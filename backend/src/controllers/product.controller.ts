@@ -48,13 +48,22 @@ export const getProductBySlug = async (
 // Coerce numeric fields when request comes via multipart/form-data
 const coerceProductBody = (body: any) => {
   const coerced = { ...body };
-  if (coerced.priceConsumer !== undefined) coerced.priceConsumer = Number(coerced.priceConsumer);
-  if (coerced.priceReseller !== undefined) coerced.priceReseller = Number(coerced.priceReseller);
-  if (coerced.minOrderReseller !== undefined) coerced.minOrderReseller = Number(coerced.minOrderReseller);
+  if (coerced.priceConsumer !== undefined)
+    coerced.priceConsumer = Number(coerced.priceConsumer);
+  if (coerced.priceReseller !== undefined)
+    coerced.priceReseller = Number(coerced.priceReseller);
+  if (coerced.minOrderReseller !== undefined)
+    coerced.minOrderReseller = Number(coerced.minOrderReseller);
   if (coerced.stock !== undefined) coerced.stock = Number(coerced.stock);
-  if (coerced.seasonStart !== undefined) coerced.seasonStart = coerced.seasonStart ? Number(coerced.seasonStart) : null;
-  if (coerced.seasonEnd !== undefined) coerced.seasonEnd = coerced.seasonEnd ? Number(coerced.seasonEnd) : null;
-  if (coerced.isFeatured !== undefined) coerced.isFeatured = coerced.isFeatured === 'true' || coerced.isFeatured === true;
+  if (coerced.seasonStart !== undefined)
+    coerced.seasonStart = coerced.seasonStart
+      ? Number(coerced.seasonStart)
+      : null;
+  if (coerced.seasonEnd !== undefined)
+    coerced.seasonEnd = coerced.seasonEnd ? Number(coerced.seasonEnd) : null;
+  if (coerced.isFeatured !== undefined)
+    coerced.isFeatured =
+      coerced.isFeatured === 'true' || coerced.isFeatured === true;
   return coerced;
 };
 
@@ -65,7 +74,10 @@ export const createProduct = async (
 ) => {
   try {
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
-    const product = await productService.createProduct(coerceProductBody(req.body), imageUrl);
+    const product = await productService.createProduct(
+      coerceProductBody(req.body),
+      imageUrl,
+    );
     success(res, product, 'Produk berhasil ditambahkan.', 201);
   } catch (error) {
     next(error);

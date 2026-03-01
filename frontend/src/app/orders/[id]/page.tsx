@@ -51,7 +51,9 @@ export default function OrderDetailPage() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
-  const [reviewedProducts, setReviewedProducts] = useState<Set<string>>(new Set());
+  const [reviewedProducts, setReviewedProducts] = useState<Set<string>>(
+    new Set(),
+  );
 
   const handleUploadPaymentProof = async () => {
     const file = fileInputRef.current?.files?.[0];
@@ -143,7 +145,8 @@ export default function OrderDetailPage() {
                 {order.orderNumber}
               </h1>
               <p className="text-sm text-muted">
-                {formatDateTime(order.createdAt)} · {order.buyerType === 'RESELLER' ? 'Reseller' : 'Konsumen'}
+                {formatDateTime(order.createdAt)} ·{' '}
+                {order.buyerType === 'RESELLER' ? 'Reseller' : 'Konsumen'}
               </p>
             </div>
             <Badge
@@ -165,7 +168,9 @@ export default function OrderDetailPage() {
           {/* Timeline Progress */}
           {!isCancelled && (
             <div className="bg-white rounded-3xl border border-faint p-6 mb-6">
-              <h3 className="font-bold text-ink text-sm mb-5">Status Pesanan</h3>
+              <h3 className="font-bold text-ink text-sm mb-5">
+                Status Pesanan
+              </h3>
               <div className="flex items-center justify-between relative">
                 {/* Line */}
                 <div className="absolute top-5 left-[10%] right-[10%] h-0.5 bg-faint z-0" />
@@ -176,7 +181,10 @@ export default function OrderDetailPage() {
                   }}
                 />
                 {TIMELINE_STEPS.map((step, idx) => (
-                  <div key={step.status} className="flex flex-col items-center z-10 relative">
+                  <div
+                    key={step.status}
+                    className="flex flex-col items-center z-10 relative"
+                  >
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all ${
                         idx <= currentStep
@@ -219,7 +227,11 @@ export default function OrderDetailPage() {
                           {(item.productImage || item.product?.imageUrl) && (
                             <div className="w-12 h-12 rounded-xl overflow-hidden bg-g6 flex-shrink-0">
                               <Image
-                                src={item.productImage || item.product?.imageUrl || ''}
+                                src={
+                                  item.productImage ||
+                                  item.product?.imageUrl ||
+                                  ''
+                                }
                                 alt={item.productName}
                                 width={48}
                                 height={48}
@@ -242,51 +254,65 @@ export default function OrderDetailPage() {
                       </div>
 
                       {/* Review form for DONE orders */}
-                      {order.status === 'DONE' && user && !reviewedProducts.has(item.productId) && (
-                        <div className="pl-15 pt-2">
-                          {reviewProduct === item.productId ? (
-                            <div className="bg-g6 rounded-2xl p-4 border border-faint">
-                              <p className="text-xs font-bold text-muted mb-2">Tulis ulasan untuk {item.productName}</p>
-                              <div className="mb-3">
-                                <StarRating
-                                  rating={reviewRating}
-                                  interactive
-                                  onChange={(r: number) => setReviewRating(r)}
-                                  size="md"
+                      {order.status === 'DONE' &&
+                        user &&
+                        !reviewedProducts.has(item.productId) && (
+                          <div className="pl-15 pt-2">
+                            {reviewProduct === item.productId ? (
+                              <div className="bg-g6 rounded-2xl p-4 border border-faint">
+                                <p className="text-xs font-bold text-muted mb-2">
+                                  Tulis ulasan untuk {item.productName}
+                                </p>
+                                <div className="mb-3">
+                                  <StarRating
+                                    rating={reviewRating}
+                                    interactive
+                                    onChange={(r: number) => setReviewRating(r)}
+                                    size="md"
+                                  />
+                                </div>
+                                <textarea
+                                  value={reviewComment}
+                                  onChange={(e) =>
+                                    setReviewComment(e.target.value)
+                                  }
+                                  placeholder="Tulis komentar (opsional)..."
+                                  className="w-full rounded-xl border border-faint p-3 text-sm resize-none h-20 focus:border-g3 focus:outline-none"
                                 />
+                                <div className="flex gap-2 mt-2">
+                                  <button
+                                    onClick={() =>
+                                      handleSubmitReview(item.productId)
+                                    }
+                                    disabled={reviewSubmitting}
+                                    className="px-4 py-2 bg-g1 text-white text-xs font-bold rounded-xl hover:bg-g2 transition-colors disabled:opacity-50"
+                                  >
+                                    {reviewSubmitting
+                                      ? 'Mengirim...'
+                                      : 'Kirim Ulasan'}
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setReviewProduct(null);
+                                      setReviewRating(5);
+                                      setReviewComment('');
+                                    }}
+                                    className="px-4 py-2 bg-g6 text-muted text-xs font-bold rounded-xl border border-faint hover:bg-g5"
+                                  >
+                                    Batal
+                                  </button>
+                                </div>
                               </div>
-                              <textarea
-                                value={reviewComment}
-                                onChange={(e) => setReviewComment(e.target.value)}
-                                placeholder="Tulis komentar (opsional)..."
-                                className="w-full rounded-xl border border-faint p-3 text-sm resize-none h-20 focus:border-g3 focus:outline-none"
-                              />
-                              <div className="flex gap-2 mt-2">
-                                <button
-                                  onClick={() => handleSubmitReview(item.productId)}
-                                  disabled={reviewSubmitting}
-                                  className="px-4 py-2 bg-g1 text-white text-xs font-bold rounded-xl hover:bg-g2 transition-colors disabled:opacity-50"
-                                >
-                                  {reviewSubmitting ? 'Mengirim...' : 'Kirim Ulasan'}
-                                </button>
-                                <button
-                                  onClick={() => { setReviewProduct(null); setReviewRating(5); setReviewComment(''); }}
-                                  className="px-4 py-2 bg-g6 text-muted text-xs font-bold rounded-xl border border-faint hover:bg-g5"
-                                >
-                                  Batal
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setReviewProduct(item.productId)}
-                              className="text-xs font-bold text-g1 hover:text-g2 transition-colors"
-                            >
-                              ⭐ Beri Ulasan
-                            </button>
-                          )}
-                        </div>
-                      )}
+                            ) : (
+                              <button
+                                onClick={() => setReviewProduct(item.productId)}
+                                className="text-xs font-bold text-g1 hover:text-g2 transition-colors"
+                              >
+                                ⭐ Beri Ulasan
+                              </button>
+                            )}
+                          </div>
+                        )}
                     </div>
                   ))}
                 </div>
@@ -361,9 +387,12 @@ export default function OrderDetailPage() {
 
                   {/* Upload Bukti Pembayaran */}
                   <div className="bg-white rounded-3xl border border-faint p-6">
-                    <h3 className="font-bold text-ink mb-3 text-sm">📤 Upload Bukti Transfer</h3>
+                    <h3 className="font-bold text-ink mb-3 text-sm">
+                      📤 Upload Bukti Transfer
+                    </h3>
                     <p className="text-xs text-muted mb-4">
-                      Unggah foto bukti transfer agar pesanan Anda segera diproses.
+                      Unggah foto bukti transfer agar pesanan Anda segera
+                      diproses.
                     </p>
                     <input
                       ref={fileInputRef}
@@ -379,7 +408,9 @@ export default function OrderDetailPage() {
                       {uploading ? 'Mengunggah...' : 'Unggah Bukti'}
                     </button>
                     {uploadMsg && (
-                      <p className={`text-xs mt-2 font-semibold ${uploadMsg.startsWith('✅') ? 'text-g1' : 'text-red'}`}>
+                      <p
+                        className={`text-xs mt-2 font-semibold ${uploadMsg.startsWith('✅') ? 'text-g1' : 'text-red'}`}
+                      >
                         {uploadMsg}
                       </p>
                     )}
@@ -390,11 +421,17 @@ export default function OrderDetailPage() {
               {/* Show uploaded payment proof */}
               {order.paymentProofUrl && (
                 <div className="bg-white rounded-3xl border border-faint p-6">
-                  <h3 className="font-bold text-ink mb-3 text-sm">📷 Bukti Pembayaran</h3>
+                  <h3 className="font-bold text-ink mb-3 text-sm">
+                    📷 Bukti Pembayaran
+                  </h3>
                   <div className="rounded-xl overflow-hidden border border-faint">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={order.paymentProofUrl.startsWith('http') ? order.paymentProofUrl : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`}
+                      src={
+                        order.paymentProofUrl.startsWith('http')
+                          ? order.paymentProofUrl
+                          : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`
+                      }
                       alt="Bukti pembayaran"
                       className="w-full object-contain max-h-[300px]"
                     />

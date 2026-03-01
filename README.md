@@ -18,15 +18,15 @@ buahkita/
 
 ## ⚙️ Tech Stack
 
-| Layer      | Teknologi                                           |
-| ---------- | --------------------------------------------------- |
-| Frontend   | Next.js 14 (App Router), TypeScript, Tailwind CSS   |
-| State      | Zustand, TanStack React Query                       |
-| Backend    | Express.js 5, TypeScript, Zod validation            |
-| Database   | PostgreSQL (Supabase), Prisma ORM                   |
-| Auth       | JWT + HttpOnly Cookies (Access + Refresh Token)     |
-| Upload     | Multer + Sharp (image processing)                   |
-| Maps       | Leaflet + React-Leaflet                             |
+| Layer    | Teknologi                                         |
+| -------- | ------------------------------------------------- |
+| Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS |
+| State    | Zustand, TanStack React Query                     |
+| Backend  | Express.js 5, TypeScript, Zod validation          |
+| Database | PostgreSQL (Supabase), Prisma ORM                 |
+| Auth     | JWT + HttpOnly Cookies (Access + Refresh Token)   |
+| Upload   | Multer + Sharp (image processing)                 |
+| Maps     | Leaflet + React-Leaflet                           |
 
 ---
 
@@ -90,10 +90,10 @@ npm run prisma:seed
 
 **Akun seed:**
 
-| Role  | Email              | Password  |
-| ----- | ------------------ | --------- |
-| Admin | admin@buahkita.id  | admin123  |
-| Buyer | buyer@buahkita.id  | buyer123  |
+| Role  | Email             | Password |
+| ----- | ----------------- | -------- |
+| Admin | admin@buahkita.id | admin123 |
+| Buyer | buyer@buahkita.id | buyer123 |
 
 ### 4. Jalankan Development Server
 
@@ -121,6 +121,7 @@ npm run build
 ## 📋 Fitur Utama
 
 ### 🛒 Pembeli (Buyer)
+
 - Katalog produk dengan filter (kategori, harga, musim, tags)
 - Detail produk dengan galeri gambar
 - Keranjang belanja dengan harga konsumen/reseller
@@ -132,6 +133,7 @@ npm run build
 - Unduh invoice PDF
 
 ### 🔧 Admin
+
 - Dashboard statistik (pendapatan, pesanan, produk, pengguna)
 - CRUD Produk (gambar multiple, harga konsumen & reseller)
 - Manajemen Pesanan (ubah status, lihat bukti bayar)
@@ -142,6 +144,7 @@ npm run build
 - Manajemen Pengguna
 
 ### 🗺️ Halaman Publik
+
 - Homepage (banner slider, produk unggulan, testimonial)
 - Tentang Kami (peta supplier & reseller via Leaflet)
 - Halaman Produk dengan filter lengkap
@@ -152,46 +155,46 @@ npm run build
 
 Base URL: `http://localhost:5010/api/v1`
 
-| Method | Endpoint                    | Deskripsi                    |
-| ------ | --------------------------- | ---------------------------- |
-| POST   | `/auth/register`            | Registrasi akun baru         |
-| POST   | `/auth/login`               | Login                        |
-| POST   | `/auth/refresh`             | Refresh token                |
-| POST   | `/auth/logout`              | Logout                       |
-| GET    | `/auth/me`                  | Profil user yang login       |
-| GET    | `/products`                 | Daftar produk (+ filter)     |
-| GET    | `/products/:slug`           | Detail produk                |
-| GET    | `/categories`               | Daftar kategori              |
-| GET    | `/cart`                     | Keranjang user               |
-| POST   | `/cart`                     | Tambah item ke keranjang     |
-| PATCH  | `/cart/:id`                 | Update jumlah item           |
-| DELETE | `/cart/:id`                 | Hapus item dari keranjang    |
-| POST   | `/orders`                   | Buat pesanan baru            |
-| GET    | `/orders`                   | Daftar pesanan user          |
-| GET    | `/orders/:id`               | Detail pesanan               |
-| POST   | `/orders/:id/pay`           | Upload bukti bayar           |
-| POST   | `/orders/:id/review`        | Kirim review                 |
-| GET    | `/orders/:id/invoice`       | Download invoice PDF         |
-| POST   | `/vouchers/validate`        | Validasi kode voucher        |
-| GET    | `/banners`                  | Daftar banner aktif          |
-| GET    | `/reviews/latest`           | Testimonial terbaru          |
-| GET    | `/quiz/questions`           | Soal kuis edukasi            |
-| POST   | `/quiz/submit`              | Submit jawaban kuis          |
-| GET    | `/reseller-maps`            | Data peta reseller           |
-| GET    | `/admin/stats`              | Statistik dashboard          |
+| Method | Endpoint              | Deskripsi                 |
+| ------ | --------------------- | ------------------------- |
+| POST   | `/auth/register`      | Registrasi akun baru      |
+| POST   | `/auth/login`         | Login                     |
+| POST   | `/auth/refresh`       | Refresh token             |
+| POST   | `/auth/logout`        | Logout                    |
+| GET    | `/auth/me`            | Profil user yang login    |
+| GET    | `/products`           | Daftar produk (+ filter)  |
+| GET    | `/products/:slug`     | Detail produk             |
+| GET    | `/categories`         | Daftar kategori           |
+| GET    | `/cart`               | Keranjang user            |
+| POST   | `/cart`               | Tambah item ke keranjang  |
+| PATCH  | `/cart/:id`           | Update jumlah item        |
+| DELETE | `/cart/:id`           | Hapus item dari keranjang |
+| POST   | `/orders`             | Buat pesanan baru         |
+| GET    | `/orders`             | Daftar pesanan user       |
+| GET    | `/orders/:id`         | Detail pesanan            |
+| POST   | `/orders/:id/pay`     | Upload bukti bayar        |
+| POST   | `/orders/:id/review`  | Kirim review              |
+| GET    | `/orders/:id/invoice` | Download invoice PDF      |
+| POST   | `/vouchers/validate`  | Validasi kode voucher     |
+| GET    | `/banners`            | Daftar banner aktif       |
+| GET    | `/reviews/latest`     | Testimonial terbaru       |
+| GET    | `/quiz/questions`     | Soal kuis edukasi         |
+| POST   | `/quiz/submit`        | Submit jawaban kuis       |
+| GET    | `/reseller-maps`      | Data peta reseller        |
+| GET    | `/admin/stats`        | Statistik dashboard       |
 
 ---
 
 ## 📜 Script yang Tersedia
 
-| Script              | Deskripsi                                        |
-| ------------------- | ------------------------------------------------ |
-| `npm run dev`       | Jalankan backend + frontend (concurrently)       |
-| `npm run build`     | Build backend + frontend                         |
-| `npm run setup`     | Install semua dependencies + prisma generate     |
-| `npm run prisma:migrate` | Jalankan database migration                 |
-| `npm run prisma:seed`    | Seed data awal (admin + buyer + produk)     |
-| `npm run prisma:studio`  | Buka Prisma Studio (GUI database)           |
+| Script                   | Deskripsi                                    |
+| ------------------------ | -------------------------------------------- |
+| `npm run dev`            | Jalankan backend + frontend (concurrently)   |
+| `npm run build`          | Build backend + frontend                     |
+| `npm run setup`          | Install semua dependencies + prisma generate |
+| `npm run prisma:migrate` | Jalankan database migration                  |
+| `npm run prisma:seed`    | Seed data awal (admin + buyer + produk)      |
+| `npm run prisma:studio`  | Buka Prisma Studio (GUI database)            |
 
 ---
 

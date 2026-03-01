@@ -45,7 +45,9 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
             className={`absolute inset-0 transition-opacity duration-700 ${
               idx === current ? 'opacity-100' : 'opacity-0'
             } ${banner.linkUrl ? 'cursor-pointer' : ''}`}
-            onClick={() => banner.linkUrl && window.open(banner.linkUrl, '_blank')}
+            onClick={() =>
+              banner.linkUrl && window.open(banner.linkUrl, '_blank')
+            }
           >
             {isSvg(banner.imageUrl) ? (
               // eslint-disable-next-line @next/next/no-img-element

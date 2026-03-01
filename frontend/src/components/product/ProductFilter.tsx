@@ -17,8 +17,18 @@ const TAG_LIST = [
 ];
 
 const MONTH_NAMES = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
 ];
 
 export default function ProductFilter({ categories }: ProductFilterProps) {
@@ -31,8 +41,12 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '');
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '');
   const [activeTags, setActiveTags] = useState<Set<string>>(new Set());
-  const [seasonMonth, setSeasonMonth] = useState(searchParams.get('seasonMonth') || '');
-  const [seasonEnabled, setSeasonEnabled] = useState(!!searchParams.get('seasonMonth'));
+  const [seasonMonth, setSeasonMonth] = useState(
+    searchParams.get('seasonMonth') || '',
+  );
+  const [seasonEnabled, setSeasonEnabled] = useState(
+    !!searchParams.get('seasonMonth'),
+  );
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -51,7 +65,17 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
       });
     }, 300);
     return () => clearTimeout(timeout);
-  }, [search, category, sort, minPrice, maxPrice, activeTags, seasonEnabled, seasonMonth, router]);
+  }, [
+    search,
+    category,
+    sort,
+    minPrice,
+    maxPrice,
+    activeTags,
+    seasonEnabled,
+    seasonMonth,
+    router,
+  ]);
 
   const toggleTag = (tag: string) => {
     setActiveTags((prev) => {
@@ -172,7 +196,9 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
           <span className="flex-1 h-px bg-faint" />
         </div>
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[0.82rem] font-semibold text-ink">Filter Musim</span>
+          <span className="text-[0.82rem] font-semibold text-ink">
+            Filter Musim
+          </span>
           <button
             onClick={() => {
               const next = !seasonEnabled;
@@ -200,7 +226,8 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
           >
             {MONTH_NAMES.map((name, idx) => (
               <option key={idx + 1} value={String(idx + 1)}>
-                {name} {idx + 1 === new Date().getMonth() + 1 ? '(Sekarang)' : ''}
+                {name}{' '}
+                {idx + 1 === new Date().getMonth() + 1 ? '(Sekarang)' : ''}
               </option>
             ))}
           </select>

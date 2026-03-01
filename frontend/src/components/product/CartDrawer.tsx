@@ -86,50 +86,50 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                     ? Number(item.product.priceReseller)
                     : Number(item.product.priceConsumer);
                 return (
-                <div
-                  key={item.id}
-                  className="flex gap-3 items-center py-3.5 border-b border-[#f5f5f5]"
-                >
-                  <div className="w-[52px] h-[52px] rounded-[14px] bg-g6 flex items-center justify-center text-[2rem] flex-shrink-0">
-                    {item.product.imageUrl ? '🍊' : '🍊'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <strong className="block text-[0.88rem] font-extrabold mb-[2px] truncate">
-                      {item.product.name}
-                    </strong>
-                    <span className="text-[0.78rem] text-muted">
-                      {item.quantity} {item.product.unit} ×{' '}
-                      {formatRupiah(price)}
-                    </span>
-                    {/* Qty controls */}
-                    <div className="flex items-center gap-1 mt-1.5">
-                      <button
-                        onClick={() =>
-                          item.quantity > 1
-                            ? updateQuantity(item.id, item.quantity - 1)
-                            : removeItem(item.id)
-                        }
-                        className="w-6 h-6 rounded-full bg-g6 border-none text-sm font-bold text-ink flex items-center justify-center cursor-pointer hover:bg-g5"
-                      >
-                        −
-                      </button>
-                      <span className="text-xs font-extrabold w-6 text-center">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
-                        }
-                        className="w-6 h-6 rounded-full bg-g6 border-none text-sm font-bold text-ink flex items-center justify-center cursor-pointer hover:bg-g5"
-                      >
-                        +
-                      </button>
+                  <div
+                    key={item.id}
+                    className="flex gap-3 items-center py-3.5 border-b border-[#f5f5f5]"
+                  >
+                    <div className="w-[52px] h-[52px] rounded-[14px] bg-g6 flex items-center justify-center text-[2rem] flex-shrink-0">
+                      {item.product.imageUrl ? '🍊' : '🍊'}
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <strong className="block text-[0.88rem] font-extrabold mb-[2px] truncate">
+                        {item.product.name}
+                      </strong>
+                      <span className="text-[0.78rem] text-muted">
+                        {item.quantity} {item.product.unit} ×{' '}
+                        {formatRupiah(price)}
+                      </span>
+                      {/* Qty controls */}
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <button
+                          onClick={() =>
+                            item.quantity > 1
+                              ? updateQuantity(item.id, item.quantity - 1)
+                              : removeItem(item.id)
+                          }
+                          className="w-6 h-6 rounded-full bg-g6 border-none text-sm font-bold text-ink flex items-center justify-center cursor-pointer hover:bg-g5"
+                        >
+                          −
+                        </button>
+                        <span className="text-xs font-extrabold w-6 text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity + 1)
+                          }
+                          className="w-6 h-6 rounded-full bg-g6 border-none text-sm font-bold text-ink flex items-center justify-center cursor-pointer hover:bg-g5"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <span className="font-black text-g1 text-[0.9rem] flex-shrink-0">
+                      {formatRupiah(price * item.quantity)}
+                    </span>
                   </div>
-                  <span className="font-black text-g1 text-[0.9rem] flex-shrink-0">
-                    {formatRupiah(price * item.quantity)}
-                  </span>
-                </div>
                 );
               })}
             </div>

@@ -50,8 +50,12 @@ export default function ProductDetailPage() {
   const { data: relatedProducts } = useQuery({
     queryKey: ['related-products', product?.category?.slug],
     queryFn: async () => {
-      const { data } = await api.get(`/products?category=${product!.category!.slug}&limit=5`);
-      return (data.data || []).filter((p: { id: string }) => p.id !== product!.id).slice(0, 4);
+      const { data } = await api.get(
+        `/products?category=${product!.category!.slug}&limit=5`,
+      );
+      return (data.data || [])
+        .filter((p: { id: string }) => p.id !== product!.id)
+        .slice(0, 4);
     },
     enabled: !!product?.category?.slug,
   });
@@ -142,7 +146,9 @@ export default function ProductDetailPage() {
                 {(() => {
                   const allImages = [
                     ...(product.imageUrl ? [product.imageUrl] : []),
-                    ...(product.images || []).filter((img: string) => img && !img.startsWith('blob:')),
+                    ...(product.images || []).filter(
+                      (img: string) => img && !img.startsWith('blob:'),
+                    ),
                   ];
                   const displayImage = allImages[activeImage] || null;
                   if (displayImage) {
@@ -167,7 +173,9 @@ export default function ProductDetailPage() {
               {(() => {
                 const allImages = [
                   ...(product.imageUrl ? [product.imageUrl] : []),
-                  ...(product.images || []).filter((img: string) => img && !img.startsWith('blob:')),
+                  ...(product.images || []).filter(
+                    (img: string) => img && !img.startsWith('blob:'),
+                  ),
                 ];
                 return allImages.length > 1 ? (
                   <div className="flex gap-2">
@@ -176,10 +184,17 @@ export default function ProductDetailPage() {
                         key={idx}
                         onClick={() => setActiveImage(idx)}
                         className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
-                          activeImage === idx ? 'border-g1 shadow-md' : 'border-faint hover:border-g4'
+                          activeImage === idx
+                            ? 'border-g1 shadow-md'
+                            : 'border-faint hover:border-g4'
                         }`}
                       >
-                        <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" />
+                        <Image
+                          src={img}
+                          alt={`${product.name} ${idx + 1}`}
+                          fill
+                          className="object-cover"
+                        />
                       </button>
                     ))}
                   </div>
@@ -309,28 +324,54 @@ export default function ProductDetailPage() {
                 Produk Terkait
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {relatedProducts.map((rp: { id: string; name: string; slug: string; imageUrl: string | null; priceConsumer: number; unit: string; category?: { name: string } }) => (
-                  <a
-                    key={rp.id}
-                    href={`/products/${rp.slug}`}
-                    className="bg-white rounded-2xl border border-faint overflow-hidden hover:shadow-md transition-all group no-underline"
-                  >
-                    <div className="relative aspect-square bg-g6">
-                      {rp.imageUrl ? (
-                        <Image src={rp.imageUrl} alt={rp.name} fill className="object-cover group-hover:scale-105 transition-transform" />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-4xl">🍊</div>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      {rp.category && (
-                        <span className="text-[0.65rem] font-bold text-g2 uppercase tracking-wider">{rp.category.name}</span>
-                      )}
-                      <p className="text-sm font-bold text-ink mt-1 line-clamp-1">{rp.name}</p>
-                      <p className="text-sm font-extrabold text-g1 mt-1">{formatRupiah(rp.priceConsumer)}<span className="text-xs text-muted font-normal">/{rp.unit}</span></p>
-                    </div>
-                  </a>
-                ))}
+                {relatedProducts.map(
+                  (rp: {
+                    id: string;
+                    name: string;
+                    slug: string;
+                    imageUrl: string | null;
+                    priceConsumer: number;
+                    unit: string;
+                    category?: { name: string };
+                  }) => (
+                    <a
+                      key={rp.id}
+                      href={`/products/${rp.slug}`}
+                      className="bg-white rounded-2xl border border-faint overflow-hidden hover:shadow-md transition-all group no-underline"
+                    >
+                      <div className="relative aspect-square bg-g6">
+                        {rp.imageUrl ? (
+                          <Image
+                            src={rp.imageUrl}
+                            alt={rp.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-4xl">
+                            🍊
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        {rp.category && (
+                          <span className="text-[0.65rem] font-bold text-g2 uppercase tracking-wider">
+                            {rp.category.name}
+                          </span>
+                        )}
+                        <p className="text-sm font-bold text-ink mt-1 line-clamp-1">
+                          {rp.name}
+                        </p>
+                        <p className="text-sm font-extrabold text-g1 mt-1">
+                          {formatRupiah(rp.priceConsumer)}
+                          <span className="text-xs text-muted font-normal">
+                            /{rp.unit}
+                          </span>
+                        </p>
+                      </div>
+                    </a>
+                  ),
+                )}
               </div>
             </section>
           )}

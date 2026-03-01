@@ -78,7 +78,8 @@ export default function AdminProductEditPage() {
       payload.append('minOrderReseller', String(formData.minOrderReseller));
       payload.append('stock', String(formData.stock));
       payload.append('unit', formData.unit);
-      if (formData.categoryId) payload.append('categoryId', formData.categoryId);
+      if (formData.categoryId)
+        payload.append('categoryId', formData.categoryId);
       if (imageFile) payload.append('image', imageFile);
 
       if (isNew) {

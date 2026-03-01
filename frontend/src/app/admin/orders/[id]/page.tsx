@@ -112,7 +112,9 @@ export default function AdminOrderDetailPage() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xl">🍊</div>
+                      <div className="w-full h-full flex items-center justify-center text-xl">
+                        🍊
+                      </div>
                     )}
                   </div>
                   <div className="flex-1">
@@ -217,13 +219,21 @@ export default function AdminOrderDetailPage() {
               <div className="rounded-xl overflow-hidden border border-faint">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={order.paymentProofUrl.startsWith('http') ? order.paymentProofUrl : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`}
+                  src={
+                    order.paymentProofUrl.startsWith('http')
+                      ? order.paymentProofUrl
+                      : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`
+                  }
                   alt="Bukti pembayaran"
                   className="w-full object-contain max-h-[400px]"
                 />
               </div>
               <a
-                href={order.paymentProofUrl.startsWith('http') ? order.paymentProofUrl : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`}
+                href={
+                  order.paymentProofUrl.startsWith('http')
+                    ? order.paymentProofUrl
+                    : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block text-center text-xs font-bold text-g1 mt-2 hover:text-g2"

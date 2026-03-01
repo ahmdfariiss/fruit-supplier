@@ -52,11 +52,7 @@ export default function ResellerMap({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {locations.map((loc) => (
-          <Marker
-            key={loc.id}
-            position={[loc.lat, loc.lng]}
-            icon={icon}
-          >
+          <Marker key={loc.id} position={[loc.lat, loc.lng]} icon={icon}>
             <Popup>
               <div>
                 <strong>{loc.name}</strong>

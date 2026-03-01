@@ -7,8 +7,12 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 
-const SupplierMap = dynamic(() => import('@/components/maps/SupplierMap'), { ssr: false });
-const ResellerMap = dynamic(() => import('@/components/maps/ResellerMap'), { ssr: false });
+const SupplierMap = dynamic(() => import('@/components/maps/SupplierMap'), {
+  ssr: false,
+});
+const ResellerMap = dynamic(() => import('@/components/maps/ResellerMap'), {
+  ssr: false,
+});
 
 const TEAM = [
   {
@@ -89,17 +93,33 @@ const MISSIONS = [
 ];
 
 export default function AboutPage() {
-  const [resellerLocations, setResellerLocations] = useState<Array<{ id: string; name: string; address: string; lat: number; lng: number; phone: string | null }>>([]);
+  const [resellerLocations, setResellerLocations] = useState<
+    Array<{
+      id: string;
+      name: string;
+      address: string;
+      lat: number;
+      lng: number;
+      phone: string | null;
+    }>
+  >([]);
   const [mapView, setMapView] = useState<'supplier' | 'reseller'>('supplier');
 
   useEffect(() => {
-    api.get('/reseller-maps').then(res => {
-      setResellerLocations(res.data.data || []);
-    }).catch(() => {});
+    api
+      .get('/reseller-maps')
+      .then((res) => {
+        setResellerLocations(res.data.data || []);
+      })
+      .catch(() => {});
   }, []);
 
-  const supplierLat = parseFloat(process.env.NEXT_PUBLIC_SUPPLIER_LAT || '-6.9667');
-  const supplierLng = parseFloat(process.env.NEXT_PUBLIC_SUPPLIER_LNG || '110.4167');
+  const supplierLat = parseFloat(
+    process.env.NEXT_PUBLIC_SUPPLIER_LAT || '-6.9667',
+  );
+  const supplierLng = parseFloat(
+    process.env.NEXT_PUBLIC_SUPPLIER_LNG || '110.4167',
+  );
 
   return (
     <>
@@ -445,13 +465,19 @@ export default function AboutPage() {
                     Kantor BuahKita
                   </div>
                   <div className="text-[0.75rem] text-muted leading-[1.5]">
-                    Jl. Pasar Buah No. 12<br />Semarang, Jawa Tengah
+                    Jl. Pasar Buah No. 12
+                    <br />
+                    Semarang, Jawa Tengah
                   </div>
                   <div className="inline-flex items-center gap-1 bg-g5 text-g1 text-[0.65rem] font-extrabold px-[9px] py-[3px] rounded-pill mt-1.5 border border-faint">
                     🏪 Kantor Pusat
                   </div>
                 </div>
-                <SupplierMap center={[supplierLat, supplierLng]} zoom={14} className="!rounded-none !border-none" />
+                <SupplierMap
+                  center={[supplierLat, supplierLng]}
+                  zoom={14}
+                  className="!rounded-none !border-none"
+                />
               </>
             ) : (
               <>
@@ -466,7 +492,12 @@ export default function AboutPage() {
                     {resellerLocations.length} lokasi mitra aktif
                   </div>
                 </div>
-                <ResellerMap locations={resellerLocations} center={[supplierLat, supplierLng]} zoom={6} className="!rounded-none !border-none" />
+                <ResellerMap
+                  locations={resellerLocations}
+                  center={[supplierLat, supplierLng]}
+                  zoom={6}
+                  className="!rounded-none !border-none"
+                />
               </>
             )}
           </div>
@@ -488,8 +519,12 @@ export default function AboutPage() {
                       🏪
                     </div>
                     <div>
-                      <span className="text-[0.82rem] font-extrabold block mb-[2px]">{loc.name}</span>
-                      <div className="text-[0.72rem] text-muted">📍 {loc.address}</div>
+                      <span className="text-[0.82rem] font-extrabold block mb-[2px]">
+                        {loc.name}
+                      </span>
+                      <div className="text-[0.72rem] text-muted">
+                        📍 {loc.address}
+                      </div>
                       {loc.phone && (
                         <span className="text-[0.68rem] font-bold bg-g5 text-g2 px-[7px] py-[2px] rounded-pill inline-block mt-1">
                           📞 {loc.phone}

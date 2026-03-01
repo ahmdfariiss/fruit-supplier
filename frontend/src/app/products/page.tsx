@@ -34,7 +34,9 @@ function ProductsContent() {
         | 'popular') || undefined,
     buyerType: buyerMode === 'reseller' ? ('reseller' as const) : undefined,
     tags: searchParams.get('tags') || undefined,
-    seasonMonth: searchParams.get('seasonMonth') ? Number(searchParams.get('seasonMonth')) : undefined,
+    seasonMonth: searchParams.get('seasonMonth')
+      ? Number(searchParams.get('seasonMonth'))
+      : undefined,
     page,
     limit: 9,
   };

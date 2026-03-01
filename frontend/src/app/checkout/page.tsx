@@ -226,13 +226,24 @@ export default function CheckoutPage() {
               <span className="text-[1.3rem]">👤</span> Pilih Tipe Pembeli
             </div>
             <p className="text-[0.85rem] text-muted mb-6">
-              Pilih tipe pembeli Anda. Ini akan menentukan harga yang berlaku untuk seluruh proses checkout.
+              Pilih tipe pembeli Anda. Ini akan menentukan harga yang berlaku
+              untuk seluruh proses checkout.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(
                 [
-                  ['CONSUMER', '🛒', 'Konsumen', 'Harga Eceran untuk pembelian rumah tangga'],
-                  ['RESELLER', '🏪', 'Reseller / Toko', 'Harga Grosir untuk pembelian dalam jumlah besar'],
+                  [
+                    'CONSUMER',
+                    '🛒',
+                    'Konsumen',
+                    'Harga Eceran untuk pembelian rumah tangga',
+                  ],
+                  [
+                    'RESELLER',
+                    '🏪',
+                    'Reseller / Toko',
+                    'Harga Grosir untuk pembelian dalam jumlah besar',
+                  ],
                 ] as const
               ).map(([type, icon, title, desc]) => (
                 <div
@@ -247,11 +258,15 @@ export default function CheckoutPage() {
                     {icon}
                   </div>
                   <div>
-                    <h4 className="text-[0.95rem] font-extrabold mb-1">{title}</h4>
+                    <h4 className="text-[0.95rem] font-extrabold mb-1">
+                      {title}
+                    </h4>
                     <p className="text-[0.78rem] text-muted">{desc}</p>
                   </div>
                   {buyerType === type && (
-                    <div className="text-g1 text-[0.75rem] font-extrabold">✓ Dipilih</div>
+                    <div className="text-g1 text-[0.75rem] font-extrabold">
+                      ✓ Dipilih
+                    </div>
                   )}
                 </div>
               ))}
@@ -262,7 +277,8 @@ export default function CheckoutPage() {
                 <span>💼</span>
                 <span>
                   Harga reseller berlaku jika qty memenuhi minimum per produk.
-                  Produk yang belum memenuhi minimum akan dihitung dengan harga konsumen.
+                  Produk yang belum memenuhi minimum akan dihitung dengan harga
+                  konsumen.
                 </span>
               </div>
             )}
@@ -292,7 +308,8 @@ export default function CheckoutPage() {
             </div>
             <p className="text-[0.85rem] text-muted mb-5">
               Periksa kembali item belanjaan Anda sebelum melanjutkan.
-              {buyerType === 'RESELLER' && ' Harga disesuaikan dengan tipe reseller.'}
+              {buyerType === 'RESELLER' &&
+                ' Harga disesuaikan dengan tipe reseller.'}
             </p>
 
             {/* Reseller global warning */}
@@ -300,10 +317,13 @@ export default function CheckoutPage() {
               <div className="bg-red/5 border border-red/20 rounded-xl p-4 mb-5 flex items-start gap-2.5 text-[0.82rem]">
                 <span className="text-red text-base mt-0.5">⚠️</span>
                 <div>
-                  <strong className="text-red block mb-0.5">Perhatian Reseller</strong>
+                  <strong className="text-red block mb-0.5">
+                    Perhatian Reseller
+                  </strong>
                   <span className="text-red/80">
-                    Beberapa produk belum memenuhi minimum order reseller dan akan dihitung dengan harga konsumen.
-                    Kembali ke keranjang untuk menambah jumlah.
+                    Beberapa produk belum memenuhi minimum order reseller dan
+                    akan dihitung dengan harga konsumen. Kembali ke keranjang
+                    untuk menambah jumlah.
                   </span>
                 </div>
               </div>
@@ -327,9 +347,12 @@ export default function CheckoutPage() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <strong className="block text-[0.88rem] font-bold">{item.product.name}</strong>
+                      <strong className="block text-[0.88rem] font-bold">
+                        {item.product.name}
+                      </strong>
                       <span className="text-[0.78rem] text-muted">
-                        {item.quantity} {item.product.unit} × {formatRupiah(item.price)}
+                        {item.quantity} {item.product.unit} ×{' '}
+                        {formatRupiah(item.price)}
                       </span>
                       {item.usesResellerPrice && (
                         <span className="ml-2 text-[0.68rem] bg-g5 text-g1 px-2 py-0.5 rounded-pill font-bold">
@@ -347,9 +370,13 @@ export default function CheckoutPage() {
                     <div className="mt-2 ml-[64px] bg-[#fef2f2] border border-red/15 rounded-lg px-3 py-2 text-[0.75rem] text-red flex items-center gap-1.5">
                       <span>⚠️</span>
                       <span>
-                        Qty kurang dari minimum reseller ({item.product.minOrderReseller} {item.product.unit}).
-                        Dikenakan harga konsumen ({formatRupiah(Number(item.product.priceConsumer))}).
-                        Butuh tambah {item.product.minOrderReseller - item.quantity} {item.product.unit} lagi.
+                        Qty kurang dari minimum reseller (
+                        {item.product.minOrderReseller} {item.product.unit}).
+                        Dikenakan harga konsumen (
+                        {formatRupiah(Number(item.product.priceConsumer))}).
+                        Butuh tambah{' '}
+                        {item.product.minOrderReseller - item.quantity}{' '}
+                        {item.product.unit} lagi.
                       </span>
                     </div>
                   )}
@@ -361,7 +388,9 @@ export default function CheckoutPage() {
             <div className="border-t-2 border-faint pt-4 mt-2">
               <div className="flex justify-between text-[0.92rem]">
                 <span className="text-muted font-medium">Subtotal</span>
-                <span className="font-extrabold text-g1 text-lg">{formatRupiah(subtotal)}</span>
+                <span className="font-extrabold text-g1 text-lg">
+                  {formatRupiah(subtotal)}
+                </span>
               </div>
             </div>
 
@@ -489,17 +518,26 @@ export default function CheckoutPage() {
                 <span>🛒</span> Ringkasan
               </div>
               <div className="text-[0.82rem] text-muted mb-1">
-                {items.length} produk · {buyerType === 'RESELLER' ? 'Reseller' : 'Konsumen'}
+                {items.length} produk ·{' '}
+                {buyerType === 'RESELLER' ? 'Reseller' : 'Konsumen'}
               </div>
               {items.map((item) => {
                 const price =
-                  buyerType === 'RESELLER' && item.quantity >= item.product.minOrderReseller
+                  buyerType === 'RESELLER' &&
+                  item.quantity >= item.product.minOrderReseller
                     ? Number(item.product.priceReseller)
                     : Number(item.product.priceConsumer);
                 return (
-                  <div key={item.id} className="flex justify-between text-[0.78rem] py-1.5 border-b border-faint last:border-none">
-                    <span className="text-muted truncate max-w-[180px]">{item.product.name} ×{item.quantity}</span>
-                    <span className="font-semibold">{formatRupiah(price * item.quantity)}</span>
+                  <div
+                    key={item.id}
+                    className="flex justify-between text-[0.78rem] py-1.5 border-b border-faint last:border-none"
+                  >
+                    <span className="text-muted truncate max-w-[180px]">
+                      {item.product.name} ×{item.quantity}
+                    </span>
+                    <span className="font-semibold">
+                      {formatRupiah(price * item.quantity)}
+                    </span>
                   </div>
                 );
               })}
@@ -518,7 +556,10 @@ export default function CheckoutPage() {
               <button
                 onClick={() => {
                   if (!name.trim() || !phone.trim() || !addr.trim()) {
-                    toast('⚠️ Lengkapi data pengiriman terlebih dahulu!', 'error');
+                    toast(
+                      '⚠️ Lengkapi data pengiriman terlebih dahulu!',
+                      'error',
+                    );
                     return;
                   }
                   goToStep(4);
@@ -556,20 +597,34 @@ export default function CheckoutPage() {
               {/* Buyer Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6 pb-6 border-b border-faint">
                 <div>
-                  <div className="text-[0.7rem] font-extrabold tracking-widest uppercase text-muted mb-2">Penerima</div>
+                  <div className="text-[0.7rem] font-extrabold tracking-widest uppercase text-muted mb-2">
+                    Penerima
+                  </div>
                   <div className="text-base font-extrabold mb-0.5">{name}</div>
                   <div className="text-[0.82rem] text-muted leading-relaxed">
-                    📱 {phone}<br />📍 {addr}
+                    📱 {phone}
+                    <br />
+                    📍 {addr}
                   </div>
-                  {notes && <div className="text-[0.78rem] text-muted mt-1 italic">📝 {notes}</div>}
+                  {notes && (
+                    <div className="text-[0.78rem] text-muted mt-1 italic">
+                      📝 {notes}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <div className="text-[0.7rem] font-extrabold tracking-widest uppercase text-muted mb-2">Tipe Pembelian</div>
+                  <div className="text-[0.7rem] font-extrabold tracking-widest uppercase text-muted mb-2">
+                    Tipe Pembelian
+                  </div>
                   <div className="text-base font-extrabold mb-0.5">
-                    {buyerType === 'RESELLER' ? '🏪 Reseller / Toko' : '🛒 Konsumen'}
+                    {buyerType === 'RESELLER'
+                      ? '🏪 Reseller / Toko'
+                      : '🛒 Konsumen'}
                   </div>
                   {voucherValid && voucherCode && (
-                    <div className="text-[0.78rem] text-g3 font-bold mt-1">🎟️ Voucher: {voucherCode}</div>
+                    <div className="text-[0.78rem] text-g3 font-bold mt-1">
+                      🎟️ Voucher: {voucherCode}
+                    </div>
                   )}
                 </div>
               </div>
@@ -594,7 +649,9 @@ export default function CheckoutPage() {
                       <td className="py-3 px-3 border-b border-faint text-[0.85rem]">
                         {item.product.name}
                         {item.needsWarning && (
-                          <span className="text-[0.65rem] text-red ml-1">(harga konsumen)</span>
+                          <span className="text-[0.65rem] text-red ml-1">
+                            (harga konsumen)
+                          </span>
                         )}
                       </td>
                       <td className="py-3 px-3 border-b border-faint text-[0.85rem]">
@@ -632,13 +689,23 @@ export default function CheckoutPage() {
                 </h4>
                 {[
                   { label: 'Bank', value: 'BCA' },
-                  { label: 'No. Rekening', value: '1234-5678-90', copyable: true, copyVal: '1234567890' },
+                  {
+                    label: 'No. Rekening',
+                    value: '1234-5678-90',
+                    copyable: true,
+                    copyVal: '1234567890',
+                  },
                   { label: 'Atas Nama', value: 'FicPact Supplier' },
                 ].map((r) => (
-                  <div key={r.label} className="flex items-center justify-between py-2.5 border-b border-faint last:border-none">
+                  <div
+                    key={r.label}
+                    className="flex items-center justify-between py-2.5 border-b border-faint last:border-none"
+                  >
                     <span className="text-[0.8rem] text-muted">{r.label}</span>
                     <div className="flex items-center gap-2">
-                      <strong className="text-[0.9rem] font-extrabold">{r.value}</strong>
+                      <strong className="text-[0.9rem] font-extrabold">
+                        {r.value}
+                      </strong>
                       {r.copyable && (
                         <button
                           onClick={() => {
@@ -654,9 +721,13 @@ export default function CheckoutPage() {
                   </div>
                 ))}
                 <div className="flex items-center justify-between py-2.5">
-                  <span className="text-[0.8rem] text-muted">Jumlah Transfer</span>
+                  <span className="text-[0.8rem] text-muted">
+                    Jumlah Transfer
+                  </span>
                   <div className="flex items-center gap-2">
-                    <strong className="text-g1 text-base font-black">{formatRupiah(subtotal)}</strong>
+                    <strong className="text-g1 text-base font-black">
+                      {formatRupiah(subtotal)}
+                    </strong>
                     <button
                       onClick={() => {
                         navigator.clipboard?.writeText(String(subtotal));
@@ -715,7 +786,9 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-2xl border border-faint p-5 mb-6 w-full max-w-[420px] text-left">
               <div className="flex justify-between text-[0.85rem] mb-1.5">
                 <span className="text-muted">Subtotal</span>
-                <span className="font-semibold">{formatRupiah(orderSubtotal)}</span>
+                <span className="font-semibold">
+                  {formatRupiah(orderSubtotal)}
+                </span>
               </div>
               {orderDiscount > 0 && (
                 <div className="flex justify-between text-[0.85rem] mb-1.5 text-g3">
@@ -730,8 +803,8 @@ export default function CheckoutPage() {
             </div>
 
             <p className="text-muted text-[0.88rem] leading-relaxed max-w-[440px] mx-auto mb-6">
-              Silakan transfer sesuai jumlah di atas, lalu upload bukti pembayaran
-              di halaman detail pesanan agar segera diproses.
+              Silakan transfer sesuai jumlah di atas, lalu upload bukti
+              pembayaran di halaman detail pesanan agar segera diproses.
             </p>
 
             <div className="flex gap-3 flex-wrap justify-center">
