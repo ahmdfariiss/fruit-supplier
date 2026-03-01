@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EF4444"/>
+      <stop offset="100%" style="stop-color:#DC2626"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="400" fill="url(#bg)"/>
+  <text x="600" y="180" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold">🍓 Reseller Welcome</text>
+  <text x="600" y="240" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-family="Arial, sans-serif" font-size="28">Bergabung Jadi Reseller BuahKita</text>
+  <text x="600" y="290" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="Arial, sans-serif" font-size="20">Harga Khusus &amp; Keuntungan Maksimal</text>
+</svg>

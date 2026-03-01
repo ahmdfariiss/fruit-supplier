@@ -1,0 +1,236 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ══ Enums ══
+
+enum Role {
+  BUYER
+  ADMIN
+}
+
+enum BuyerType {
+  CONSUMER
+  RESELLER
+}
+
+enum OrderStatus {
+  PENDING    // Menunggu pembayaran
+  CONFIRMED  // Admin konfirmasi pembayaran
+  PROCESSING // Sedang diproses/dikemas
+  SHIPPED    // Sedang dikirim
+  DONE       // Selesai diterima
+  CANCELLED  // Dibatalkan
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+// ══ Models ══
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(BUYER)
+  phone        String?
+  address      String?
+  isActive     Boolean  @default(true)
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders        Order[]
+  reviews       Review[]
+  cartItems     CartItem[]
+  refreshTokens RefreshToken[]
+  userVouchers  UserVoucher[]
+}
+
+model Product {
+  id               String   @id @default(uuid())
+  name             String
+  slug             String   @unique
+  description      String
+  categoryId       String
+  priceConsumer    Decimal
+  priceReseller    Decimal
+  minOrderReseller Int      @default(1)
+  stock            Int      @default(0)
+  unit             String
+  imageUrl         String?
+  images           String[]
+  isFeatured       Boolean  @default(false)
+  seasonStart      Int?
+  seasonEnd        Int?
+  tags             String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  category   Category    @relation(fields: [categoryId], references: [id])
+  orderItems OrderItem[]
+  reviews    Review[]
+  cartItems  CartItem[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([isFeatured])
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String
+  slug     String    @unique
+  icon     String?
+  products Product[]
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique
+  userId          String
+  buyerType       BuyerType
+  status          OrderStatus @default(PENDING)
+  subtotal        Decimal
+  shippingCost    Decimal     @default(0)
+  discountAmount  Decimal     @default(0)
+  total           Decimal
+  voucherCode     String?
+  shippingName    String
+  shippingPhone   String
+  shippingAddress String
+  notes           String?
+  paymentProofUrl String?
+  paidAt          DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+}
+
+model OrderItem {
+  id           String  @id @default(uuid())
+  orderId      String
+  productId    String
+  productName  String
+  productImage String?
+  price        Decimal
+  quantity     Int
+  subtotal     Decimal
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  orderId   String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId, orderId])
+  @@index([productId])
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  quantity  Int
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+model Banner {
+  id         String   @id @default(uuid())
+  title      String
+  imageUrl   String
+  linkUrl    String?
+  isActive   Boolean  @default(true)
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
+model QuizQuestion {
+  id           String   @id @default(uuid())
+  question     String
+  options      Json
+  correctIndex Int
+  explanation  String?
+  createdAt    DateTime @default(now())
+}
+
+model Voucher {
+  id            String       @id @default(uuid())
+  code          String       @unique
+  discountType  DiscountType @default(PERCENTAGE)
+  discountValue Int
+  minPurchase   Decimal      @default(0)
+  maxDiscount   Decimal?
+  usageLimit    Int          @default(1)
+  usedCount     Int          @default(0)
+  validFrom     DateTime     @default(now())
+  validUntil    DateTime?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+
+  userVouchers UserVoucher[]
+}
+
+model UserVoucher {
+  id        String    @id @default(uuid())
+  userId    String
+  voucherId String
+  usedAt    DateTime?
+
+  user    User    @relation(fields: [userId], references: [id])
+  voucher Voucher @relation(fields: [voucherId], references: [id])
+
+  @@unique([userId, voucherId])
+}
+
+model ResellerMap {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}

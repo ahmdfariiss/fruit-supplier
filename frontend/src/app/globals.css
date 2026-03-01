@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --g1: #2d5a00;
+  --g2: #457d00;
+  --g3: #6aab1a;
+  --g4: #a8cf6f;
+  --g5: #dff0c0;
+  --g6: #f3faeb;
+  --ink: #0f1a06;
+  --muted: #5a6e47;
+  --faint: #c8ddb0;
+  --cream: #faf8f3;
+  --sand: #f0ead8;
+  --red: #e84d1c;
+  --gold: #c47d00;
+  --blue: #0779e4;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply bg-g1 text-white px-6 py-3 rounded-pill font-extrabold text-sm
+           transition-all duration-200 shadow-btn hover:bg-g2 hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border-[1.5px] border-faint text-ink px-6 py-3
+           rounded-pill font-extrabold text-sm transition-all duration-200
+           hover:border-g2 hover:text-g2;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent border-2 border-ink/10 text-ink px-6 py-3
+           rounded-pill font-bold text-sm transition-all duration-200
+           hover:border-g2 hover:text-g2 hover:bg-g6;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-3xl border border-faint overflow-hidden;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 text-xs font-extrabold px-3 py-1 rounded-pill;
+  }
+
+  /* Section Labels */
+  .sec-ey {
+    @apply inline-flex items-center gap-1.5 text-[0.72rem] font-extrabold
+           tracking-[0.1em] uppercase text-g2 mb-3;
+  }
+  .sec-ey::before {
+    content: '';
+    @apply w-[18px] h-[2px] bg-g2 inline-block;
+  }
+
+  .sec-title {
+    @apply font-lora text-[clamp(1.8rem,3.5vw,2.8rem)] font-semibold
+           tracking-tight leading-[1.15];
+  }
+  .sec-title i,
+  .sec-title em {
+    @apply not-italic text-g2;
+  }
+
+  /* Form Inputs */
+  .inp-wrap {
+    @apply relative;
+  }
+  .inp-wrap input {
+    @apply w-full border-[1.5px] border-faint rounded-xl py-[11px] pr-10 pl-3.5
+           font-cabinet text-[0.88rem] text-ink bg-white outline-none
+           transition-colors duration-200;
+  }
+  .inp-wrap input:focus {
+    @apply border-g3;
+  }
+  .inp-wrap input.err {
+    @apply border-red;
+  }
+  .inp-ico {
+    @apply absolute right-3 top-1/2 -translate-y-1/2 text-[0.95rem] cursor-pointer select-none text-muted;
+  }
+
+  /* Ticker */
+  .ticker {
+    @apply bg-g1 py-3 overflow-hidden;
+  }
+  .ticker-track {
+    @apply flex gap-[60px] whitespace-nowrap animate-ticker;
+  }
+  .ticker-track:hover {
+    animation-play-state: paused;
+  }
+  .ticker-item {
+    @apply flex items-center gap-2.5 text-[0.78rem] font-bold text-white/80
+           tracking-[0.04em] uppercase;
+  }
+
+  /* Toast pill */
+  .toast-pill {
+    @apply fixed bottom-8 left-1/2 -translate-x-1/2 z-[1000] bg-g1 text-white
+           py-3 px-6 rounded-pill text-[0.85rem] font-bold
+           shadow-[0_6px_28px_rgba(45,90,0,0.4)] opacity-0
+           transition-all duration-400 pointer-events-none whitespace-nowrap;
+  }
+  .toast-pill.show {
+    @apply opacity-100 translate-y-0;
+  }
+
+  /* Fade reveal animation */
+  .fade-reveal {
+    @apply opacity-0 translate-y-6 transition-all duration-700;
+  }
+  .fade-reveal.visible {
+    @apply opacity-100 translate-y-0;
+  }
+}

@@ -1,0 +1,579 @@
+'use client';
+
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
+import api from '@/lib/api';
+
+const SupplierMap = dynamic(() => import('@/components/maps/SupplierMap'), { ssr: false });
+const ResellerMap = dynamic(() => import('@/components/maps/ResellerMap'), { ssr: false });
+
+const TEAM = [
+  {
+    ava: '🧑‍🌾',
+    name: 'Ahmad Farhan',
+    role: 'Founder & CEO',
+    desc: 'Penggerak utama. Membangun BuahKita dari mimpi sederhana memotong rantai distribusi buah.',
+  },
+  {
+    ava: '👩‍💻',
+    name: 'Sari Dewi',
+    role: 'Head of Operations',
+    desc: 'Memastikan setiap pesanan berjalan lancar dari sortir, packing, hingga pengiriman tepat waktu.',
+  },
+  {
+    ava: '👨‍💼',
+    name: 'Rizki Pratama',
+    role: 'Reseller Relations',
+    desc: 'Mengelola kemitraan dengan 150+ reseller dan memastikan semua mitra puas dan bertumbuh.',
+  },
+  {
+    ava: '👩‍🔬',
+    name: 'Ayu Lestari',
+    role: 'Quality Assurance',
+    desc: 'Quality control ketat. Bertanggung jawab atas standar kualitas setiap buah yang keluar dari gudang.',
+  },
+];
+
+const ALUR = [
+  {
+    ico: '🌱',
+    title: 'Panen Segar',
+    desc: 'Petani mitra memanen buah di pagi hari untuk menjaga kesegaran optimal',
+  },
+  {
+    ico: '✅',
+    title: 'Quality Control',
+    desc: 'Setiap buah melewati pengecekan kualitas ketat sebelum masuk sistem',
+  },
+  {
+    ico: '📦',
+    title: 'Sortir & Packing',
+    desc: 'Disortir berdasarkan grade lalu dikemas agar tetap segar saat sampai',
+  },
+  {
+    ico: '🚚',
+    title: 'Distribusi Cepat',
+    desc: 'Dikirim di hari yang sama atau siap ambil di lokasi kami',
+  },
+  {
+    ico: '😊',
+    title: 'Sampai ke Kamu',
+    desc: 'Buah segar premium hadir di meja makan kamu dalam kondisi terbaik',
+  },
+];
+
+const MISSIONS = [
+  {
+    ico: '🎯',
+    title: 'Visi',
+    desc: 'Menjadi platform buah lokal #1 di Indonesia yang menghubungkan petani dan konsumen secara transparan dan berkelanjutan.',
+  },
+  {
+    ico: '🌱',
+    title: 'Misi 1 — Kesejahteraan Petani',
+    desc: 'Memberikan harga adil dan akses pasar langsung kepada petani mitra tanpa perantara berlebih.',
+  },
+  {
+    ico: '🤝',
+    title: 'Misi 2 — Transparansi Total',
+    desc: 'Setiap buah memiliki identitas asal, mulai dari nama petani, lokasi kebun, hingga tanggal panen.',
+  },
+  {
+    ico: '🚀',
+    title: 'Misi 3 — Digitalisasi UMKM',
+    desc: 'Membantu petani dan reseller lokal memanfaatkan teknologi digital untuk meningkatkan skala usaha.',
+  },
+];
+
+export default function AboutPage() {
+  const [resellerLocations, setResellerLocations] = useState<Array<{ id: string; name: string; address: string; lat: number; lng: number; phone: string | null }>>([]);
+  const [mapView, setMapView] = useState<'supplier' | 'reseller'>('supplier');
+
+  useEffect(() => {
+    api.get('/reseller-maps').then(res => {
+      setResellerLocations(res.data.data || []);
+    }).catch(() => {});
+  }, []);
+
+  const supplierLat = parseFloat(process.env.NEXT_PUBLIC_SUPPLIER_LAT || '-6.9667');
+  const supplierLng = parseFloat(process.env.NEXT_PUBLIC_SUPPLIER_LNG || '110.4167');
+
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-screen">
+        {/* Page Header */}
+        <div className="pt-[120px] pb-[60px] px-[6%] bg-g6 relative overflow-hidden">
+          <div className="absolute -right-20 -top-20 w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(168,207,111,.22)_0%,transparent_65%)] pointer-events-none" />
+          <div className="max-w-[640px]">
+            <div className="flex items-center gap-2 text-[0.78rem] font-semibold text-muted mb-[18px]">
+              <Link
+                href="/"
+                className="text-muted no-underline hover:text-g2 transition-colors"
+              >
+                Beranda
+              </Link>
+              <span className="text-faint">›</span>
+              <span>Tentang Kami</span>
+            </div>
+            <div className="sec-ey">Kenali Kami</div>
+            <h1 className="font-lora text-[clamp(2rem,4vw,3.2rem)] font-semibold tracking-tight leading-[1.15] mb-3">
+              Cerita di Balik <em className="italic text-g2">BuahKita</em>
+            </h1>
+            <p className="text-[0.95rem] text-muted leading-[1.75]">
+              Dari mimpi sederhana untuk mendekatkan petani dan konsumen,
+              BuahKita kini menjadi jembatan digital antara kebun lokal terbaik
+              Indonesia dengan meja makan kamu.
+            </p>
+          </div>
+        </div>
+
+        {/* Owner Section */}
+        <section className="py-[72px] px-[6%] bg-white">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.4fr] gap-14 items-center max-w-[1000px] mx-auto">
+            {/* Visual */}
+            <div className="relative max-w-[340px] mx-auto md:mx-0">
+              <div className="w-full aspect-[4/5] bg-gradient-to-br from-g4 to-g5 rounded-[28px] flex items-center justify-center text-[8rem] relative overflow-hidden">
+                🧑‍🌾
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(45,90,0,.15)]" />
+              </div>
+              <div className="absolute -bottom-4 -right-4 bg-white border-[1.5px] border-faint rounded-[18px] p-3.5 px-[18px] shadow-[0_8px_32px_rgba(45,90,0,.12)] min-w-[180px]">
+                <div className="text-[0.67rem] font-extrabold text-muted tracking-[0.08em] uppercase mb-[5px]">
+                  Pendiri & CEO
+                </div>
+                <div className="text-[0.85rem] font-extrabold text-g1">
+                  Ahmad Farhan
+                </div>
+                <div className="text-[0.73rem] text-muted mt-[2px]">
+                  Sejak 2023 · Semarang
+                </div>
+              </div>
+            </div>
+
+            {/* Info */}
+            <div>
+              <div className="sec-ey">Pendiri Kami</div>
+              <h2 className="font-lora text-[clamp(1.8rem,3vw,2.6rem)] font-semibold tracking-tight leading-[1.2] mb-4">
+                Dibangun dengan <em className="italic text-g2">Passion</em>,
+                <br />
+                Digerakkan oleh Petani
+              </h2>
+              <p className="text-[0.9rem] text-muted leading-[1.8] mb-3.5">
+                BuahKita lahir dari keresahan Ahmad Farhan saat melihat buah
+                segar impor mendominasi rak supermarket, sementara hasil kebun
+                petani lokal sulit menembus pasar karena sistem distribusi yang
+                panjang dan tidak transparan.
+              </p>
+              <p className="text-[0.9rem] text-muted leading-[1.8] mb-5">
+                Dengan latar belakang teknologi dan kecintaan pada pertanian
+                lokal, Ahmad membangun BuahKita sebagai platform yang memotong
+                rantai distribusi — menghubungkan langsung petani mitra ke
+                konsumen dan reseller, dengan harga yang adil untuk semua pihak.
+              </p>
+              <div className="flex flex-wrap gap-2 mt-5">
+                {[
+                  '🌱 150+ Petani Mitra',
+                  '🏆 UMKM Award 2024',
+                  '🌿 100% Lokal',
+                  '📍 Semarang',
+                ].map((tag) => (
+                  <span
+                    key={tag}
+                    className="flex items-center gap-1.5 bg-g6 border border-faint rounded-pill px-3.5 py-[7px] text-[0.78rem] font-bold text-g1"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <div className="flex flex-col gap-2.5 mt-6 pt-6 border-t border-faint">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-g5 flex items-center justify-center text-[0.95rem] flex-shrink-0">
+                    📍
+                  </div>
+                  <div>
+                    <strong className="block text-[0.88rem] font-extrabold text-ink">
+                      Jl. Pasar Buah No. 12, Semarang
+                    </strong>
+                    <span className="text-[0.82rem] font-semibold text-muted">
+                      Buka Senin–Sabtu, 06.00–15.00 WIB
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-g5 flex items-center justify-center text-[0.95rem] flex-shrink-0">
+                    📱
+                  </div>
+                  <div>
+                    <strong className="block text-[0.88rem] font-extrabold text-ink">
+                      0812-3456-7890
+                    </strong>
+                    <span className="text-[0.82rem] font-semibold text-muted">
+                      WhatsApp & Telepon
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-g5 flex items-center justify-center text-[0.95rem] flex-shrink-0">
+                    📧
+                  </div>
+                  <div>
+                    <strong className="block text-[0.88rem] font-extrabold text-ink">
+                      hello@buahkita.id
+                    </strong>
+                    <span className="text-[0.82rem] font-semibold text-muted">
+                      Balas dalam 1×24 jam
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Strip */}
+        <div className="bg-g1 py-11 px-[6%]">
+          <div className="grid grid-cols-2 md:grid-cols-4 max-w-[900px] mx-auto">
+            {[
+              { val: '150+', label: 'Petani Mitra Aktif' },
+              { val: '2.400+', label: 'Pesanan Terproses' },
+              { val: '12', label: 'Provinsi Terjangkau' },
+              { val: '98%', label: 'Pelanggan Puas' },
+            ].map((s, i) => (
+              <div
+                key={s.label}
+                className={`text-center px-6 relative ${i < 3 ? 'md:border-r md:border-white/15' : ''}`}
+              >
+                <strong className="block text-[2.4rem] font-black text-g4 tracking-tight leading-none mb-1.5">
+                  {s.val}
+                </strong>
+                <span className="text-[0.78rem] text-white/50 font-semibold tracking-wide">
+                  {s.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Visi Misi */}
+        <section className="py-20 px-[6%] bg-white">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-[1080px] mx-auto items-center">
+            {/* Left */}
+            <div className="pr-5">
+              <div className="sec-ey">Visi & Misi Kami</div>
+              <h2 className="font-lora text-[clamp(1.6rem,2.5vw,2.2rem)] font-semibold tracking-tight mb-4">
+                Mengubah Cara Indonesia{' '}
+                <em className="italic text-g2">Membeli</em> Buah
+              </h2>
+              <p className="text-[0.9rem] text-muted leading-relaxed mb-5">
+                Kami percaya petani lokal bisa sejahtera tanpa harus bergantung
+                pada tengkulak. BuahKita membangun jembatan digital langsung
+                dari kebun ke meja makan kamu.
+              </p>
+              {/* Before vs After */}
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
+                <div className="bg-[#fff8f0] border-[1.5px] border-[#f0dcc0] rounded-[20px] p-6 text-center">
+                  <div className="text-[2.5rem] mb-2.5">😢</div>
+                  <div className="text-[0.68rem] font-extrabold uppercase tracking-[0.08em] text-muted mb-2">
+                    Sebelumnya
+                  </div>
+                  <h4 className="text-base font-extrabold mb-1.5">
+                    Rantai Distribusi Panjang
+                  </h4>
+                  <p className="text-[0.78rem] text-muted leading-relaxed">
+                    Petani → Tengkulak → Pengepul → Distributor → Toko →
+                    Konsumen. Harga mahal, petani tidak sejahtera.
+                  </p>
+                </div>
+                <div className="text-[2rem] text-g3 font-black text-center md:rotate-0 rotate-90 self-center">
+                  →
+                </div>
+                <div className="bg-g6 border-[1.5px] border-faint rounded-[20px] p-6 text-center">
+                  <div className="text-[2.5rem] mb-2.5">🌿</div>
+                  <div className="text-[0.68rem] font-extrabold uppercase tracking-[0.08em] text-muted mb-2">
+                    Dengan BuahKita
+                  </div>
+                  <h4 className="text-base font-extrabold mb-1.5">
+                    Langsung dari Kebun
+                  </h4>
+                  <p className="text-[0.78rem] text-muted leading-relaxed">
+                    Petani → BuahKita → Konsumen. Lebih segar, harga jujur,
+                    petani lebih sejahtera.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right — Mission items */}
+            <div className="flex flex-col gap-4">
+              {MISSIONS.map((m) => (
+                <div
+                  key={m.title}
+                  className="flex items-start gap-3.5 p-[18px] px-5 bg-g6 rounded-2xl border border-faint transition-transform duration-200 hover:translate-x-1"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-g5 flex items-center justify-center text-[1.3rem] flex-shrink-0">
+                    {m.ico}
+                  </div>
+                  <div>
+                    <h4 className="text-[0.92rem] font-extrabold mb-[3px]">
+                      {m.title}
+                    </h4>
+                    <p className="text-[0.8rem] text-muted leading-[1.5]">
+                      {m.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Alur Kerja — Farm to Table */}
+        <section className="py-20 px-[6%] bg-g6">
+          <div className="text-center">
+            <div className="sec-ey justify-center">Farm to Table</div>
+            <h2 className="font-lora text-[clamp(1.8rem,3vw,2.4rem)] font-semibold tracking-tight">
+              Perjalanan Buah dari <em className="italic text-g2">Kebun</em> ke
+              Mejamu
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-5 max-w-[1080px] mx-auto mt-10 relative">
+            {/* Connecting line */}
+            <div className="hidden md:block absolute top-10 left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-g5 via-g3 to-g5" />
+            {ALUR.map((a) => (
+              <div key={a.title} className="text-center relative z-[1]">
+                <div className="w-20 h-20 rounded-full bg-white border-[3px] border-g4 flex items-center justify-center text-[2rem] mx-auto mb-3.5 shadow-[0_4px_20px_rgba(45,90,0,.08)] transition-all duration-300 hover:scale-110 hover:bg-g5 hover:shadow-[0_8px_28px_rgba(45,90,0,.15)]">
+                  {a.ico}
+                </div>
+                <h4 className="text-[0.88rem] font-extrabold mb-1">
+                  {a.title}
+                </h4>
+                <p className="text-[0.75rem] text-muted leading-[1.5]">
+                  {a.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Tim BuahKita */}
+        <section className="py-20 px-[6%] bg-white">
+          <div className="text-center">
+            <div className="sec-ey justify-center">Tim Kami</div>
+            <h2 className="font-lora text-[clamp(1.8rem,3vw,2.4rem)] font-semibold tracking-tight">
+              Orang-Orang di Balik <em className="italic text-g2">BuahKita</em>
+            </h2>
+            <p className="text-muted text-[0.9rem] mt-2.5 max-w-[520px] mx-auto leading-relaxed">
+              Tim kecil dengan visi besar — menghubungkan petani dan konsumen
+              lewat teknologi dan cinta pada buah lokal.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-[1080px] mx-auto mt-10">
+            {TEAM.map((t) => (
+              <div
+                key={t.name}
+                className="text-center p-7 px-5 bg-g6 rounded-3xl border-[1.5px] border-faint transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_36px_rgba(45,90,0,.1)]"
+              >
+                <div className="w-[72px] h-[72px] rounded-full bg-g5 flex items-center justify-center text-[2.2rem] mx-auto mb-3.5 border-[3px] border-g4">
+                  {t.ava}
+                </div>
+                <h4 className="text-[0.95rem] font-extrabold mb-[2px]">
+                  {t.name}
+                </h4>
+                <div className="text-[0.75rem] font-bold text-g2 mb-2">
+                  {t.role}
+                </div>
+                <p className="text-[0.78rem] text-muted leading-[1.5]">
+                  {t.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Map Section */}
+        <section className="py-[72px] px-[6%] bg-cream" id="lokasi">
+          <div className="flex items-end justify-between flex-wrap gap-5 mb-8">
+            <div>
+              <div className="sec-ey">Lokasi</div>
+              <h2 className="font-lora text-[clamp(1.6rem,3vw,2.4rem)] font-semibold tracking-tight leading-[1.2] mt-2">
+                Temukan Kami & <em className="italic text-g2">Mitra</em> Petani
+                Kami
+              </h2>
+              <p className="text-[0.88rem] text-muted leading-[1.65] max-w-[440px] mt-2">
+                Pilih lokasi di bawah untuk melihat posisi kantor BuahKita atau
+                kebun mitra petani kami secara langsung di peta.
+              </p>
+            </div>
+          </div>
+
+          {/* Map Toggle */}
+          <div className="flex gap-2 mb-5">
+            <button
+              onClick={() => setMapView('supplier')}
+              className={`px-4 py-2 rounded-xl text-[0.82rem] font-bold transition-all ${
+                mapView === 'supplier'
+                  ? 'bg-g1 text-white shadow-md'
+                  : 'bg-g6 text-muted border border-faint hover:bg-g5'
+              }`}
+            >
+              🏪 Kantor BuahKita
+            </button>
+            <button
+              onClick={() => setMapView('reseller')}
+              className={`px-4 py-2 rounded-xl text-[0.82rem] font-bold transition-all ${
+                mapView === 'reseller'
+                  ? 'bg-g1 text-white shadow-md'
+                  : 'bg-g6 text-muted border border-faint hover:bg-g5'
+              }`}
+            >
+              🌳 Mitra Reseller ({resellerLocations.length})
+            </button>
+          </div>
+
+          {/* Map */}
+          <div className="relative rounded-3xl overflow-hidden shadow-[0_12px_48px_rgba(45,90,0,.13)] border-2 border-faint bg-g5">
+            {mapView === 'supplier' ? (
+              <>
+                <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-xl rounded-2xl p-3.5 px-[18px] border border-white/90 shadow-[0_4px_20px_rgba(45,90,0,.12)] min-w-[220px] z-[1000]">
+                  <div className="text-[0.65rem] font-extrabold tracking-[0.08em] uppercase text-muted mb-[5px]">
+                    Sedang ditampilkan
+                  </div>
+                  <div className="text-[0.95rem] font-extrabold text-ink mb-[3px]">
+                    Kantor BuahKita
+                  </div>
+                  <div className="text-[0.75rem] text-muted leading-[1.5]">
+                    Jl. Pasar Buah No. 12<br />Semarang, Jawa Tengah
+                  </div>
+                  <div className="inline-flex items-center gap-1 bg-g5 text-g1 text-[0.65rem] font-extrabold px-[9px] py-[3px] rounded-pill mt-1.5 border border-faint">
+                    🏪 Kantor Pusat
+                  </div>
+                </div>
+                <SupplierMap center={[supplierLat, supplierLng]} zoom={14} className="!rounded-none !border-none" />
+              </>
+            ) : (
+              <>
+                <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-xl rounded-2xl p-3.5 px-[18px] border border-white/90 shadow-[0_4px_20px_rgba(45,90,0,.12)] min-w-[220px] z-[1000]">
+                  <div className="text-[0.65rem] font-extrabold tracking-[0.08em] uppercase text-muted mb-[5px]">
+                    Sedang ditampilkan
+                  </div>
+                  <div className="text-[0.95rem] font-extrabold text-ink mb-[3px]">
+                    Mitra Reseller
+                  </div>
+                  <div className="text-[0.75rem] text-muted leading-[1.5]">
+                    {resellerLocations.length} lokasi mitra aktif
+                  </div>
+                </div>
+                <ResellerMap locations={resellerLocations} center={[supplierLat, supplierLng]} zoom={6} className="!rounded-none !border-none" />
+              </>
+            )}
+          </div>
+
+          {/* Reseller Location Cards */}
+          {resellerLocations.length > 0 && (
+            <div className="mt-6">
+              <div className="text-[0.78rem] font-bold text-muted tracking-[0.04em] uppercase mb-3">
+                🌳 Klik untuk lihat lokasi reseller mitra
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {resellerLocations.map((loc) => (
+                  <div
+                    key={loc.id}
+                    onClick={() => setMapView('reseller')}
+                    className="bg-white border-2 border-faint rounded-2xl p-3.5 px-4 cursor-pointer transition-all duration-200 flex items-center gap-3 hover:border-g4 hover:bg-g6"
+                  >
+                    <div className="w-[38px] h-[38px] rounded-xl bg-g5 flex items-center justify-center text-lg flex-shrink-0">
+                      🏪
+                    </div>
+                    <div>
+                      <span className="text-[0.82rem] font-extrabold block mb-[2px]">{loc.name}</span>
+                      <div className="text-[0.72rem] text-muted">📍 {loc.address}</div>
+                      {loc.phone && (
+                        <span className="text-[0.68rem] font-bold bg-g5 text-g2 px-[7px] py-[2px] rounded-pill inline-block mt-1">
+                          📞 {loc.phone}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Contact Section */}
+        <section className="py-[72px] px-[6%] bg-white" id="kontak">
+          <div className="max-w-[640px] mx-auto text-center">
+            <div className="sec-ey justify-center">Hubungi Kami</div>
+            <h2 className="font-lora text-[clamp(1.8rem,3vw,2.4rem)] font-semibold mb-3">
+              Ada Pertanyaan?
+              <br />
+              <em className="italic text-g2">Kami Siap</em> Membantu
+            </h2>
+            <p className="text-muted text-[0.9rem] leading-relaxed mb-8">
+              Tim kami siap membantu kamu melalui berbagai saluran komunikasi.
+              Pilih yang paling mudah untukmu!
+            </p>
+            <div className="flex flex-col gap-3 text-left">
+              {[
+                {
+                  ico: '💬',
+                  icoBg: 'bg-[#25d366]',
+                  label: 'WhatsApp',
+                  sub: '0812-3456-7890 · Respon cepat',
+                  href: 'https://wa.me/6281234567890',
+                },
+                {
+                  ico: '📸',
+                  icoBg: 'bg-gradient-to-br from-[#f58529] to-[#dd2a7b]',
+                  label: 'Instagram',
+                  sub: '@buahkita.id · DM untuk promo',
+                  href: '#',
+                },
+                {
+                  ico: '📧',
+                  icoBg: 'bg-g1',
+                  label: 'Email',
+                  sub: 'hello@buahkita.id · Balasan 1×24 jam',
+                  href: 'mailto:hello@buahkita.id',
+                },
+                {
+                  ico: '📍',
+                  icoBg: 'bg-[#4285f4]',
+                  label: 'Kunjungi Langsung',
+                  sub: 'Jl. Pasar Buah No. 12, Semarang · Buka 06–15 WIB',
+                  href: '#lokasi',
+                },
+              ].map((c) => (
+                <a
+                  key={c.label}
+                  href={c.href}
+                  target={c.href.startsWith('http') ? '_blank' : undefined}
+                  className="flex items-center gap-3.5 bg-g6 border-[1.5px] border-faint rounded-2xl p-4 px-[18px] cursor-pointer transition-all duration-200 no-underline hover:border-g3 hover:bg-g5 hover:translate-x-1 group"
+                >
+                  <div
+                    className={`w-[42px] h-[42px] rounded-[14px] flex items-center justify-center text-xl text-white flex-shrink-0 ${c.icoBg}`}
+                  >
+                    {c.ico}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <strong className="block text-[0.88rem] font-extrabold text-ink mb-[2px]">
+                      {c.label}
+                    </strong>
+                    <span className="text-[0.77rem] text-muted">{c.sub}</span>
+                  </div>
+                  <span className="text-muted text-[0.85rem] transition-transform duration-200 group-hover:translate-x-[3px]">
+                    ›
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
+}
