@@ -73,6 +73,7 @@ export default function CheckoutPage() {
   const [voucherCode, setVoucherCode] = useState('');
   const [voucherValid, setVoucherValid] = useState<boolean | null>(null);
   const [voucherMsg, setVoucherMsg] = useState('');
+  const [voucherDiscount, setVoucherDiscount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
   // Order result state
@@ -105,6 +106,7 @@ export default function CheckoutPage() {
   }, [user]);
 
   const subtotal = totalPrice();
+  const finalTotal = Math.max(0, subtotal - voucherDiscount);
 
   // Compute items with reseller pricing & warnings
   const cartItemsWithPricing = items.map((item) => {
@@ -124,6 +126,7 @@ export default function CheckoutPage() {
     if (!voucherCode.trim()) {
       setVoucherValid(null);
       setVoucherMsg('');
+      setVoucherDiscount(0);
       return;
     }
     try {
@@ -133,11 +136,13 @@ export default function CheckoutPage() {
       });
       setVoucherValid(true);
       setVoucherMsg(data.data?.message || 'Voucher valid!');
+      setVoucherDiscount(Number(data.data?.discountAmount || 0));
       toast('🎉 Voucher valid!', 'success');
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: string } } };
       setVoucherValid(false);
       setVoucherMsg(axiosErr?.response?.data?.error || 'Voucher tidak valid');
+      setVoucherDiscount(0);
       toast(
         '❌ ' + (axiosErr?.response?.data?.error || 'Voucher tidak valid'),
         'error',
@@ -490,6 +495,7 @@ export default function CheckoutPage() {
                     setVoucherCode(e.target.value.toUpperCase());
                     setVoucherValid(null);
                     setVoucherMsg('');
+                    setVoucherDiscount(0);
                   }}
                   placeholder="Masukkan kode voucher"
                   className={`flex-1 ${inputCls} ${voucherValid === true ? 'border-g3' : voucherValid === false ? 'border-red' : ''}`}
@@ -507,6 +513,12 @@ export default function CheckoutPage() {
                 >
                   {voucherValid ? '✅' : '❌'} {voucherMsg}
                 </p>
+              )}
+              {voucherValid && voucherDiscount > 0 && (
+                <div className="mt-3 bg-g6 border border-g4 rounded-xl p-3 flex items-center justify-between">
+                  <span className="text-[0.82rem] text-g1 font-semibold">🎉 Potongan diskon</span>
+                  <span className="text-[0.92rem] font-extrabold text-g1">-{formatRupiah(voucherDiscount)}</span>
+                </div>
               )}
             </div>
           </div>
@@ -541,13 +553,32 @@ export default function CheckoutPage() {
                   </div>
                 );
               })}
-              <div className="flex justify-between text-base font-extrabold pt-3 border-t border-faint mt-3">
-                <span>Total</span>
-                <span className="text-g1">{formatRupiah(subtotal)}</span>
+
+              {/* Subtotal */}
+              <div className="flex justify-between text-[0.85rem] pt-3 border-t border-faint mt-3">
+                <span className="text-muted">Subtotal</span>
+                <span className="font-semibold">{formatRupiah(subtotal)}</span>
               </div>
-              {voucherValid && (
-                <div className="text-[0.78rem] text-g3 font-semibold mt-2">
-                  ✅ Voucher diterapkan
+
+              {/* Diskon Voucher */}
+              {voucherValid && voucherDiscount > 0 && (
+                <div className="flex justify-between text-[0.85rem] py-1.5 text-g3">
+                  <span className="flex items-center gap-1">
+                    🎟️ Diskon Voucher
+                  </span>
+                  <span className="font-semibold">-{formatRupiah(voucherDiscount)}</span>
+                </div>
+              )}
+
+              {/* Total Bayar */}
+              <div className="flex justify-between text-base font-extrabold pt-3 border-t border-faint mt-1">
+                <span>Total Bayar</span>
+                <span className="text-g1">{formatRupiah(finalTotal)}</span>
+              </div>
+
+              {voucherValid && voucherDiscount > 0 && (
+                <div className="mt-2 bg-g6 border border-g4 rounded-lg px-3 py-2 text-[0.75rem] text-g1 font-semibold flex items-center gap-1.5">
+                  🎉 Anda hemat {formatRupiah(voucherDiscount)} dengan voucher <strong>{voucherCode}</strong>
                 </div>
               )}
             </div>
@@ -675,9 +706,15 @@ export default function CheckoutPage() {
                     <span>Subtotal</span>
                     <span>{formatRupiah(subtotal)}</span>
                   </div>
+                  {voucherValid && voucherDiscount > 0 && (
+                    <div className="flex justify-between text-[0.85rem] text-g3 py-1">
+                      <span>Diskon Voucher ({voucherCode})</span>
+                      <span>-{formatRupiah(voucherDiscount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-[1.05rem] font-black pt-3 mt-2 border-t-2 border-faint">
                     <span>Total Bayar</span>
-                    <span className="text-g1">{formatRupiah(subtotal)}</span>
+                    <span className="text-g1">{formatRupiah(finalTotal)}</span>
                   </div>
                 </div>
               </div>
@@ -726,11 +763,11 @@ export default function CheckoutPage() {
                   </span>
                   <div className="flex items-center gap-2">
                     <strong className="text-g1 text-base font-black">
-                      {formatRupiah(subtotal)}
+                      {formatRupiah(finalTotal)}
                     </strong>
                     <button
                       onClick={() => {
-                        navigator.clipboard?.writeText(String(subtotal));
+                        navigator.clipboard?.writeText(String(finalTotal));
                         toast('✅ Jumlah transfer disalin!', 'success');
                       }}
                       className="bg-g1 text-white border-none py-1 px-3 rounded-pill text-[0.72rem] font-bold cursor-pointer hover:bg-g2 transition-colors"
@@ -740,6 +777,21 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Voucher savings banner */}
+              {voucherValid && voucherDiscount > 0 && (
+                <div className="bg-g6 border border-g4 rounded-2xl p-4 mb-6 flex items-center gap-3">
+                  <span className="text-[1.5rem]">🎉</span>
+                  <div>
+                    <div className="text-[0.85rem] font-extrabold text-g1">
+                      Anda hemat {formatRupiah(voucherDiscount)}!
+                    </div>
+                    <div className="text-[0.78rem] text-muted">
+                      Voucher <strong>{voucherCode}</strong> berhasil diterapkan pada pesanan ini.
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex gap-3">
