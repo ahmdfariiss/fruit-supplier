@@ -4,9 +4,9 @@ import { useToast } from '@/hooks/useToast';
 
 const typeStyles = {
   success: 'bg-g1 text-white',
-  error: 'bg-red-500 text-white',
-  info: 'bg-blue-500 text-white',
-  warning: 'bg-yellow-500 text-white',
+  error: 'bg-red-500 text-red',
+  info: 'bg-blue-500 text-blue',
+  warning: 'bg-yellow-500 text-yellow',
 };
 
 const typeIcons = {
@@ -22,7 +22,7 @@ export default function Toast() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[1100] flex flex-col gap-3">
+    <div className="fixed bottom-11 right-6 z-[1100] flex flex-col gap-3">
       {toasts.map((toast) => (
         <div
           key={toast.id}
