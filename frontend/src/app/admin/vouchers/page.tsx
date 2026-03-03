@@ -9,14 +9,14 @@ import Spinner from '@/components/ui/Spinner';
 interface Voucher {
   id: string;
   code: string;
-  type: 'PERCENTAGE' | 'FIXED';
-  value: number;
-  minOrder: number;
+  discountType: 'PERCENTAGE' | 'FIXED';
+  discountValue: number;
+  minPurchase: number;
   maxDiscount: number | null;
   usageLimit: number | null;
-  usageCount: number;
+  usedCount: number;
   isActive: boolean;
-  expiresAt: string | null;
+  validUntil: string | null;
   createdAt: string;
 }
 
@@ -63,12 +63,12 @@ export default function AdminVouchersPage() {
     try {
       await api.post('/admin/vouchers', {
         code: form.code.toUpperCase(),
-        type: form.type,
-        value: Number(form.value),
-        minOrder: Number(form.minOrder) || 0,
+        discountType: form.type,
+        discountValue: Number(form.value),
+        minPurchase: Number(form.minOrder) || 0,
         maxDiscount: form.maxDiscount ? Number(form.maxDiscount) : null,
         usageLimit: form.usageLimit ? Number(form.usageLimit) : null,
-        expiresAt: form.expiresAt || null,
+        validUntil: form.expiresAt || null,
       });
       queryClient.invalidateQueries({ queryKey: ['admin-vouchers'] });
       setForm(EMPTY_FORM);
@@ -297,8 +297,8 @@ export default function AdminVouchersPage() {
               </thead>
               <tbody>
                 {vouchers.map(v => {
-                  const isExpired = v.expiresAt && new Date(v.expiresAt) < new Date();
-                  const isExhausted = v.usageLimit !== null && v.usageCount >= v.usageLimit;
+                  const isExpired = v.validUntil && new Date(v.validUntil) < new Date();
+                  const isExhausted = v.usageLimit !== null && v.usedCount >= v.usageLimit;
                   return (
                     <tr key={v.id} className="border-b border-faint/60 hover:bg-g6/40 transition-colors">
                       <td className="py-3.5 px-4">
@@ -307,22 +307,22 @@ export default function AdminVouchersPage() {
                         </span>
                       </td>
                       <td className="py-3.5 px-4 font-bold">
-                        {v.type === 'PERCENTAGE'
-                          ? `${v.value}%${v.maxDiscount ? ` (maks. Rp ${v.maxDiscount.toLocaleString('id-ID')})` : ''}`
-                          : `Rp ${v.value.toLocaleString('id-ID')}`
+                        {v.discountType === 'PERCENTAGE'
+                          ? `${v.discountValue}%${v.maxDiscount ? ` (maks. Rp ${Number(v.maxDiscount).toLocaleString('id-ID')})` : ''}`
+                          : `Rp ${Number(v.discountValue).toLocaleString('id-ID')}`
                         }
                       </td>
                       <td className="py-3.5 px-4 text-muted">
-                        {v.minOrder > 0 ? `Rp ${v.minOrder.toLocaleString('id-ID')}` : '-'}
+                        {Number(v.minPurchase) > 0 ? `Rp ${Number(v.minPurchase).toLocaleString('id-ID')}` : '-'}
                       </td>
                       <td className="py-3.5 px-4">
                         <span className={`text-xs font-bold ${isExhausted ? 'text-red' : 'text-ink'}`}>
-                          {v.usageCount}/{v.usageLimit ?? '∞'}
+                          {v.usedCount}/{v.usageLimit ?? '∞'}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-xs text-muted">
-                        {v.expiresAt
-                          ? <span className={isExpired ? 'text-red font-bold' : ''}>{formatDateTime(v.expiresAt)}</span>
+                        {v.validUntil
+                          ? <span className={isExpired ? 'text-red font-bold' : ''}>{formatDateTime(v.validUntil)}</span>
                           : '∞ Tidak ada'}
                       </td>
                       <td className="py-3.5 px-4">
