@@ -248,7 +248,7 @@ export default function AdminProductFormPage() {
             </div>
           )}
           <ImageUpload
-            value={imageFile}
+            value={!isNew && product?.imageUrl && !imageFile ? product.imageUrl : undefined}
             onChange={setImageFile}
             accept="image/jpeg,image/png,image/webp"
           />
