@@ -1,35 +1,36 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
-import Modal from '@/components/ui/Modal';
-import Input from '@/components/ui/Input';
+import dynamic from 'next/dynamic';
+
+const ResellerMap = dynamic(() => import('@/components/maps/ResellerMap'), { ssr: false });
 
 interface ResellerLocation {
   id: string;
   name: string;
   address: string;
-  city: string;
   lat: number;
   lng: number;
   phone: string | null;
-  isActive: boolean;
 }
+
+const EMPTY_FORM = {
+  name: '',
+  address: '',
+  lat: '',
+  lng: '',
+  phone: '',
+};
 
 export default function AdminResellerMapsPage() {
   const queryClient = useQueryClient();
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editItem, setEditItem] = useState<ResellerLocation | null>(null);
-
-  const [name, setName] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [lat, setLat] = useState('');
-  const [lng, setLng] = useState('');
-  const [phone, setPhone] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-reseller-maps'],
@@ -39,206 +40,203 @@ export default function AdminResellerMapsPage() {
     },
   });
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const payload = {
-        name,
-        address,
-        city,
-        lat: parseFloat(lat),
-        lng: parseFloat(lng),
-        phone: phone || null,
-      };
-      if (editItem) {
-        return api.put(`/admin/reseller-maps/${editItem.id}`, payload);
-      }
-      return api.post('/admin/reseller-maps', payload);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-reseller-maps'] });
-      resetForm();
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.delete(`/admin/reseller-maps/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-reseller-maps'] });
-    },
-  });
-
-  const resetForm = () => {
-    setShowForm(false);
-    setEditItem(null);
-    setName('');
-    setAddress('');
-    setCity('');
-    setLat('');
-    setLng('');
-    setPhone('');
-  };
-
-  const openEdit = (loc: ResellerLocation) => {
-    setEditItem(loc);
-    setName(loc.name);
-    setAddress(loc.address);
-    setCity(loc.city);
-    setLat(String(loc.lat));
-    setLng(String(loc.lng));
-    setPhone(loc.phone || '');
-    setShowForm(true);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-20">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
   const locations = data || [];
+
+  const handleSave = async () => {
+    if (!form.name.trim() || !form.address.trim()) return alert('Nama dan alamat wajib diisi');
+    if (!form.lat || !form.lng) return alert('Koordinat latitude & longitude wajib diisi');
+    const lat = parseFloat(form.lat);
+    const lng = parseFloat(form.lng);
+    if (isNaN(lat) || isNaN(lng)) return alert('Koordinat harus berupa angka valid');
+    if (lat < -90 || lat > 90) return alert('Latitude harus antara -90 dan 90');
+    if (lng < -180 || lng > 180) return alert('Longitude harus antara -180 dan 180');
+
+    setSaving(true);
+    try {
+      await api.post('/admin/reseller-maps', {
+        name: form.name,
+        address: form.address,
+        lat,
+        lng,
+        phone: form.phone || null,
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-reseller-maps'] });
+      queryClient.invalidateQueries({ queryKey: ['reseller-maps'] });
+      setForm(EMPTY_FORM);
+      setShowForm(false);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      alert(axiosErr?.response?.data?.error || 'Gagal menambah lokasi');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (loc: ResellerLocation) => {
+    if (!confirm(`Hapus lokasi "${loc.name}"?`)) return;
+    setDeletingId(loc.id);
+    try {
+      await api.delete(`/admin/reseller-maps/${loc.id}`);
+      queryClient.invalidateQueries({ queryKey: ['admin-reseller-maps'] });
+      queryClient.invalidateQueries({ queryKey: ['reseller-maps'] });
+    } catch {
+      alert('Gagal menghapus lokasi');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
+
+  // Supplier center (fallback to Semarang)
+  const centerLat = parseFloat(process.env.NEXT_PUBLIC_SUPPLIER_LAT || '-6.9667');
+  const centerLng = parseFloat(process.env.NEXT_PUBLIC_SUPPLIER_LNG || '110.4167');
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-lora text-2xl font-semibold text-ink">
-          Peta Reseller
-        </h1>
-        <Button onClick={() => setShowForm(true)}>+ Tambah Lokasi</Button>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-faint overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-faint bg-sand/30">
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Nama
-                </th>
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Kota
-                </th>
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Alamat
-                </th>
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Koordinat
-                </th>
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {locations.map((loc) => (
-                <tr
-                  key={loc.id}
-                  className="border-b border-faint/50 hover:bg-sand/10"
-                >
-                  <td className="py-3 px-4 font-semibold">{loc.name}</td>
-                  <td className="py-3 px-4 text-muted">{loc.city}</td>
-                  <td className="py-3 px-4 text-muted text-xs max-w-[200px] truncate">
-                    {loc.address}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-xs text-muted">
-                    {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)}
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEdit(loc)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteMutation.mutate(loc.id)}
-                        className="text-red-500"
-                      >
-                        Hapus
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {locations.length === 0 && (
-          <div className="text-center py-12 text-muted">
-            Belum ada lokasi reseller
-          </div>
+        <h1 className="font-lora text-2xl font-semibold text-ink">Peta Reseller</h1>
+        {!showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="px-5 py-2.5 bg-g1 text-white rounded-xl text-sm font-bold hover:bg-g2 transition-colors"
+          >
+            + Tambah Lokasi
+          </button>
         )}
       </div>
 
-      {/* Form Modal */}
-      <Modal
-        isOpen={showForm}
-        onClose={resetForm}
-        title={editItem ? 'Edit Lokasi' : 'Tambah Lokasi'}
-      >
-        <div className="space-y-4">
-          <Input
-            label="Nama Reseller"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <Input
-            label="Kota"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-          />
-          <div>
-            <label className="block text-sm font-semibold text-ink mb-1.5">
-              Alamat
-            </label>
-            <textarea
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              rows={2}
-              className="w-full rounded-xl border border-faint bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-g3/30 focus:border-g3"
-            />
+      {/* Map Preview */}
+      {locations.length > 0 && (
+        <div className="bg-white rounded-2xl border border-faint overflow-hidden mb-6">
+          <div className="px-5 py-3 border-b border-faint flex items-center justify-between">
+            <h3 className="font-bold text-ink text-sm">Pratinjau Peta ({locations.length} lokasi)</h3>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Latitude"
-              type="number"
-              value={lat}
-              onChange={(e) => setLat(e.target.value)}
-              placeholder="-6.2088"
+          <div className="h-[280px]">
+            <ResellerMap
+              locations={locations}
+              center={[centerLat, centerLng]}
+              zoom={5}
+              className="!rounded-none !border-none h-full"
             />
-            <Input
-              label="Longitude"
-              type="number"
-              value={lng}
-              onChange={(e) => setLng(e.target.value)}
-              placeholder="106.8456"
-            />
-          </div>
-          <Input
-            label="Telepon (opsional)"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="08xxxxxxxxxx"
-          />
-          <div className="flex gap-3 justify-end">
-            <Button variant="ghost" onClick={resetForm}>
-              Batal
-            </Button>
-            <Button
-              onClick={() => saveMutation.mutate()}
-              disabled={saveMutation.isPending || !name || !lat || !lng}
-            >
-              {saveMutation.isPending ? 'Menyimpan...' : 'Simpan'}
-            </Button>
           </div>
         </div>
-      </Modal>
+      )}
+
+      {/* Add Form */}
+      {showForm && (
+        <div className="bg-white rounded-2xl border border-faint p-6 mb-6">
+          <h3 className="font-bold text-ink mb-5">Tambah Lokasi Reseller</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Nama Toko / Reseller *</label>
+              <input value={form.name} onChange={e => set('name', e.target.value)}
+                placeholder="Toko Buah Segar Pak Budi"
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors" />
+            </div>
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">No. Telepon / WhatsApp</label>
+              <input value={form.phone} onChange={e => set('phone', e.target.value)}
+                placeholder="08xxxxxxxxxx"
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Alamat Lengkap *</label>
+              <textarea value={form.address} onChange={e => set('address', e.target.value)}
+                placeholder="Jl. Contoh No. 1, Kelurahan, Kecamatan, Kota, Provinsi"
+                rows={2}
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors resize-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">
+                Latitude * <span className="text-muted font-normal normal-case">(contoh: -6.9667)</span>
+              </label>
+              <input type="number" value={form.lat} onChange={e => set('lat', e.target.value)}
+                placeholder="-6.9667" step="any"
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors font-mono" />
+            </div>
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">
+                Longitude * <span className="text-muted font-normal normal-case">(contoh: 110.4167)</span>
+              </label>
+              <input type="number" value={form.lng} onChange={e => set('lng', e.target.value)}
+                placeholder="110.4167" step="any"
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors font-mono" />
+            </div>
+          </div>
+
+          {/* Coordinate Help */}
+          <div className="mb-4 p-3.5 bg-g6 rounded-xl text-xs text-muted border border-faint">
+            <p className="font-bold text-ink mb-1">💡 Cara mendapatkan koordinat:</p>
+            <p>1. Buka <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="text-g1 font-bold underline">Google Maps</a></p>
+            <p>2. Cari lokasi, klik kanan pada pin</p>
+            <p>3. Salin angka pertama (Latitude) dan angka kedua (Longitude)</p>
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={() => { setShowForm(false); setForm(EMPTY_FORM); }}
+              className="flex-1 py-2.5 bg-white border border-faint rounded-xl text-sm font-bold text-muted hover:border-g3 transition-all">
+              Batal
+            </button>
+            <button onClick={handleSave} disabled={saving}
+              className="flex-[2] py-2.5 bg-g1 text-white rounded-xl text-sm font-extrabold hover:bg-g2 transition-colors disabled:opacity-50">
+              {saving ? '⏳ Menyimpan...' : '📍 Tambah Lokasi'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Location List */}
+      <div className="bg-white rounded-2xl border border-faint overflow-hidden">
+        <div className="px-5 py-4 border-b border-faint">
+          <h3 className="font-bold text-ink">Daftar Lokasi ({locations.length})</h3>
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center py-12"><Spinner size="lg" /></div>
+        ) : locations.length === 0 ? (
+          <div className="text-center py-12 text-muted">
+            <span className="text-3xl block mb-2">📍</span>
+            <p className="text-sm font-semibold">Belum ada lokasi reseller</p>
+            <p className="text-xs mt-1">Tambah lokasi untuk ditampilkan di peta</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-faint">
+            {locations.map((loc) => (
+              <div key={loc.id} className="flex items-center gap-4 p-4 hover:bg-g6/30 transition-colors">
+                {/* Icon */}
+                <div className="w-10 h-10 rounded-xl bg-g5 flex items-center justify-center text-lg flex-shrink-0">
+                  🏪
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm text-ink">{loc.name}</p>
+                  <p className="text-xs text-muted mt-0.5 truncate">📍 {loc.address}</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-[0.68rem] font-mono text-muted bg-g6 px-2 py-0.5 rounded">
+                      {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)}
+                    </span>
+                    {loc.phone && (
+                      <span className="text-[0.68rem] font-bold text-g2">📞 {loc.phone}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <button
+                  onClick={() => handleDelete(loc)}
+                  disabled={deletingId === loc.id}
+                  className="px-3 py-1.5 rounded-lg bg-red/10 text-red text-xs font-bold hover:bg-red/20 transition-all disabled:opacity-50 flex-shrink-0"
+                >
+                  {deletingId === loc.id ? '...' : 'Hapus'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

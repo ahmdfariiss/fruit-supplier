@@ -1,44 +1,42 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { formatRupiah, formatDate } from '@/lib/formatters';
-import Button from '@/components/ui/Button';
+import { formatDateTime } from '@/lib/formatters';
 import Spinner from '@/components/ui/Spinner';
-import Modal from '@/components/ui/Modal';
-import Input from '@/components/ui/Input';
-import Badge from '@/components/ui/Badge';
 
 interface Voucher {
   id: string;
   code: string;
-  discountType: 'PERCENTAGE' | 'FIXED';
-  discountValue: number;
-  minPurchase: number;
+  type: 'PERCENTAGE' | 'FIXED';
+  value: number;
+  minOrder: number;
   maxDiscount: number | null;
-  usageLimit: number;
-  usedCount: number;
-  validFrom: string;
-  validUntil: string;
+  usageLimit: number | null;
+  usageCount: number;
   isActive: boolean;
+  expiresAt: string | null;
+  createdAt: string;
 }
+
+const EMPTY_FORM = {
+  code: '',
+  type: 'PERCENTAGE' as 'PERCENTAGE' | 'FIXED',
+  value: '',
+  minOrder: '0',
+  maxDiscount: '',
+  usageLimit: '',
+  expiresAt: '',
+};
 
 export default function AdminVouchersPage() {
   const queryClient = useQueryClient();
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editItem, setEditItem] = useState<Voucher | null>(null);
-
-  const [code, setCode] = useState('');
-  const [discountType, setDiscountType] = useState<'PERCENTAGE' | 'FIXED'>(
-    'PERCENTAGE',
-  );
-  const [discountValue, setDiscountValue] = useState(0);
-  const [minPurchase, setMinPurchase] = useState(0);
-  const [maxDiscount, setMaxDiscount] = useState<number | ''>('');
-  const [usageLimit, setUsageLimit] = useState(100);
-  const [validFrom, setValidFrom] = useState('');
-  const [validUntil, setValidUntil] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-vouchers'],
@@ -48,275 +46,315 @@ export default function AdminVouchersPage() {
     },
   });
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const payload = {
-        code: code.toUpperCase(),
-        discountType,
-        discountValue,
-        minPurchase,
-        maxDiscount: maxDiscount || null,
-        usageLimit,
-        validFrom,
-        validUntil,
-      };
-      if (editItem) {
-        return api.put(`/admin/vouchers/${editItem.id}`, payload);
-      }
-      return api.post('/admin/vouchers', payload);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-vouchers'] });
-      resetForm();
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.delete(`/admin/vouchers/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-vouchers'] });
-    },
-  });
-
-  const resetForm = () => {
-    setShowForm(false);
-    setEditItem(null);
-    setCode('');
-    setDiscountType('PERCENTAGE');
-    setDiscountValue(0);
-    setMinPurchase(0);
-    setMaxDiscount('');
-    setUsageLimit(100);
-    setValidFrom('');
-    setValidUntil('');
-  };
-
-  const openEdit = (v: Voucher) => {
-    setEditItem(v);
-    setCode(v.code);
-    setDiscountType(v.discountType);
-    setDiscountValue(v.discountValue);
-    setMinPurchase(v.minPurchase);
-    setMaxDiscount(v.maxDiscount ?? '');
-    setUsageLimit(v.usageLimit);
-    setValidFrom(v.validFrom?.slice(0, 10) || '');
-    setValidUntil(v.validUntil?.slice(0, 10) || '');
-    setShowForm(true);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-20">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
   const vouchers = data || [];
+
+  const generateCode = () => {
+    const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789';
+    const code = Array.from({ length: 8 }, () =>
+      chars[Math.floor(Math.random() * chars.length)]
+    ).join('');
+    setForm(f => ({ ...f, code }));
+  };
+
+  const handleSave = async () => {
+    if (!form.code.trim()) return alert('Kode voucher wajib diisi');
+    if (!form.value || Number(form.value) <= 0) return alert('Nilai voucher wajib diisi');
+    setSaving(true);
+    try {
+      await api.post('/admin/vouchers', {
+        code: form.code.toUpperCase(),
+        type: form.type,
+        value: Number(form.value),
+        minOrder: Number(form.minOrder) || 0,
+        maxDiscount: form.maxDiscount ? Number(form.maxDiscount) : null,
+        usageLimit: form.usageLimit ? Number(form.usageLimit) : null,
+        expiresAt: form.expiresAt || null,
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-vouchers'] });
+      setForm(EMPTY_FORM);
+      setShowForm(false);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      alert(axiosErr?.response?.data?.error || 'Gagal membuat voucher');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggle = async (v: Voucher) => {
+    setTogglingId(v.id);
+    try {
+      await api.patch(`/admin/vouchers/${v.id}`, { isActive: !v.isActive });
+      queryClient.invalidateQueries({ queryKey: ['admin-vouchers'] });
+    } catch {
+      alert('Gagal mengubah status voucher');
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const handleDelete = async (v: Voucher) => {
+    if (!confirm(`Hapus voucher "${v.code}"?`)) return;
+    setDeletingId(v.id);
+    try {
+      await api.delete(`/admin/vouchers/${v.id}`);
+      queryClient.invalidateQueries({ queryKey: ['admin-vouchers'] });
+    } catch {
+      alert('Gagal menghapus voucher');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-lora text-2xl font-semibold text-ink">
-          Manajemen Voucher
-        </h1>
-        <Button onClick={() => setShowForm(true)}>+ Tambah Voucher</Button>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-faint overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-faint bg-sand/30">
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Kode
-                </th>
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Diskon
-                </th>
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Min. Belanja
-                </th>
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Penggunaan
-                </th>
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Berlaku
-                </th>
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Status
-                </th>
-                <th className="text-left py-3 px-4 font-semibold text-muted text-xs uppercase">
-                  Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {vouchers.map((v) => {
-                const isExpired = new Date(v.validUntil) < new Date();
-                const isFull = v.usedCount >= v.usageLimit;
-                return (
-                  <tr
-                    key={v.id}
-                    className="border-b border-faint/50 hover:bg-sand/10"
-                  >
-                    <td className="py-3 px-4 font-mono font-bold text-g2">
-                      {v.code}
-                    </td>
-                    <td className="py-3 px-4 font-semibold">
-                      {v.discountType === 'PERCENTAGE'
-                        ? `${v.discountValue}%`
-                        : formatRupiah(v.discountValue)}
-                    </td>
-                    <td className="py-3 px-4 text-muted">
-                      {formatRupiah(v.minPurchase)}
-                    </td>
-                    <td className="py-3 px-4">
-                      {v.usedCount}/{v.usageLimit}
-                    </td>
-                    <td className="py-3 px-4 text-xs text-muted">
-                      {formatDate(v.validFrom)} - {formatDate(v.validUntil)}
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge
-                        variant={
-                          isExpired || isFull
-                            ? 'red'
-                            : v.isActive
-                              ? 'green'
-                              : 'yellow'
-                        }
-                      >
-                        {isExpired
-                          ? 'Kadaluarsa'
-                          : isFull
-                            ? 'Habis'
-                            : v.isActive
-                              ? 'Aktif'
-                              : 'Nonaktif'}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEdit(v)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteMutation.mutate(v.id)}
-                          className="text-red-500"
-                        >
-                          Hapus
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {vouchers.length === 0 && (
-          <div className="text-center py-12 text-muted">Belum ada voucher</div>
+        <h1 className="font-lora text-2xl font-semibold text-ink">Voucher</h1>
+        {!showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="px-5 py-2.5 bg-g1 text-white rounded-xl text-sm font-bold hover:bg-g2 transition-colors"
+          >
+            + Buat Voucher
+          </button>
         )}
       </div>
 
-      {/* Form Modal */}
-      <Modal
-        isOpen={showForm}
-        onClose={resetForm}
-        title={editItem ? 'Edit Voucher' : 'Tambah Voucher'}
-      >
-        <div className="space-y-4">
-          <Input
-            label="Kode Voucher"
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="DISKON20"
-          />
+      {/* Form */}
+      {showForm && (
+        <div className="bg-white rounded-2xl border border-faint p-6 mb-6">
+          <h3 className="font-bold text-ink mb-5">Buat Voucher Baru</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            {/* Code */}
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Kode Voucher *</label>
+              <div className="flex gap-2">
+                <input
+                  value={form.code}
+                  onChange={e => set('code', e.target.value.toUpperCase())}
+                  placeholder="BUAH50"
+                  className="flex-1 px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 font-mono tracking-widest"
+                />
+                <button
+                  onClick={generateCode}
+                  className="px-3 py-2.5 border border-faint rounded-xl text-xs font-bold text-muted hover:border-g3 hover:text-g1 transition-all"
+                >
+                  🎲 Auto
+                </button>
+              </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-ink mb-1.5">
-              Tipe Diskon
-            </label>
-            <select
-              value={discountType}
-              onChange={(e) =>
-                setDiscountType(e.target.value as 'PERCENTAGE' | 'FIXED')
-              }
-              className="w-full rounded-xl border border-faint bg-white px-4 py-3 text-sm"
+            {/* Type */}
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Tipe Diskon *</label>
+              <div className="flex gap-2">
+                {(['PERCENTAGE', 'FIXED'] as const).map(t => (
+                  <button
+                    key={t}
+                    onClick={() => set('type', t)}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                      form.type === t ? 'bg-g1 text-white border-g1' : 'border-faint text-muted hover:border-g3'
+                    }`}
+                  >
+                    {t === 'PERCENTAGE' ? '% Persentase' : 'Rp Nominal'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Value */}
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">
+                Nilai Diskon * {form.type === 'PERCENTAGE' ? '(%)' : '(Rp)'}
+              </label>
+              <input
+                type="number"
+                value={form.value}
+                onChange={e => set('value', e.target.value)}
+                placeholder={form.type === 'PERCENTAGE' ? '10' : '15000'}
+                min="0"
+                max={form.type === 'PERCENTAGE' ? '100' : undefined}
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
+              />
+            </div>
+
+            {/* Min Order */}
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Min. Belanja (Rp)</label>
+              <input
+                type="number"
+                value={form.minOrder}
+                onChange={e => set('minOrder', e.target.value)}
+                placeholder="50000"
+                min="0"
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
+              />
+            </div>
+
+            {/* Max Discount (only for percentage) */}
+            {form.type === 'PERCENTAGE' && (
+              <div>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Maks. Diskon (Rp, opsional)</label>
+                <input
+                  type="number"
+                  value={form.maxDiscount}
+                  onChange={e => set('maxDiscount', e.target.value)}
+                  placeholder="30000"
+                  min="0"
+                  className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
+                />
+              </div>
+            )}
+
+            {/* Usage Limit */}
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Batas Pemakaian (kosong = unlimited)</label>
+              <input
+                type="number"
+                value={form.usageLimit}
+                onChange={e => set('usageLimit', e.target.value)}
+                placeholder="100"
+                min="1"
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
+              />
+            </div>
+
+            {/* Expires At */}
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Tanggal Kedaluwarsa (opsional)</label>
+              <input
+                type="datetime-local"
+                value={form.expiresAt}
+                onChange={e => set('expiresAt', e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Preview */}
+          {form.code && form.value && (
+            <div className="mb-5 p-4 bg-g6 rounded-xl border border-faint">
+              <p className="text-xs font-extrabold text-muted uppercase tracking-wider mb-1">Preview Voucher</p>
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-lg font-extrabold text-g1 tracking-widest bg-white px-4 py-2 rounded-xl border border-g4">
+                  {form.code}
+                </span>
+                <div className="text-sm">
+                  <p className="font-bold text-ink">
+                    Diskon {form.type === 'PERCENTAGE' ? `${form.value}%` : `Rp ${Number(form.value).toLocaleString('id-ID')}`}
+                    {form.maxDiscount && form.type === 'PERCENTAGE' && ` (maks. Rp ${Number(form.maxDiscount).toLocaleString('id-ID')})`}
+                  </p>
+                  {Number(form.minOrder) > 0 && (
+                    <p className="text-xs text-muted">Min. belanja Rp {Number(form.minOrder).toLocaleString('id-ID')}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => { setShowForm(false); setForm(EMPTY_FORM); }}
+              className="flex-1 py-2.5 bg-white border border-faint rounded-xl text-sm font-bold text-muted hover:border-g3 transition-all"
             >
-              <option value="PERCENTAGE">Persentase (%)</option>
-              <option value="FIXED">Nominal (Rp)</option>
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Nilai Diskon"
-              type="number"
-              value={discountValue}
-              onChange={(e) => setDiscountValue(Number(e.target.value))}
-            />
-            <Input
-              label="Max. Diskon (opsional)"
-              type="number"
-              value={maxDiscount}
-              onChange={(e) =>
-                setMaxDiscount(e.target.value ? Number(e.target.value) : '')
-              }
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Min. Belanja"
-              type="number"
-              value={minPurchase}
-              onChange={(e) => setMinPurchase(Number(e.target.value))}
-            />
-            <Input
-              label="Batas Penggunaan"
-              type="number"
-              value={usageLimit}
-              onChange={(e) => setUsageLimit(Number(e.target.value))}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Berlaku Dari"
-              type="date"
-              value={validFrom}
-              onChange={(e) => setValidFrom(e.target.value)}
-            />
-            <Input
-              label="Berlaku Sampai"
-              type="date"
-              value={validUntil}
-              onChange={(e) => setValidUntil(e.target.value)}
-            />
-          </div>
-
-          <div className="flex gap-3 justify-end">
-            <Button variant="ghost" onClick={resetForm}>
               Batal
-            </Button>
-            <Button
-              onClick={() => saveMutation.mutate()}
-              disabled={saveMutation.isPending || !code}
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-[2] py-2.5 bg-g1 text-white rounded-xl text-sm font-extrabold hover:bg-g2 transition-colors disabled:opacity-50"
             >
-              {saveMutation.isPending ? 'Menyimpan...' : 'Simpan'}
-            </Button>
+              {saving ? '⏳ Menyimpan...' : '🎟️ Buat Voucher'}
+            </button>
           </div>
         </div>
-      </Modal>
+      )}
+
+      {/* Voucher List */}
+      <div className="bg-white rounded-2xl border border-faint overflow-hidden">
+        <div className="px-5 py-4 border-b border-faint flex items-center justify-between">
+          <h3 className="font-bold text-ink">Daftar Voucher ({vouchers.length})</h3>
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center py-12"><Spinner size="lg" /></div>
+        ) : vouchers.length === 0 ? (
+          <div className="text-center py-12 text-muted">
+            <span className="text-3xl block mb-2">🎟️</span>
+            <p className="text-sm font-semibold">Belum ada voucher</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-g6 border-b border-faint">
+                <tr>
+                  {['Kode', 'Diskon', 'Min. Belanja', 'Pemakaian', 'Berlaku', 'Status', 'Aksi'].map(h => (
+                    <th key={h} className="text-left py-3 px-4 text-xs font-extrabold uppercase tracking-wider text-muted">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {vouchers.map(v => {
+                  const isExpired = v.expiresAt && new Date(v.expiresAt) < new Date();
+                  const isExhausted = v.usageLimit !== null && v.usageCount >= v.usageLimit;
+                  return (
+                    <tr key={v.id} className="border-b border-faint/60 hover:bg-g6/40 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <span className="font-mono font-extrabold text-g1 tracking-widest bg-g5 px-2.5 py-1 rounded-lg text-xs">
+                          {v.code}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 font-bold">
+                        {v.type === 'PERCENTAGE'
+                          ? `${v.value}%${v.maxDiscount ? ` (maks. Rp ${v.maxDiscount.toLocaleString('id-ID')})` : ''}`
+                          : `Rp ${v.value.toLocaleString('id-ID')}`
+                        }
+                      </td>
+                      <td className="py-3.5 px-4 text-muted">
+                        {v.minOrder > 0 ? `Rp ${v.minOrder.toLocaleString('id-ID')}` : '-'}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className={`text-xs font-bold ${isExhausted ? 'text-red' : 'text-ink'}`}>
+                          {v.usageCount}/{v.usageLimit ?? '∞'}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs text-muted">
+                        {v.expiresAt
+                          ? <span className={isExpired ? 'text-red font-bold' : ''}>{formatDateTime(v.expiresAt)}</span>
+                          : '∞ Tidak ada'}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <button
+                          onClick={() => handleToggle(v)}
+                          disabled={togglingId === v.id}
+                          className={`w-10 h-6 rounded-full transition-all relative ${
+                            v.isActive && !isExpired && !isExhausted ? 'bg-g1' : 'bg-faint'
+                          } disabled:opacity-50`}
+                        >
+                          <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                            v.isActive ? 'left-5' : 'left-1'
+                          }`} />
+                        </button>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <button
+                          onClick={() => handleDelete(v)}
+                          disabled={deletingId === v.id}
+                          className="px-3 py-1.5 rounded-lg bg-red/10 text-red text-xs font-bold hover:bg-red/20 transition-all disabled:opacity-50"
+                        >
+                          {deletingId === v.id ? '...' : 'Hapus'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
