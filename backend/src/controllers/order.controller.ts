@@ -4,6 +4,7 @@ import path from 'path';
 import * as orderService from '../services/order.service';
 import { success, paginated } from '../helpers/response.helper';
 import { prisma } from '../config/database';
+import { generateInvoicePDF } from '../helpers/invoice.helper';
 
 export const createOrder = async (
   req: Request,
@@ -118,6 +119,36 @@ export const uploadPaymentProof = async (
     if (req.file) {
       try { fs.unlinkSync(req.file.path); } catch { /* ignore */ }
     }
+    next(error);
+  }
+};
+
+export const downloadInvoice = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    // Pastikan user punya akses ke order ini
+    const order = await orderService.getOrderById(
+      req.params.id as string,
+      req.user!.userId,
+      req.user!.role,
+    );
+
+    const { filePath, fileName } = await generateInvoicePDF(order.id);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+
+    // Hapus file setelah selesai dikirim
+    fileStream.on('end', () => {
+      try { fs.unlinkSync(filePath); } catch { /* ignore */ }
+    });
+  } catch (error) {
     next(error);
   }
 };
