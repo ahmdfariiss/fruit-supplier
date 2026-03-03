@@ -1,28 +1,24 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { formatRupiah, formatDateTime } from '@/lib/formatters';
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/constants';
-import { OrderStatus } from '@/types/order';
 import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
-import Image from 'next/image';
+import type { OrderStatus } from '@/types/order';
 
-const STATUS_FLOW: OrderStatus[] = [
-  'PENDING',
-  'CONFIRMED',
-  'PROCESSING',
-  'SHIPPED',
-  'DONE',
-];
+const ALL_STATUSES: OrderStatus[] = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DONE', 'CANCELLED'];
 
 export default function AdminOrderDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [newStatus, setNewStatus] = useState<OrderStatus | ''>('');
+  const [updating, setUpdating] = useState(false);
+  const [trackingNote, setTrackingNote] = useState('');
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['admin-order', params.id],
@@ -32,224 +28,212 @@ export default function AdminOrderDetailPage() {
     },
   });
 
-  const updateStatus = useMutation({
-    mutationFn: (status: string) =>
-      api.patch(`/admin/orders/${params.id}/status`, { status }),
-    onSuccess: () => {
+  const handleUpdateStatus = async () => {
+    if (!newStatus || !order) return;
+    setUpdating(true);
+    try {
+      await api.patch(`/admin/orders/${order.id}/status`, {
+        status: newStatus,
+        ...(trackingNote ? { note: trackingNote } : {}),
+      });
       queryClient.invalidateQueries({ queryKey: ['admin-order', params.id] });
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-    },
-  });
+      setNewStatus('');
+      setTrackingNote('');
+    } catch {
+      alert('Gagal update status');
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center py-20">
-        <Spinner size="lg" />
-      </div>
-    );
+    return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
   }
 
   if (!order) {
     return (
-      <div className="text-center py-20 text-muted">
-        Pesanan tidak ditemukan
+      <div className="text-center py-20">
+        <span className="text-4xl block mb-3">📦</span>
+        <p className="text-muted">Pesanan tidak ditemukan</p>
+        <button onClick={() => router.push('/admin/orders')} className="mt-4 text-g1 font-bold text-sm">
+          ← Kembali
+        </button>
       </div>
     );
   }
 
-  const currentIdx = STATUS_FLOW.indexOf(order.status);
-  const nextStatus =
-    currentIdx >= 0 && currentIdx < STATUS_FLOW.length - 1
-      ? STATUS_FLOW[currentIdx + 1]
-      : null;
-
   return (
     <div>
+      {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" onClick={() => router.push('/admin/orders')}>
-          ← Kembali
-        </Button>
-        <h1 className="font-lora text-2xl font-semibold text-ink">
-          Pesanan #{order.orderNumber}
-        </h1>
-        <Badge
-          variant={
-            ORDER_STATUS_COLORS[order.status as OrderStatus] as
-              | 'green'
-              | 'yellow'
-              | 'red'
-              | 'blue'
-              | 'orange'
-          }
+        <button
+          onClick={() => router.push('/admin/orders')}
+          className="text-sm text-muted hover:text-g1 transition-colors font-semibold"
         >
-          {ORDER_STATUS_LABELS[order.status as OrderStatus]}
+          ← Pesanan
+        </button>
+        <div className="flex-1">
+          <h1 className="font-lora text-xl font-semibold text-ink">{order.orderNumber}</h1>
+          <p className="text-xs text-muted">{formatDateTime(order.createdAt)}</p>
+        </div>
+        <Badge
+          variant={ORDER_STATUS_COLORS[order.status] as 'green' | 'yellow' | 'red' | 'blue' | 'gray' | 'orange'}
+          size="md"
+        >
+          {ORDER_STATUS_LABELS[order.status]}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Order Items */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-faint p-6">
-          <h2 className="font-bold text-ink mb-4">Item Pesanan</h2>
-          <div className="space-y-3">
-            {order.items?.map(
-              (item: {
-                id: string;
-                quantity: number;
-                price: number;
-                productName: string;
-                product?: { name: string; imageUrl: string | null };
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+        {/* Left */}
+        <div className="space-y-5">
+          {/* Order Items */}
+          <div className="bg-white rounded-2xl border border-faint p-5">
+            <h3 className="font-bold text-ink mb-4">Produk Dipesan</h3>
+            <div className="space-y-3">
+              {order.items?.map((item: {
+                id: string; productName: string; productImage: string | null;
+                quantity: number; price: number; subtotal: number;
               }) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-4 p-3 rounded-xl border border-faint/50"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-sand relative flex-shrink-0 overflow-hidden">
-                    {item.product?.imageUrl ? (
-                      <Image
-                        src={item.product.imageUrl}
-                        alt={item.product.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xl">
-                        🍊
-                      </div>
-                    )}
+                <div key={item.id} className="flex items-center gap-3 py-2 border-b border-faint last:border-0">
+                  <div className="w-10 h-10 rounded-xl bg-g6 flex items-center justify-center shrink-0 overflow-hidden">
+                    {item.productImage
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={item.productImage} alt={item.productName} className="w-full h-full object-cover" />
+                      : <span className="text-xl">🍊</span>
+                    }
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm">
-                      {item.product?.name || item.productName}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {item.quantity}x @ {formatRupiah(item.price)}
-                    </p>
+                    <p className="font-semibold text-sm">{item.productName}</p>
+                    <p className="text-xs text-muted">{item.quantity} × {formatRupiah(item.price)}</p>
                   </div>
-                  <p className="font-bold text-sm">
-                    {formatRupiah(item.quantity * item.price)}
-                  </p>
+                  <span className="font-bold text-sm">{formatRupiah(item.subtotal)}</span>
                 </div>
-              ),
-            )}
-          </div>
-
-          <div className="border-t border-faint mt-4 pt-4 space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted">Subtotal</span>
-              <span className="font-semibold">
-                {formatRupiah(order.subtotal)}
-              </span>
+              ))}
             </div>
-            {order.discountAmount > 0 && (
-              <div className="flex justify-between text-g2">
-                <span>Diskon</span>
-                <span>-{formatRupiah(order.discountAmount)}</span>
+            {/* Totals */}
+            <div className="pt-4 mt-2 space-y-1.5">
+              <div className="flex justify-between text-sm text-muted">
+                <span>Subtotal</span><span>{formatRupiah(order.subtotal)}</span>
               </div>
-            )}
-            <div className="flex justify-between text-base font-bold pt-2 border-t border-faint">
-              <span>Total</span>
-              <span>{formatRupiah(order.total)}</span>
+              {Number(order.shippingCost) > 0 && (
+                <div className="flex justify-between text-sm text-muted">
+                  <span>Ongkir</span><span>{formatRupiah(order.shippingCost)}</span>
+                </div>
+              )}
+              {Number(order.discountAmount) > 0 && (
+                <div className="flex justify-between text-sm text-g3">
+                  <span>Diskon</span><span>-{formatRupiah(order.discountAmount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-extrabold text-base border-t border-faint pt-2 mt-1">
+                <span>Total</span><span className="text-g1">{formatRupiah(order.total)}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Sidebar */}
-        <div className="space-y-4">
-          {/* Customer Info */}
-          <div className="bg-white rounded-2xl border border-faint p-6">
-            <h3 className="font-bold text-ink mb-3">Informasi Pelanggan</h3>
+          {/* Shipping */}
+          <div className="bg-white rounded-2xl border border-faint p-5">
+            <h3 className="font-bold text-ink mb-3">Info Pengiriman</h3>
             <div className="space-y-2 text-sm">
-              <p>
-                <span className="text-muted">Nama:</span>{' '}
-                <span className="font-semibold">{order.shippingName}</span>
-              </p>
-              <p>
-                <span className="text-muted">Telepon:</span>{' '}
-                <span className="font-semibold">{order.shippingPhone}</span>
-              </p>
-              <p>
-                <span className="text-muted">Tipe:</span>{' '}
-                <span className="font-semibold capitalize">
-                  {order.buyerType}
-                </span>
-              </p>
+              <p><span className="text-muted">Nama:</span> <span className="font-semibold ml-1">{order.shippingName}</span></p>
+              <p><span className="text-muted">Telepon:</span> <span className="font-semibold ml-1">{order.shippingPhone}</span></p>
+              <p><span className="text-muted">Alamat:</span> <span className="font-semibold ml-1">{order.shippingAddress}</span></p>
+              {order.notes && <p><span className="text-muted">Catatan:</span> <span className="font-semibold ml-1 italic">{order.notes}</span></p>}
             </div>
           </div>
-
-          {/* Shipping Info */}
-          <div className="bg-white rounded-2xl border border-faint p-6">
-            <h3 className="font-bold text-ink mb-3">Alamat Pengiriman</h3>
-            <p className="text-sm text-muted">{order.shippingAddress}</p>
-          </div>
-
-          {/* Status Update */}
-          {order.status !== 'CANCELLED' && order.status !== 'DONE' && (
-            <div className="bg-white rounded-2xl border border-faint p-6">
-              <h3 className="font-bold text-ink mb-3">Update Status</h3>
-              <div className="space-y-2">
-                {nextStatus && (
-                  <Button
-                    className="w-full"
-                    onClick={() => updateStatus.mutate(nextStatus)}
-                    disabled={updateStatus.isPending}
-                  >
-                    {updateStatus.isPending
-                      ? 'Memproses...'
-                      : `Ubah ke ${ORDER_STATUS_LABELS[nextStatus]}`}
-                  </Button>
-                )}
-                {order.status !== 'DONE' && (
-                  <Button
-                    variant="ghost"
-                    className="w-full text-red-500"
-                    onClick={() => updateStatus.mutate('CANCELLED')}
-                    disabled={updateStatus.isPending}
-                  >
-                    Batalkan Pesanan
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Payment Proof */}
           {order.paymentProofUrl && (
-            <div className="bg-white rounded-2xl border border-faint p-6">
-              <h3 className="font-bold text-ink mb-3">📷 Bukti Pembayaran</h3>
+            <div className="bg-white rounded-2xl border border-faint p-5">
+              <h3 className="font-bold text-ink mb-3">Bukti Pembayaran</h3>
               <div className="rounded-xl overflow-hidden border border-faint">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={
-                    order.paymentProofUrl.startsWith('http')
-                      ? order.paymentProofUrl
-                      : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`
-                  }
-                  alt="Bukti pembayaran"
-                  className="w-full object-contain max-h-[400px]"
+                  src={order.paymentProofUrl.startsWith('http')
+                    ? order.paymentProofUrl
+                    : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`}
+                  alt="Bukti bayar"
+                  className="w-full max-h-[400px] object-contain"
                 />
               </div>
               <a
-                href={
-                  order.paymentProofUrl.startsWith('http')
-                    ? order.paymentProofUrl
-                    : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`
-                }
+                href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center text-xs font-bold text-g1 mt-2 hover:text-g2"
+                className="inline-block mt-3 text-xs font-bold text-g1 hover:underline"
               >
-                Buka di tab baru ↗
+                📷 Buka gambar penuh
               </a>
             </div>
           )}
+        </div>
 
-          {/* Meta */}
-          <div className="bg-white rounded-2xl border border-faint p-6">
-            <h3 className="font-bold text-ink mb-3">Detail</h3>
-            <div className="text-sm space-y-1 text-muted">
-              <p>Dibuat: {formatDateTime(order.createdAt)}</p>
-              <p>Diperbarui: {formatDateTime(order.updatedAt)}</p>
+        {/* Right Sidebar */}
+        <div className="space-y-5">
+          {/* Customer */}
+          <div className="bg-white rounded-2xl border border-faint p-5">
+            <h3 className="font-bold text-ink mb-3">Pelanggan</h3>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-g5 flex items-center justify-center font-extrabold text-g1">
+                {order.user?.name?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div>
+                <p className="font-bold text-sm">{order.user?.name || order.shippingName}</p>
+                <p className="text-xs text-muted">{order.user?.email}</p>
+              </div>
             </div>
+            <div className="flex gap-2">
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                order.buyerType === 'RESELLER' ? 'bg-g5 text-g1' : 'bg-blue-50 text-blue-600'
+              }`}>
+                {order.buyerType === 'RESELLER' ? '🏪 Reseller' : '🛒 Konsumen'}
+              </span>
+            </div>
+          </div>
+
+          {/* Update Status */}
+          {order.status !== 'DONE' && order.status !== 'CANCELLED' && (
+            <div className="bg-white rounded-2xl border border-faint p-5">
+              <h3 className="font-bold text-ink mb-4">Update Status</h3>
+              <select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value as OrderStatus)}
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm mb-3 outline-none focus:border-g3 transition-colors"
+              >
+                <option value="">Pilih status baru...</option>
+                {ALL_STATUSES.filter(s => s !== order.status).map(s => (
+                  <option key={s} value={s}>{ORDER_STATUS_LABELS[s]}</option>
+                ))}
+              </select>
+              <textarea
+                value={trackingNote}
+                onChange={(e) => setTrackingNote(e.target.value)}
+                placeholder="Catatan (opsional)..."
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm resize-none h-16 mb-3 outline-none focus:border-g3 transition-colors"
+              />
+              <button
+                onClick={handleUpdateStatus}
+                disabled={!newStatus || updating}
+                className="w-full py-2.5 bg-g1 text-white rounded-xl text-sm font-bold hover:bg-g2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {updating ? '⏳ Menyimpan...' : '✅ Update Status'}
+              </button>
+            </div>
+          )}
+
+          {/* Invoice */}
+          <div className="bg-white rounded-2xl border border-faint p-5">
+            <h3 className="font-bold text-ink mb-3">Invoice</h3>
+            <a
+              href={`${process.env.NEXT_PUBLIC_API_URL}/orders/${order.id}/invoice`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-2.5 bg-g6 text-ink text-sm font-bold rounded-xl text-center border border-faint hover:bg-g5 transition-colors no-underline"
+            >
+              📥 Unduh Invoice PDF
+            </a>
           </div>
         </div>
       </div>

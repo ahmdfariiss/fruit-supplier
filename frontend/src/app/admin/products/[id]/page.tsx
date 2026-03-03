@@ -1,28 +1,32 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { productSchema } from '@/validators/productSchema';
-import { Category } from '@/types/product';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Spinner from '@/components/ui/Spinner';
 import ImageUpload from '@/components/ui/ImageUpload';
-import { z } from 'zod';
+import Spinner from '@/components/ui/Spinner';
+import type { Category } from '@/types/product';
 
-type ProductFormData = z.infer<typeof productSchema>;
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-export default function AdminProductEditPage() {
-  const router = useRouter();
+const EMPTY_FORM = {
+  name: '', description: '', categoryId: '',
+  priceConsumer: '', priceReseller: '', minOrderReseller: '1',
+  stock: '', unit: 'kg', isFeatured: false,
+  seasonStart: '', seasonEnd: '', tags: '',
+};
+
+export default function AdminProductFormPage() {
   const params = useParams();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const isNew = params.id === 'new';
+
+  const [form, setForm] = useState(EMPTY_FORM);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -38,216 +42,235 @@ export default function AdminProductEditPage() {
       const { data } = await api.get(`/admin/products/${params.id}`);
       return data.data;
     },
-    enabled: !isNew,
-  });
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
+    enabled: !isNew && !!params.id,
   });
 
   useEffect(() => {
     if (product) {
-      reset({
-        name: product.name,
-        description: product.description,
-        priceConsumer: product.priceConsumer,
-        priceReseller: product.priceReseller,
-        minOrderReseller: product.minOrderReseller,
-        stock: product.stock,
-        unit: product.unit,
-        categoryId: product.categoryId,
+      setForm({
+        name: product.name || '',
+        description: product.description || '',
+        categoryId: product.categoryId || '',
+        priceConsumer: String(product.priceConsumer || ''),
+        priceReseller: String(product.priceReseller || ''),
+        minOrderReseller: String(product.minOrderReseller || '1'),
+        stock: String(product.stock || ''),
+        unit: product.unit || 'kg',
+        isFeatured: product.isFeatured || false,
+        seasonStart: product.seasonStart != null ? String(product.seasonStart) : '',
+        seasonEnd: product.seasonEnd != null ? String(product.seasonEnd) : '',
+        tags: (product.tags || []).join(', '),
       });
-      if (product.imageUrl) {
-        setImagePreview(product.imageUrl);
-      }
     }
-  }, [product, reset]);
+  }, [product]);
 
-  const mutation = useMutation({
-    mutationFn: async (formData: ProductFormData) => {
-      const payload = new FormData();
-      payload.append('name', formData.name);
-      payload.append('description', formData.description || '');
-      payload.append('priceConsumer', String(formData.priceConsumer));
-      payload.append('priceReseller', String(formData.priceReseller));
-      payload.append('minOrderReseller', String(formData.minOrderReseller));
-      payload.append('stock', String(formData.stock));
-      payload.append('unit', formData.unit);
-      if (formData.categoryId)
-        payload.append('categoryId', formData.categoryId);
-      if (imageFile) payload.append('image', imageFile);
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!form.name.trim()) e.name = 'Nama wajib diisi';
+    if (!form.categoryId) e.categoryId = 'Kategori wajib dipilih';
+    if (!form.priceConsumer || Number(form.priceConsumer) <= 0) e.priceConsumer = 'Harga konsumen wajib diisi';
+    if (!form.priceReseller || Number(form.priceReseller) <= 0) e.priceReseller = 'Harga reseller wajib diisi';
+    if (!form.stock || Number(form.stock) < 0) e.stock = 'Stok wajib diisi';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, val]) => {
+        if (key === 'tags') {
+          const tagsArr = String(val).split(',').map(t => t.trim()).filter(Boolean);
+          tagsArr.forEach(t => formData.append('tags[]', t));
+        } else if (key === 'seasonStart' || key === 'seasonEnd') {
+          if (String(val)) formData.append(key, String(val));
+        } else {
+          formData.append(key, String(val));
+        }
+      });
+      if (imageFile) formData.append('image', imageFile);
 
       if (isNew) {
-        return api.post('/admin/products', payload);
+        await api.post('/admin/products', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } else {
+        await api.put(`/admin/products/${params.id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       }
-      return api.put(`/admin/products/${params.id}`, payload);
-    },
-    onSuccess: () => {
+
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       router.push('/admin/products');
-    },
-  });
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      alert(axiosErr?.response?.data?.error || 'Gagal menyimpan produk');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const set = (key: string, val: unknown) => setForm(f => ({ ...f, [key]: val }));
+
+  const inputCls = (field: string) =>
+    `w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none transition-colors ${
+      errors[field] ? 'border-red focus:border-red' : 'border-faint focus:border-g3'
+    }`;
 
   if (!isNew && isLoading) {
-    return (
-      <div className="flex justify-center py-20">
-        <Spinner size="lg" />
-      </div>
-    );
+    return <div className="flex justify-center py-20"><Spinner size="lg" /></div>;
   }
 
   return (
-    <div>
-      <h1 className="font-lora text-2xl font-semibold text-ink mb-6">
-        {isNew ? 'Tambah Produk' : 'Edit Produk'}
-      </h1>
+    <div className="max-w-3xl">
+      <div className="flex items-center gap-4 mb-6">
+        <button onClick={() => router.push('/admin/products')} className="text-sm text-muted hover:text-g1 font-semibold transition-colors">
+          ← Produk
+        </button>
+        <h1 className="font-lora text-xl font-semibold text-ink">
+          {isNew ? 'Tambah Produk Baru' : `Edit: ${product?.name || ''}`}
+        </h1>
+      </div>
 
-      <form
-        onSubmit={handleSubmit((data) => mutation.mutate(data))}
-        className="max-w-2xl space-y-5"
-      >
-        <div className="bg-white rounded-2xl border border-faint p-6 space-y-5">
-          <Input
-            label="Nama Produk"
-            {...register('name')}
-            error={errors.name?.message}
-          />
-
-          <div>
-            <label className="block text-sm font-semibold text-ink mb-1.5">
-              Deskripsi
-            </label>
-            <textarea
-              {...register('description')}
-              rows={4}
-              className="w-full rounded-xl border border-faint bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-g3/30 focus:border-g3"
-            />
-            {errors.description && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-ink mb-1.5">
-              Kategori
-            </label>
-            <select
-              {...register('categoryId')}
-              className="w-full rounded-xl border border-faint bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-g3/30 focus:border-g3"
-            >
-              <option value="">Pilih kategori</option>
-              {categories?.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-            {errors.categoryId && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.categoryId.message}
-              </p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Harga Konsumer"
-              type="number"
-              {...register('priceConsumer', { valueAsNumber: true })}
-              error={errors.priceConsumer?.message}
-            />
-            <Input
-              label="Harga Reseller"
-              type="number"
-              {...register('priceReseller', { valueAsNumber: true })}
-              error={errors.priceReseller?.message}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Min. Order Reseller"
-              type="number"
-              {...register('minOrderReseller', { valueAsNumber: true })}
-              error={errors.minOrderReseller?.message}
-            />
-            <Input
-              label="Stok"
-              type="number"
-              {...register('stock', { valueAsNumber: true })}
-              error={errors.stock?.message}
-            />
-          </div>
-
-          <Input
-            label="Satuan"
-            placeholder="kg, pcs, ikat..."
-            {...register('unit')}
-            error={errors.unit?.message}
-          />
-
-          <div>
-            <label className="block text-sm font-semibold text-ink mb-1.5">
-              Gambar Produk
-            </label>
-            <ImageUpload
-              value={imagePreview || undefined}
-              onChange={(file) => {
-                setImageFile(file);
-                setImagePreview(URL.createObjectURL(file));
-              }}
-            />
-            {imagePreview && (
-              <div className="flex gap-2 mt-2 flex-wrap">
-                <div className="relative group">
-                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-sand relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imagePreview}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview(null);
-                    }}
-                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                  >
-                    ×
-                  </button>
-                </div>
+      <div className="space-y-5">
+        {/* Basic Info */}
+        <div className="bg-white rounded-2xl border border-faint p-6">
+          <h3 className="font-bold text-ink mb-5">Informasi Dasar</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Nama Produk *</label>
+              <input value={form.name} onChange={e => set('name', e.target.value)} placeholder="Contoh: Mangga Harum Manis" className={inputCls('name')} />
+              {errors.name && <p className="text-xs text-red mt-1">{errors.name}</p>}
+            </div>
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Deskripsi</label>
+              <textarea value={form.description} onChange={e => set('description', e.target.value)}
+                placeholder="Deskripsi produk..." rows={3}
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors resize-none" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Kategori *</label>
+                <select value={form.categoryId} onChange={e => set('categoryId', e.target.value)} className={inputCls('categoryId')}>
+                  <option value="">Pilih kategori...</option>
+                  {categories?.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+                </select>
+                {errors.categoryId && <p className="text-xs text-red mt-1">{errors.categoryId}</p>}
               </div>
-            )}
+              <div>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Satuan *</label>
+                <select value={form.unit} onChange={e => set('unit', e.target.value)} className={inputCls('unit')}>
+                  {['kg', 'gram', 'buah', 'ikat', 'box', 'lusin', 'liter'].map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Tags (pisah dengan koma)</label>
+              <input value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="segar, premium, organik"
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors" />
+            </div>
           </div>
         </div>
 
+        {/* Pricing */}
+        <div className="bg-white rounded-2xl border border-faint p-6">
+          <h3 className="font-bold text-ink mb-5">Harga & Stok</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Harga Konsumen (Rp) *</label>
+              <input type="number" value={form.priceConsumer} onChange={e => set('priceConsumer', e.target.value)}
+                placeholder="15000" className={inputCls('priceConsumer')} min="0" />
+              {errors.priceConsumer && <p className="text-xs text-red mt-1">{errors.priceConsumer}</p>}
+            </div>
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Harga Reseller (Rp) *</label>
+              <input type="number" value={form.priceReseller} onChange={e => set('priceReseller', e.target.value)}
+                placeholder="12000" className={inputCls('priceReseller')} min="0" />
+              {errors.priceReseller && <p className="text-xs text-red mt-1">{errors.priceReseller}</p>}
+            </div>
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Min. Order Reseller</label>
+              <input type="number" value={form.minOrderReseller} onChange={e => set('minOrderReseller', e.target.value)}
+                placeholder="10" className={inputCls('minOrderReseller')} min="1" />
+            </div>
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Stok ({form.unit}) *</label>
+              <input type="number" value={form.stock} onChange={e => set('stock', e.target.value)}
+                placeholder="100" className={inputCls('stock')} min="0" />
+              {errors.stock && <p className="text-xs text-red mt-1">{errors.stock}</p>}
+            </div>
+          </div>
+          <div className="flex items-center gap-3 mt-4 p-3 bg-g6 rounded-xl">
+            <button
+              onClick={() => set('isFeatured', !form.isFeatured)}
+              className={`w-10 h-6 rounded-full transition-all relative flex-shrink-0 ${form.isFeatured ? 'bg-g1' : 'bg-faint'}`}
+            >
+              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${form.isFeatured ? 'left-5' : 'left-1'}`} />
+            </button>
+            <div>
+              <p className="text-sm font-bold text-ink">Tampilkan di Beranda (Unggulan)</p>
+              <p className="text-xs text-muted">Produk akan muncul di section Featured Products</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Season */}
+        <div className="bg-white rounded-2xl border border-faint p-6">
+          <h3 className="font-bold text-ink mb-2">Musim Panen</h3>
+          <p className="text-xs text-muted mb-4">Kosongkan jika produk tersedia sepanjang tahun</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Bulan Mulai</label>
+              <select value={form.seasonStart} onChange={e => set('seasonStart', e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3">
+                <option value="">Tidak ada</option>
+                {MONTH_NAMES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Bulan Selesai</label>
+              <select value={form.seasonEnd} onChange={e => set('seasonEnd', e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3">
+                <option value="">Tidak ada</option>
+                {MONTH_NAMES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Image */}
+        <div className="bg-white rounded-2xl border border-faint p-6">
+          <h3 className="font-bold text-ink mb-4">Foto Produk</h3>
+          {!isNew && product?.imageUrl && !imageFile && (
+            <div className="mb-3 relative w-24 h-24 rounded-xl overflow-hidden border border-faint">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+              <p className="text-xs text-muted mt-2">Foto saat ini</p>
+            </div>
+          )}
+          <ImageUpload
+            value={imageFile}
+            onChange={setImageFile}
+            accept="image/jpeg,image/png,image/webp"
+          />
+        </div>
+
+        {/* Actions */}
         <div className="flex gap-3">
-          <Button type="submit" disabled={mutation.isPending}>
-            {mutation.isPending
-              ? 'Menyimpan...'
-              : isNew
-                ? 'Tambah Produk'
-                : 'Simpan Perubahan'}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
+          <button
             onClick={() => router.push('/admin/products')}
+            className="flex-1 py-3 bg-white text-ink border border-faint rounded-xl text-sm font-bold hover:border-g3 hover:text-g1 transition-all"
           >
             Batal
-          </Button>
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="flex-[2] py-3 bg-g1 text-white rounded-xl text-sm font-extrabold hover:bg-g2 transition-colors disabled:opacity-50"
+          >
+            {saving ? '⏳ Menyimpan...' : isNew ? '✅ Simpan Produk' : '✅ Perbarui Produk'}
+          </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
