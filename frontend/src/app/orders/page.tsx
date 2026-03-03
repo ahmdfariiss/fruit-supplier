@@ -94,7 +94,17 @@ export default function OrdersPage() {
   const toggleUpload = (id: string) =>
     setUploadOpen((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const handleUploadPayment = async (orderId: string, file: File) => {
+  const handleUploadPayment = async (orderId: string, file: File, orderNumber: string) => {
+    // Validate filename matches order number
+    const fileNameWithoutExt = file.name.replace(/\.[^.]+$/, '');
+    if (fileNameWithoutExt !== orderNumber) {
+      toast(
+        `Nama file harus sesuai kode pesanan: ${orderNumber}. Contoh: ${orderNumber}.jpg`,
+        'error',
+      );
+      return;
+    }
+
     setUploading((prev) => ({ ...prev, [orderId]: true }));
     try {
       const formData = new FormData();
@@ -108,8 +118,10 @@ export default function OrdersPage() {
       );
       toggleUpload(orderId);
       refetch();
-    } catch {
-      toast('Gagal mengunggah bukti transfer. Coba lagi.', 'error');
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.error || 'Gagal mengunggah bukti transfer. Coba lagi.';
+      toast(msg, 'error');
     } finally {
       setUploading((prev) => ({ ...prev, [orderId]: false }));
     }
@@ -356,9 +368,14 @@ export default function OrdersPage() {
                   {/* Upload Section */}
                   {uploadOpen[o.id] && (
                     <div className="px-7 py-4 border-t border-faint bg-[#fffbf0]">
-                      <h4 className="text-[0.88rem] font-extrabold mb-3">
+                      <h4 className="text-[0.88rem] font-extrabold mb-2">
                         📤 Upload Bukti Transfer
                       </h4>
+                      <div className="bg-[#fff8e1] border border-[#ffe082] rounded-xl px-3 py-2 mb-3">
+                        <p className="text-xs font-bold text-[#c47d00]">
+                          ⚠️ Nama file harus: <span className="font-mono">{o.orderNumber}.jpg</span>
+                        </p>
+                      </div>
                       <label
                         className={`block border-2 border-dashed border-g4 rounded-[14px] p-5 text-center cursor-pointer bg-g6 hover:border-g2 hover:bg-g5 transition-all ${uploading[o.id] ? 'opacity-50 pointer-events-none' : ''}`}
                       >
@@ -368,7 +385,7 @@ export default function OrdersPage() {
                           className="hidden"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) handleUploadPayment(o.id, file);
+                            if (file) handleUploadPayment(o.id, file, o.orderNumber);
                           }}
                         />
                         {uploading[o.id] ? (

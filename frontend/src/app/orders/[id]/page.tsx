@@ -59,6 +59,15 @@ export default function OrderDetailPage() {
     const file = fileInputRef.current?.files?.[0];
     if (!file) return;
 
+    // Validate filename matches order number
+    const fileNameWithoutExt = file.name.replace(/\.[^.]+$/, '');
+    if (fileNameWithoutExt !== order?.orderNumber) {
+      setUploadMsg(
+        `❌ Nama file harus sesuai kode pesanan: ${order?.orderNumber}. Contoh: ${order?.orderNumber}.jpg`,
+      );
+      return;
+    }
+
     setUploading(true);
     setUploadMsg('');
     try {
@@ -69,8 +78,10 @@ export default function OrderDetailPage() {
       });
       setUploadMsg('✅ Bukti pembayaran berhasil diunggah!');
       queryClient.invalidateQueries({ queryKey: ['order', params.id] });
-    } catch {
-      setUploadMsg('❌ Gagal mengunggah bukti pembayaran.');
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.error || 'Gagal mengunggah bukti pembayaran.';
+      setUploadMsg(`❌ ${msg}`);
     } finally {
       setUploading(false);
     }
@@ -390,10 +401,15 @@ export default function OrderDetailPage() {
                     <h3 className="font-bold text-ink mb-3 text-sm">
                       📤 Upload Bukti Transfer
                     </h3>
-                    <p className="text-xs text-muted mb-4">
+                    <p className="text-xs text-muted mb-2">
                       Unggah foto bukti transfer agar pesanan Anda segera
                       diproses.
                     </p>
+                    <div className="bg-[#fff8e1] border border-[#ffe082] rounded-xl px-3 py-2 mb-4">
+                      <p className="text-xs font-bold text-[#c47d00]">
+                        ⚠️ Nama file harus: <span className="font-mono">{order.orderNumber}.jpg</span>
+                      </p>
+                    </div>
                     <input
                       ref={fileInputRef}
                       type="file"
