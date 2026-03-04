@@ -18,7 +18,7 @@ export default function HomePage() {
   const { data: banners } = useQuery({
     queryKey: ['banners'],
     queryFn: async () => {
-      const { data } = await api.get('/banners');
+      const { data } = await api.get('/banners?active=true');
       return data.data;
     },
   });
