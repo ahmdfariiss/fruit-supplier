@@ -82,7 +82,7 @@ export default function HomePage() {
           </div>
 
           {/* Hero Right Collage */}
-          <div className="grid grid-cols-2 grid-rows-2 gap-3.5 min-h-[480px]">
+          <div className="hidden md:grid grid-cols-2 grid-rows-2 gap-3.5 min-h-[480px]">
             <div className="row-span-2 rounded-[22px] bg-g5 border-2 border-dashed border-g4 flex items-center justify-center overflow-hidden hover:border-g2 hover:shadow-card transition-all cursor-pointer">
               <div className="text-center p-5">
                 <span className="text-5xl block mb-2">🍊</span>
