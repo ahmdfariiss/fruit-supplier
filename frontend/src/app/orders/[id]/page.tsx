@@ -16,6 +16,7 @@ import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
+import { getImageUrl } from '@/lib/image';
 
 const TIMELINE_STEPS: { status: OrderStatus; label: string; icon: string }[] = [
   { status: 'PENDING', label: 'Dibuat', icon: '📝' },
@@ -238,11 +239,11 @@ export default function OrderDetailPage() {
                           {(item.productImage || item.product?.imageUrl) && (
                             <div className="w-12 h-12 rounded-xl overflow-hidden bg-g6 flex-shrink-0">
                               <Image
-                                src={
+                                src={getImageUrl(
                                   item.productImage ||
                                   item.product?.imageUrl ||
                                   ''
-                                }
+                                )}
                                 alt={item.productName}
                                 width={48}
                                 height={48}
@@ -443,11 +444,7 @@ export default function OrderDetailPage() {
                   <div className="rounded-xl overflow-hidden border border-faint">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={
-                        order.paymentProofUrl.startsWith('http')
-                          ? order.paymentProofUrl
-                          : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`
-                      }
+                      src={getImageUrl(order.paymentProofUrl)}
                       alt="Bukti pembayaran"
                       className="w-full object-contain max-h-[300px]"
                     />

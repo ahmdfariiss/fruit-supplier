@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import type { Product } from '@/types/product';
 import { formatRupiah } from '@/lib/formatters';
+import { getImageUrl } from '@/lib/image';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/useToast';
@@ -68,12 +69,11 @@ export default function ProductCard({
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(45,90,0,.06)]" />
         {product.imageUrl ? (
           <Image
-            src={product.imageUrl}
+            src={getImageUrl(product.imageUrl)}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-[350ms] ease-[cubic-bezier(.34,1.5,.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[8deg]"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
         ) : (
           <span className="relative z-[1] transition-transform duration-[350ms] ease-[cubic-bezier(.34,1.5,.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[8deg]">
             🍊

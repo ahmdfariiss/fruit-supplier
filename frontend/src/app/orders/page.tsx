@@ -10,6 +10,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import api from '@/lib/api';
 import type { Order, OrderStatus } from '@/types/order';
+import { getImageUrl } from '@/lib/image';
 
 /* ═══════════════  STATUS CONFIG  ═══════════════ */
 const STATUS_MAP: Record<
@@ -293,7 +294,7 @@ export default function OrdersPage() {
                           {it.product?.imageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={it.product.imageUrl}
+                              src={getImageUrl(it.product.imageUrl)}
                               alt={it.productName}
                               className="w-full h-full object-cover"
                             />

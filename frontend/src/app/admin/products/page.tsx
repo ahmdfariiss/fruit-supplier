@@ -8,6 +8,7 @@ import { formatRupiah } from '@/lib/formatters';
 import Spinner from '@/components/ui/Spinner';
 import Image from 'next/image';
 import type { Product } from '@/types/product';
+import { getImageUrl } from '@/lib/image';
 
 export default function AdminProductsPage() {
   const router = useRouter();
@@ -106,7 +107,7 @@ export default function AdminProductsPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-g6 overflow-hidden flex-shrink-0 relative">
                           {product.imageUrl
-                            ? <Image src={product.imageUrl} alt={product.name} fill className="object-cover" />
+                            ? <Image src={getImageUrl(product.imageUrl)} alt={product.name} fill className="object-cover" />
                             : <div className="absolute inset-0 flex items-center justify-center text-xl">🍊</div>
                           }
                         </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { getImageUrl } from '@/lib/image';
 
 interface Banner {
   id: string;
@@ -49,22 +50,13 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
               banner.linkUrl && window.open(banner.linkUrl, '_blank')
             }
           >
-            {isSvg(banner.imageUrl) ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={banner.imageUrl}
-                alt={banner.title}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            ) : (
-              <Image
-                src={banner.imageUrl}
-                alt={banner.title}
-                fill
-                className="object-cover"
-                priority={idx === 0}
-              />
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={getImageUrl(banner.imageUrl)}
+              alt={banner.title}
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
             {/* Overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-ink/60 via-ink/20 to-transparent" />
             <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10">

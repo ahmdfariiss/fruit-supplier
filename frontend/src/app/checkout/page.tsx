@@ -9,6 +9,7 @@ import { formatRupiah } from '@/lib/formatters';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import api from '@/lib/api';
+import { getImageUrl } from '@/lib/image';
 
 /* ═══════════════  5-STEP INDICATOR (Spec §6.6)  ═══════════════ */
 const STEPS = [
@@ -343,7 +344,7 @@ export default function CheckoutPage() {
                       {item.product.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={item.product.imageUrl}
+                          src={getImageUrl(item.product.imageUrl)}
                           alt={item.product.name}
                           className="w-full h-full object-cover"
                         />

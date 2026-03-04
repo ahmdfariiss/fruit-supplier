@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { Product } from '@/types/product';
 import { formatRupiah } from '@/lib/formatters';
+import { getImageUrl } from '@/lib/image';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/useToast';
@@ -69,7 +70,7 @@ export default function ProductDetailModal({
               {product.imageUrl ? (
                 <div className="relative w-[200px] h-[200px] z-[1] animate-[bob_3s_ease-in-out_infinite]">
                   <Image
-                    src={product.imageUrl}
+                    src={getImageUrl(product.imageUrl)}
                     alt={product.name}
                     fill
                     className="object-contain"

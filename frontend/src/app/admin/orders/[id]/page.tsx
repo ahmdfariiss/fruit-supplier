@@ -9,6 +9,7 @@ import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/constants';
 import Badge from '@/components/ui/Badge';
 import Spinner from '@/components/ui/Spinner';
 import type { OrderStatus } from '@/types/order';
+import { getImageUrl } from '@/lib/image';
 
 const ALL_STATUSES: OrderStatus[] = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DONE', 'CANCELLED'];
 
@@ -100,7 +101,7 @@ export default function AdminOrderDetailPage() {
                   <div className="w-10 h-10 rounded-xl bg-g6 flex items-center justify-center shrink-0 overflow-hidden">
                     {item.productImage
                       // eslint-disable-next-line @next/next/no-img-element
-                      ? <img src={item.productImage} alt={item.productName} className="w-full h-full object-cover" />
+                      ? <img src={getImageUrl(item.productImage)} alt={item.productName} className="w-full h-full object-cover" />
                       : <span className="text-xl">🍊</span>
                     }
                   </div>
@@ -151,9 +152,7 @@ export default function AdminOrderDetailPage() {
               <div className="rounded-xl overflow-hidden border border-faint">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={order.paymentProofUrl.startsWith('http')
-                    ? order.paymentProofUrl
-                    : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${order.paymentProofUrl}`}
+                  src={getImageUrl(order.paymentProofUrl)}
                   alt="Bukti bayar"
                   className="w-full max-h-[400px] object-contain"
                 />

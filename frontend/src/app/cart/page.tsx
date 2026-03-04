@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCartStore } from '@/store/cartStore';
+import { getImageUrl } from '@/lib/image';
 import { useAuthStore } from '@/store/authStore';
 import { formatRupiah } from '@/lib/formatters';
 import Navbar from '@/components/layout/Navbar';
@@ -125,7 +126,7 @@ export default function CartPage() {
                       <div className="relative w-20 h-20 rounded-xl bg-g6 overflow-hidden flex-shrink-0">
                         {item.product.imageUrl ? (
                           <Image
-                            src={item.product.imageUrl}
+                            src={getImageUrl(item.product.imageUrl)}
                             alt={item.product.name}
                             fill
                             className="object-cover"
