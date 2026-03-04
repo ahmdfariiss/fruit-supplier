@@ -18,7 +18,7 @@ export default function HomePage() {
   const { data: banners } = useQuery({
     queryKey: ['banners'],
     queryFn: async () => {
-      const { data } = await api.get('/banners?active=true');
+      const { data } = await api.get('/banners');
       return data.data;
     },
   });
@@ -126,7 +126,7 @@ export default function HomePage() {
         <Ticker />
 
         {/* ═══ FEATURED PRODUCTS ═══ */}
-        <FeaturedProducts />
+      
 
         {/* ═══ WHY US ═══ */}
         <WhyUsSection />

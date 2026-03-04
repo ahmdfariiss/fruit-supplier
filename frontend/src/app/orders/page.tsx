@@ -118,9 +118,9 @@ export default function OrdersPage() {
       );
       toggleUpload(orderId);
       refetch();
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.error || 'Gagal mengunggah bukti transfer. Coba lagi.';
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      const msg = axiosErr?.response?.data?.error || 'Gagal mengunggah bukti transfer. Coba lagi.';
       toast(msg, 'error');
     } finally {
       setUploading((prev) => ({ ...prev, [orderId]: false }));

@@ -25,6 +25,7 @@ interface AuthState {
   ) => Promise<void>;
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
+  checkAuth: () => Promise<void>;
   setUser: (user: User | null) => void;
 }
 
@@ -55,6 +56,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   fetchUser: async () => {
+    try {
+      const { data } = await api.get('/auth/me');
+      set({ user: data.data, isAuthenticated: true, isLoading: false });
+    } catch {
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    }
+  },
+
+  // alias fetchUser, dipakai di admin/layout.tsx
+  checkAuth: async () => {
     try {
       const { data } = await api.get('/auth/me');
       set({ user: data.data, isAuthenticated: true, isLoading: false });
