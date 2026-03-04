@@ -1,7 +1,3 @@
-'use client';
-
-import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import BannerSlider from '@/components/home/BannerSlider';
@@ -14,14 +10,29 @@ import ImpactCounter from '@/components/home/ImpactCounter';
 import ResellerBand from '@/components/home/ResellerBand';
 import Link from 'next/link';
 
-export default function HomePage() {
-  const { data: banners } = useQuery({
-    queryKey: ['banners'],
-    queryFn: async () => {
-      const { data } = await api.get('/banners');
-      return data.data;
-    },
-  });
+export const revalidate = 60;
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+
+async function getBannersAndProducts() {
+  try {
+    const [bannersRes, productsRes] = await Promise.all([
+      fetch(`${BASE_URL}/banners`, { next: { revalidate: 60 } }),
+      fetch(`${BASE_URL}/products?featured=true`, { next: { revalidate: 60 } }),
+    ]);
+    const bannersData = bannersRes.ok ? await bannersRes.json() : { data: [] };
+    const productsData = productsRes.ok ? await productsRes.json() : { data: [] };
+    return {
+      banners: bannersData.data || [],
+      featuredProducts: productsData.data || [],
+    };
+  } catch {
+    return { banners: [], featuredProducts: [] };
+  }
+}
+
+export default async function HomePage() {
+  const { banners, featuredProducts } = await getBannersAndProducts();
 
   return (
     <>
@@ -82,7 +93,7 @@ export default function HomePage() {
           </div>
 
           {/* Hero Right Collage */}
-          <div className="hidden md:grid grid-cols-2 grid-rows-2 gap-3.5 min-h-[480px]">
+          <div className="grid grid-cols-2 grid-rows-2 gap-3.5 min-h-[480px]">
             <div className="row-span-2 rounded-[22px] bg-g5 border-2 border-dashed border-g4 flex items-center justify-center overflow-hidden hover:border-g2 hover:shadow-card transition-all cursor-pointer">
               <div className="text-center p-5">
                 <span className="text-5xl block mb-2">🍊</span>
@@ -126,7 +137,7 @@ export default function HomePage() {
         <Ticker />
 
         {/* ═══ FEATURED PRODUCTS ═══ */}
-      
+        <FeaturedProducts products={featuredProducts} />
 
         {/* ═══ WHY US ═══ */}
         <WhyUsSection />
