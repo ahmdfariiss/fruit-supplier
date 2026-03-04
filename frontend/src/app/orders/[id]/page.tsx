@@ -78,9 +78,9 @@ export default function OrderDetailPage() {
       });
       setUploadMsg('✅ Bukti pembayaran berhasil diunggah!');
       queryClient.invalidateQueries({ queryKey: ['order', params.id] });
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.error || 'Gagal mengunggah bukti pembayaran.';
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      const msg = axiosErr?.response?.data?.error || 'Gagal mengunggah bukti pembayaran.';
       setUploadMsg(`❌ ${msg}`);
     } finally {
       setUploading(false);

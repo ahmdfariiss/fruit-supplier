@@ -1,19 +1,13 @@
-'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
 import type { Product } from '@/types/product';
 import ProductCard from '@/components/product/ProductCard';
 import Link from 'next/link';
 
-export default function FeaturedProducts() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['featured-products'],
-    queryFn: async () => {
-      const { data } = await api.get('/products?featured=true&limit=8');
-      return data.data as Product[];
-    },
-  });
+type FeaturedProductsProps = {
+  products: Product[];
+};
+
+export default function FeaturedProducts({ products }: FeaturedProductsProps) {
 
   return (
     <section className="py-[90px] px-[6%]">
@@ -34,29 +28,15 @@ export default function FeaturedProducts() {
       </div>
 
       {/* Products */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-3xl border border-faint overflow-hidden animate-pulse"
-            >
-              <div className="aspect-square bg-g6" />
-              <div className="p-4 space-y-2">
-                <div className="h-3 bg-g6 rounded-full w-1/3" />
-                <div className="h-4 bg-g6 rounded-full w-2/3" />
-                <div className="h-5 bg-g6 rounded-full w-1/2" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {data?.map((product) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {products?.length > 0 ? (
+          products.map((product) => (
             <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      )}
+          ))
+        ) : (
+          <div className="col-span-4 text-center text-muted py-8">Tidak ada produk unggulan.</div>
+        )}
+      </div>
     </section>
   );
 }
