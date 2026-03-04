@@ -1,4 +1,3 @@
-import PDFDocument from 'pdfkit';
 import path from 'path';
 import fs from 'fs';
 import { prisma } from '../config/database';
@@ -30,6 +29,15 @@ const formatDate = (date: Date): string => {
  * File disimpan di direktori uploads/invoices/ dengan nama {orderNumber}.pdf
  */
 export const generateInvoicePDF = async (orderId: string): Promise<{ filePath: string; fileName: string }> => {
+  let PDFDocument: new (options?: Record<string, unknown>) => any;
+
+  try {
+    const pdfkitModule = await import('pdfkit');
+    PDFDocument = pdfkitModule.default as typeof PDFDocument;
+  } catch {
+    throw new AppError('Layanan invoice PDF tidak tersedia saat ini.', 503);
+  }
+
   // Fetch order lengkap
   const order = await prisma.order.findUnique({
     where: { id: orderId },
