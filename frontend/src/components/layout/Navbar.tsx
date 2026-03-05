@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
@@ -45,9 +46,14 @@ export default function Navbar() {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 no-underline">
-          <div className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-g2 to-g4 flex items-center justify-center text-sm shadow-[0_2px_10px_rgba(69,125,0,0.3)]">
-            🍊
-          </div>
+          <Image
+            src="/images/logo.jpeg"
+            alt="BuahKita"
+            width={38}
+            height={38}
+            className="rounded-full object-contain"
+            priority
+          />
           <span className="font-lora text-[1.2rem] font-semibold text-g1 tracking-tight">
             BuahKita
           </span>

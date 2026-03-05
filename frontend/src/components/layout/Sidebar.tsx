@@ -22,9 +22,14 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-white/10">
         <Link href="/admin" className="flex items-center gap-2 no-underline">
-          <div className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-g2 to-g4 flex items-center justify-center text-sm">
-            🍊
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo.png"
+            alt="BuahKita"
+            width={38}
+            height={38}
+            className="rounded-full object-contain"
+          />
           <div>
             <span className="font-lora text-lg font-semibold text-white block">
               BuahKita

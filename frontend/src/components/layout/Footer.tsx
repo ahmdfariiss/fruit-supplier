@@ -27,9 +27,14 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-g2 to-g4 flex items-center justify-center text-sm">
-                🍊
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logo.png"
+                alt="BuahKita"
+                width={38}
+                height={38}
+                className="rounded-full object-contain"
+              />
               <span className="font-lora text-xl font-semibold">BuahKita</span>
             </div>
             <p className="text-white/60 text-sm leading-relaxed max-w-xs mb-6">
