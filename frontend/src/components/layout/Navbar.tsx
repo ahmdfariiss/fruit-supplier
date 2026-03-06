@@ -47,7 +47,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 no-underline">
           <Image
-            src="/images/logo.jpeg"
+            src="/images/logo.png"
             alt="BuahKita"
             width={38}
             height={38}
