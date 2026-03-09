@@ -22,7 +22,7 @@ export default function StarRating({
   onChange,
 }: StarRatingProps) {
   return (
-    <div className={`flex items-center ${sizes[size]}`}>
+    <div className={`flex items-center ${sizes[size]}`} role="img" aria-label={`Rating ${rating} dari ${maxRating} bintang`}>
       {Array.from({ length: maxRating }, (_, i) => {
         const starValue = i + 1;
         const isFilled = starValue <= rating;
@@ -34,6 +34,8 @@ export default function StarRating({
             type="button"
             disabled={!interactive}
             onClick={() => interactive && onChange?.(starValue)}
+            aria-label={interactive ? `Beri ${starValue} bintang` : `${starValue} bintang`}
+            tabIndex={interactive ? 0 : -1}
             className={`
               transition-colors duration-150
               ${interactive ? 'cursor-pointer hover:scale-110' : 'cursor-default'}

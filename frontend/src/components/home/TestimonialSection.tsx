@@ -66,7 +66,7 @@ export default function TestimonialSection() {
           <span className="text-[2.5rem] font-black text-white">4.9</span>
           <div>
             <StarRating rating={5} size="sm" />
-            <p className="text-white/60 text-[0.75rem] font-semibold mt-0.5">
+            <p className="text-white/90 text-[0.75rem] font-semibold mt-0.5">
               dari {testimonials.length * 100}+ ulasan
             </p>
           </div>
@@ -79,7 +79,7 @@ export default function TestimonialSection() {
           ].map((s) => (
             <div key={s.label} className="text-center">
               <div className="text-lg font-black text-white">{s.val}</div>
-              <div className="text-[0.68rem] text-white/50 font-semibold uppercase tracking-wider">
+              <div className="text-[0.68rem] text-white/90 font-semibold uppercase tracking-wider">
                 {s.label}
               </div>
             </div>
@@ -92,7 +92,7 @@ export default function TestimonialSection() {
         {testimonials.map((t) => (
           <div
             key={t.id}
-            className="bg-white rounded-3xl p-6 border border-faint shadow-sm hover:shadow-card hover:-translate-y-1 transition-all duration-300"
+            className="bg-white rounded-3xl p-6 border border-faint shadow-sm hover:shadow-card hover:-translate-y-1 transition-[transform,box-shadow] duration-300"
           >
             <StarRating rating={t.rating} size="sm" />
             <p className="text-[0.85rem] text-muted leading-relaxed mt-3 mb-4">

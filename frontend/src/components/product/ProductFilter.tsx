@@ -99,6 +99,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
           <input
             type="text"
             placeholder="Ketik nama buah..."
+            aria-label="Cari produk"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="border-none bg-transparent outline-none font-sans text-[0.85rem] text-ink w-full placeholder:text-muted"
@@ -154,6 +155,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
           <input
             type="number"
             placeholder="Min"
+            aria-label="Harga minimum"
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
             min={0}
@@ -163,6 +165,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
           <input
             type="number"
             placeholder="Max"
+            aria-label="Harga maksimum"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
             min={0}
@@ -179,6 +182,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
         </div>
         <select
           value={sort}
+          aria-label="Urutkan produk"
           onChange={(e) => setSort(e.target.value)}
           className="w-full px-3.5 py-2.5 rounded-xl border-[1.5px] border-faint bg-white font-sans text-[0.85rem] text-ink outline-none cursor-pointer focus:border-g3 transition-colors"
         >
@@ -207,6 +211,9 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
                 setSeasonMonth(String(new Date().getMonth() + 1));
               }
             }}
+            role="switch"
+            aria-checked={seasonEnabled}
+            aria-label="Filter buah musiman"
             className={`w-10 h-[22px] rounded-full relative cursor-pointer transition-colors ${
               seasonEnabled ? 'bg-g1' : 'bg-faint'
             }`}
@@ -221,6 +228,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
         {seasonEnabled && (
           <select
             value={seasonMonth}
+            aria-label="Pilih bulan musim"
             onChange={(e) => setSeasonMonth(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-xl border-[1.5px] border-faint bg-white font-sans text-[0.85rem] text-ink outline-none cursor-pointer focus:border-g3 transition-colors"
           >

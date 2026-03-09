@@ -12,12 +12,14 @@ interface ProductCardProps {
   product: Product;
   showResellerPrice?: boolean;
   onOpenDetail?: (product: Product) => void;
+  priority?: boolean;
 }
 
 export default function ProductCard({
   product,
   showResellerPrice = false,
   onOpenDetail,
+  priority = false,
 }: ProductCardProps) {
   const displayPrice = showResellerPrice
     ? product.priceReseller
@@ -52,7 +54,7 @@ export default function ProductCard({
 
   return (
     <div
-      className="group bg-white rounded-[22px] overflow-hidden border border-faint cursor-pointer relative transition-all duration-300 hover:-translate-y-[5px] hover:shadow-[0_16px_44px_rgba(45,90,0,.12)]"
+      className="group bg-white rounded-[22px] overflow-hidden border border-faint cursor-pointer relative transition-[transform,box-shadow] duration-300 hover:-translate-y-[5px] hover:shadow-[0_16px_44px_rgba(45,90,0,.12)]"
       onClick={() => onOpenDetail?.(product)}
     >
       {/* Badge */}
@@ -65,7 +67,7 @@ export default function ProductCard({
       )}
 
       {/* Image */}
-      <div className="bg-g5 flex items-center justify-center text-[4.5rem] p-7 transition-transform duration-400 min-h-[160px] relative overflow-hidden group-hover:scale-105">
+      <div className="bg-g5 flex items-center justify-center text-[4.5rem] transition-transform duration-400 relative overflow-hidden group-hover:scale-105 aspect-[4/3]">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(45,90,0,.06)]" />
         {product.imageUrl ? (
           <Image
@@ -73,7 +75,9 @@ export default function ProductCard({
             alt={product.name}
             fill
             className="object-cover transition-transform duration-[350ms] ease-[cubic-bezier(.34,1.5,.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[8deg]"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 280px"
+            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
           />
         ) : (
           <span className="relative z-[1] transition-transform duration-[350ms] ease-[cubic-bezier(.34,1.5,.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[8deg]">
@@ -149,6 +153,7 @@ export default function ProductCard({
           </div>
           <button
             onClick={handleAdd}
+            aria-label={`Tambahkan ${product.name} ke keranjang`}
             className="w-[38px] h-[38px] rounded-full bg-g1 text-white border-none text-xl flex items-center justify-center transition-all duration-250 hover:bg-g3 hover:scale-[1.12] hover:rotate-90 flex-shrink-0"
           >
             +

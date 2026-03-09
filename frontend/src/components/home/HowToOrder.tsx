@@ -1,5 +1,3 @@
-'use client';
-
 export default function HowToOrder() {
   const steps = [
     {
@@ -29,7 +27,7 @@ export default function HowToOrder() {
   ];
 
   return (
-    <section className="py-[90px] px-[6%]">
+    <section className="py-[90px] px-[6%] cv-auto">
       <div className="text-center mb-14">
         <div className="sec-ey justify-center">Cara Pesan</div>
         <h2 className="sec-title">
@@ -50,9 +48,9 @@ export default function HowToOrder() {
                   {s.num}
                 </span>
               </div>
-              <h4 className="text-[0.9rem] font-extrabold text-ink mb-1.5">
+              <h3 className="text-[0.9rem] font-extrabold text-ink mb-1.5">
                 {s.title}
-              </h4>
+              </h3>
               <p className="text-[0.78rem] text-muted leading-relaxed max-w-[200px] mx-auto">
                 {s.desc}
               </p>

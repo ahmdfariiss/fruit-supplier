@@ -10,7 +10,7 @@
   --g5: #dff0c0;
   --g6: #f3faeb;
   --ink: #0f1a06;
-  --muted: #5a6e47;
+  --muted: #4a5e37;
   --faint: #c8ddb0;
   --cream: #faf8f3;
   --sand: #f0ead8;
@@ -19,8 +19,10 @@
   --blue: #0779e4;
 }
 
-html {
-  scroll-behavior: smooth;
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -105,9 +107,11 @@ body {
   /* Ticker */
   .ticker {
     @apply bg-g1 py-3 overflow-hidden;
+    contain: content;
   }
   .ticker-track {
     @apply flex gap-[60px] whitespace-nowrap animate-ticker;
+    will-change: transform;
   }
   .ticker-track:hover {
     animation-play-state: paused;
@@ -134,5 +138,52 @@ body {
   }
   .fade-reveal.visible {
     @apply opacity-100 translate-y-0;
+  }
+
+  /* Screen-reader only */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Skip to content link */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 16px;
+    background: var(--g1);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 0 0 12px 12px;
+    z-index: 10000;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: top 0.2s ease;
+  }
+  .skip-link:focus {
+    top: 0;
+  }
+
+  /* Content-visibility optimization for below-fold sections */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
+  }
+
+  /* Reduce paint complexity for sections */
+  .contain-layout {
+    contain: layout style;
+  }
+
+  .contain-content {
+    contain: content;
   }
 }

@@ -52,12 +52,16 @@ export default function ProductDetailModal({
       <div
         className="fixed inset-0 z-[998] bg-ink/45 backdrop-blur-[8px] flex items-center justify-center p-5"
         onClick={(e) => e.target === e.currentTarget && onClose()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Detail produk: ${product.name}`}
       >
         {/* Modal */}
         <div className="bg-white rounded-[28px] w-full max-w-[900px] max-h-[90vh] overflow-y-auto shadow-[0_24px_80px_rgba(15,26,6,.2)] animate-[modalIn_0.35s_cubic-bezier(.34,1.1,.64,1)] relative">
           {/* Close */}
           <button
             onClick={onClose}
+            aria-label="Tutup detail produk"
             className="absolute top-5 right-5 z-[2] w-[38px] h-[38px] rounded-full bg-ink/[.07] border-none cursor-pointer text-base flex items-center justify-center hover:bg-ink/[.12] transition-colors"
           >
             ✕
@@ -229,6 +233,7 @@ export default function ProductDetailModal({
                 <div className="flex items-center bg-white border-[1.5px] border-faint rounded-pill overflow-hidden">
                   <button
                     onClick={() => setQty(Math.max(1, qty - 1))}
+                    aria-label="Kurangi jumlah"
                     className="w-9 h-9 border-none bg-transparent cursor-pointer text-lg font-bold text-g1 flex items-center justify-center hover:bg-g6 transition-colors"
                   >
                     −
@@ -236,6 +241,7 @@ export default function ProductDetailModal({
                   <input
                     type="number"
                     value={qty}
+                    aria-label="Jumlah produk"
                     onChange={(e) =>
                       setQty(Math.max(1, parseInt(e.target.value) || 1))
                     }
@@ -245,6 +251,7 @@ export default function ProductDetailModal({
                   />
                   <button
                     onClick={() => setQty(Math.min(99, qty + 1))}
+                    aria-label="Tambah jumlah"
                     className="w-9 h-9 border-none bg-transparent cursor-pointer text-lg font-bold text-g1 flex items-center justify-center hover:bg-g6 transition-colors"
                   >
                     +

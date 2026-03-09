@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useProducts } from '@/hooks/useProducts';
 import { useQuery } from '@tanstack/react-query';
@@ -9,10 +9,11 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ProductGrid from '@/components/product/ProductGrid';
 import ProductFilter from '@/components/product/ProductFilter';
-import ProductDetailModal from '@/components/product/ProductDetailModal';
-import CartDrawer from '@/components/product/CartDrawer';
 import Pagination from '@/components/ui/Pagination';
 import type { Category, Product } from '@/types/product';
+
+const ProductDetailModal = lazy(() => import('@/components/product/ProductDetailModal'));
+const CartDrawer = lazy(() => import('@/components/product/CartDrawer'));
 
 function ProductsContent() {
   const searchParams = useSearchParams();
@@ -122,7 +123,7 @@ function ProductsContent() {
         </aside>
 
         {/* Main Grid */}
-        <main>
+        <section>
           {/* Grid top bar */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div className="text-[0.85rem] text-muted font-semibold">
@@ -146,18 +147,26 @@ function ProductsContent() {
               onPageChange={setPage}
             />
           )}
-        </main>
+        </section>
       </div>
 
       {/* Detail Modal */}
-      <ProductDetailModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        buyerMode={buyerMode}
-      />
+      {selectedProduct && (
+        <Suspense fallback={null}>
+          <ProductDetailModal
+            product={selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+            buyerMode={buyerMode}
+          />
+        </Suspense>
+      )}
 
       {/* Cart Drawer */}
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+      {cartOpen && (
+        <Suspense fallback={null}>
+          <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+        </Suspense>
+      )}
     </>
   );
 }
@@ -166,7 +175,7 @@ export default function ProductsPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen">
+      <main id="main-content" className="min-h-screen">
         <Suspense
           fallback={
             <div className="pt-[120px] pb-20 px-[6%] bg-g6">

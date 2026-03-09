@@ -1,5 +1,3 @@
-'use client';
-
 export default function ImpactCounter() {
   const stats = [
     { value: '150+', label: 'Petani Mitra', icon: '🌾' },
@@ -9,7 +7,7 @@ export default function ImpactCounter() {
   ];
 
   return (
-    <section className="py-16 px-[6%] bg-g1">
+    <section className="py-16 px-[6%] bg-g1 cv-auto">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto text-center">
         {stats.map((s) => (
           <div key={s.label}>
@@ -17,7 +15,7 @@ export default function ImpactCounter() {
             <div className="text-[2rem] font-black text-white tracking-tight">
               {s.value}
             </div>
-            <div className="text-[0.72rem] font-semibold text-white/60 uppercase tracking-widest">
+            <div className="text-[0.72rem] font-semibold text-white/90 uppercase tracking-widest">
               {s.label}
             </div>
           </div>

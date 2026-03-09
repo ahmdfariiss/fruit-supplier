@@ -1,5 +1,3 @@
-'use client';
-
 export default function WhyUsSection() {
   const points = [
     {
@@ -25,7 +23,7 @@ export default function WhyUsSection() {
   ];
 
   return (
-    <section className="py-[90px] px-[6%] bg-white">
+    <section className="py-[90px] px-[6%] bg-white cv-auto">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
         {/* Left Visual */}
         <div className="relative">
@@ -38,7 +36,7 @@ export default function WhyUsSection() {
             </div>
             <div className="text-center w-full">
               <span className="text-[5rem] block mb-4">🌾</span>
-              <p className="text-white/70 text-sm font-semibold">
+              <p className="text-white/90 text-sm font-semibold">
                 Kebun Mitra BuahKita
               </p>
             </div>
@@ -60,9 +58,9 @@ export default function WhyUsSection() {
                   {pt.icon}
                 </div>
                 <div>
-                  <h4 className="text-[0.92rem] font-extrabold text-ink mb-1">
+                  <h3 className="text-[0.92rem] font-extrabold text-ink mb-1">
                     {pt.title}
-                  </h4>
+                  </h3>
                   <p className="text-[0.82rem] text-muted leading-relaxed">
                     {pt.desc}
                   </p>

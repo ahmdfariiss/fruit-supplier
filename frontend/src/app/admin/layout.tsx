@@ -67,7 +67,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="w-9 h-9 rounded-xl bg-g4 flex items-center justify-center text-lg">🍎</div>
             <div>
               <div className="text-white font-extrabold text-[0.92rem] leading-none">BuahKita</div>
-              <div className="text-white/40 text-[0.65rem] font-semibold tracking-wider mt-0.5">ADMIN PANEL</div>
+              <div className="text-white/70 text-[0.65rem] font-semibold tracking-wider mt-0.5">ADMIN PANEL</div>
             </div>
           </Link>
         </div>
@@ -100,7 +100,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white text-[0.8rem] font-bold truncate">{user?.name}</p>
-              <p className="text-white/40 text-[0.68rem] truncate">{user?.email}</p>
+              <p className="text-white/70 text-[0.68rem] truncate">{user?.email}</p>
             </div>
           </div>
           <button

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import Image from 'next/image';
 import api from '@/lib/api';
 import Spinner from '@/components/ui/Spinner';
 import { getImageUrl } from '@/lib/image';
@@ -156,7 +157,7 @@ export default function AdminBannersPage() {
                 {/* Preview */}
                 <div className="relative w-32 h-16 rounded-xl overflow-hidden bg-g6 flex-shrink-0 border border-faint">
                   {banner.imageUrl
-                    ? <img src={getImageUrl(banner.imageUrl)} alt={banner.title} className="absolute inset-0 w-full h-full object-cover" />
+                    ? <Image src={getImageUrl(banner.imageUrl)} alt={banner.title} fill className="object-cover" sizes="128px" />
                     : <div className="absolute inset-0 flex items-center justify-center text-xl">🖼️</div>
                   }
                 </div>

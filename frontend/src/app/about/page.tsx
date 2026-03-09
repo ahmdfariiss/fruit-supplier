@@ -2,7 +2,19 @@
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Link from 'next/link';
-import MapSection from '@/components/about/MapSection';
+import dynamic from 'next/dynamic';
+
+const MapSection = dynamic(
+  () => import('@/components/about/MapSection'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[400px] bg-g6 rounded-2xl animate-pulse flex items-center justify-center">
+        <span className="text-muted text-sm">Memuat peta...</span>
+      </div>
+    ),
+  }
+);
 
 const TEAM = [
   {
@@ -105,7 +117,7 @@ export default async function AboutPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen">
+      <main id="main-content" className="min-h-screen">
         {/* Page Header */}
         <div className="pt-[120px] pb-[60px] px-[6%] bg-g6 relative overflow-hidden">
           <div className="absolute -right-20 -top-20 w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(168,207,111,.22)_0%,transparent_65%)] pointer-events-none" />
@@ -250,7 +262,7 @@ export default async function AboutPage() {
                 <strong className="block text-[2.4rem] font-black text-g4 tracking-tight leading-none mb-1.5">
                   {s.val}
                 </strong>
-                <span className="text-[0.78rem] text-white/50 font-semibold tracking-wide">
+                <span className="text-[0.78rem] text-white/70 font-semibold tracking-wide">
                   {s.label}
                 </span>
               </div>

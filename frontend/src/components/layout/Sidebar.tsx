@@ -34,7 +34,7 @@ export default function Sidebar() {
             <span className="font-lora text-lg font-semibold text-white block">
               BuahKita
             </span>
-            <span className="text-[0.65rem] text-white/40 font-semibold tracking-widest uppercase">
+            <span className="text-[0.65rem] text-white/70 font-semibold tracking-widest uppercase">
               Admin Panel
             </span>
           </div>
@@ -77,7 +77,7 @@ export default function Sidebar() {
         <Link
           href="/"
           className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold
-            text-white/50 hover:bg-white/8 hover:text-white transition-all no-underline"
+            text-white/70 hover:bg-white/8 hover:text-white transition-all no-underline"
         >
           ← Kembali ke Toko
         </Link>

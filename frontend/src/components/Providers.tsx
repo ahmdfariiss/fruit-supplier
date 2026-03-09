@@ -11,7 +11,14 @@ function AuthInitializer() {
 
   useEffect(() => {
     if (isLoading) {
-      fetchUser();
+      // Defer auth check to avoid blocking initial render
+      const id = requestIdleCallback
+        ? requestIdleCallback(() => fetchUser())
+        : setTimeout(() => fetchUser(), 100);
+      return () => {
+        if (typeof cancelIdleCallback !== 'undefined') cancelIdleCallback(id as number);
+        else clearTimeout(id as ReturnType<typeof setTimeout>);
+      };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

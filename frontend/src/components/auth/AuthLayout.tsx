@@ -50,7 +50,7 @@ export default function AuthLayout({ children, activeTab }: AuthLayoutProps) {
             <br />
             Petaninya
           </h2>
-          <p className="text-[0.9rem] text-white/45 leading-[1.75] max-w-[360px] mb-9">
+          <p className="text-[0.9rem] text-white/70 leading-[1.75] max-w-[360px] mb-9">
             Bergabung dan nikmati kemudahan pesan, invoice otomatis, dan
             transparansi penuh rantai distribusi buah lokal Indonesia.
           </p>
@@ -85,7 +85,7 @@ export default function AuthLayout({ children, activeTab }: AuthLayoutProps) {
                   <strong className="block text-[0.83rem] font-bold text-white mb-px">
                     {f.title}
                   </strong>
-                  <span className="text-[0.73rem] text-white/40">{f.desc}</span>
+                  <span className="text-[0.73rem] text-white/70">{f.desc}</span>
                 </div>
               </div>
             ))}
@@ -106,7 +106,7 @@ export default function AuthLayout({ children, activeTab }: AuthLayoutProps) {
               <strong className="text-[0.78rem] text-white block">
                 Rista Amelia
               </strong>
-              <span className="text-[0.7rem] text-white/35">
+              <span className="text-[0.7rem] text-white/70">
                 Pelanggan sejak 2025, Semarang
               </span>
             </div>

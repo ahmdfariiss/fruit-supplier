@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/useToast';
 import { formatRupiah } from '@/lib/formatters';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import Image from 'next/image';
 import api from '@/lib/api';
 import { getImageUrl } from '@/lib/image';
 
@@ -23,11 +24,12 @@ const STEPS = [
 function StepBar({ current }: { current: number }) {
   return (
     <div className="pt-[100px] px-[6%] bg-g6">
-      <div className="flex items-center justify-center gap-0 pb-10 max-w-[700px] mx-auto">
+      <nav aria-label="Langkah checkout" className="flex items-center justify-center gap-0 pb-10 max-w-[700px] mx-auto">
         {STEPS.map((s, i) => (
           <div
             key={s.num}
             className="flex flex-col items-center gap-1.5 flex-1 relative"
+            aria-current={s.num === current ? 'step' : undefined}
           >
             {i < STEPS.length - 1 && (
               <div
@@ -47,7 +49,7 @@ function StepBar({ current }: { current: number }) {
             </div>
           </div>
         ))}
-      </div>
+      </nav>
     </div>
   );
 }
@@ -224,7 +226,10 @@ export default function CheckoutPage() {
       <Navbar />
       <StepBar current={step} />
 
-      {/* ═══ STEP 1: Pilih Tipe Pembeli (BuyerTypeSelector) ═══ */}
+      <main id="main-content">
+        <h1 className="sr-only">Checkout - Langkah {step} dari 5</h1>
+
+        {/* ═══ STEP 1: Pilih Tipe Pembeli (BuyerTypeSelector) ═══ */}
       {step === 1 && (
         <div className="max-w-[640px] mx-auto px-[6%] py-10 pb-20 animate-fadeInUp">
           <div className="bg-white rounded-3xl p-7 border border-faint">
@@ -342,11 +347,13 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-[52px] h-[52px] rounded-xl bg-g6 flex items-center justify-center shrink-0 overflow-hidden">
                       {item.product.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={getImageUrl(item.product.imageUrl)}
                           alt={item.product.name}
+                          width={52}
+                          height={52}
                           className="w-full h-full object-cover"
+                          loading="lazy"
                         />
                       ) : (
                         <span className="text-[1.6rem]">🍊</span>
@@ -435,46 +442,53 @@ export default function CheckoutPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3.5">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[0.78rem] font-bold text-muted tracking-wide">
+                  <label htmlFor="shipping-name" className="text-[0.78rem] font-bold text-muted tracking-wide">
                     NAMA PENERIMA *
                   </label>
                   <input
+                    id="shipping-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Nama lengkap penerima"
+                    autoComplete="name"
                     className={inputCls}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[0.78rem] font-bold text-muted tracking-wide">
+                  <label htmlFor="shipping-phone" className="text-[0.78rem] font-bold text-muted tracking-wide">
                     NO. TELEPON *
                   </label>
                   <input
-                    type="text"
+                    id="shipping-phone"
+                    type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="08xxxxxxxxxx"
+                    autoComplete="tel"
                     className={inputCls}
                   />
                 </div>
               </div>
               <div className="flex flex-col gap-1.5 mb-3.5">
-                <label className="text-[0.78rem] font-bold text-muted tracking-wide">
+                <label htmlFor="shipping-address" className="text-[0.78rem] font-bold text-muted tracking-wide">
                   ALAMAT LENGKAP *
                 </label>
                 <textarea
+                  id="shipping-address"
                   value={addr}
                   onChange={(e) => setAddr(e.target.value)}
                   placeholder="Jl. Contoh No. 123, RT/RW, Kelurahan, Kecamatan, Kota"
+                  autoComplete="street-address"
                   className={`${inputCls} min-h-[80px] resize-y`}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[0.78rem] font-bold text-muted tracking-wide">
+                <label htmlFor="shipping-notes" className="text-[0.78rem] font-bold text-muted tracking-wide">
                   CATATAN (opsional)
                 </label>
                 <textarea
+                  id="shipping-notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Misal: tolong pilihkan yang belum terlalu matang..."
@@ -490,6 +504,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex gap-2">
                 <input
+                  id="voucher-code"
                   type="text"
                   value={voucherCode}
                   onChange={(e) => {
@@ -503,6 +518,7 @@ export default function CheckoutPage() {
                 />
                 <button
                   onClick={validateVoucher}
+                  aria-label="Validasi kode voucher"
                   className="px-5 py-2.5 rounded-xl bg-g1 text-white text-[0.82rem] font-bold border-none cursor-pointer hover:bg-g2 transition-colors whitespace-nowrap"
                 >
                   Validasi
@@ -668,6 +684,7 @@ export default function CheckoutPage() {
                     {['Produk', 'Qty', 'Harga', 'Subtotal'].map((h) => (
                       <th
                         key={h}
+                        scope="col"
                         className={`text-[0.7rem] font-extrabold tracking-widest uppercase text-muted py-2 px-3 text-left border-b-2 border-faint ${h === 'Subtotal' ? 'text-right' : ''}`}
                       >
                         {h}
@@ -750,6 +767,7 @@ export default function CheckoutPage() {
                             navigator.clipboard?.writeText(r.copyVal!);
                             toast('✅ Nomor rekening disalin!', 'success');
                           }}
+                          aria-label={`Salin ${r.label}`}
                           className="bg-g1 text-white border-none py-1 px-3 rounded-pill text-[0.72rem] font-bold cursor-pointer hover:bg-g2 transition-colors"
                         >
                           Salin
@@ -771,6 +789,7 @@ export default function CheckoutPage() {
                         navigator.clipboard?.writeText(String(finalTotal));
                         toast('✅ Jumlah transfer disalin!', 'success');
                       }}
+                      aria-label="Salin jumlah transfer"
                       className="bg-g1 text-white border-none py-1 px-3 rounded-pill text-[0.72rem] font-bold cursor-pointer hover:bg-g2 transition-colors"
                     >
                       Salin
@@ -885,6 +904,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       )}
+      </main>
 
       <Footer />
     </>

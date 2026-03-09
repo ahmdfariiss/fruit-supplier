@@ -30,8 +30,8 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
       {/* Products */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {products?.length > 0 ? (
-          products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          products.map((product, index) => (
+            <ProductCard key={product.id} product={product} priority={index < 4} />
           ))
         ) : (
           <div className="col-span-4 text-center text-muted py-8">Tidak ada produk unggulan.</div>

@@ -16,7 +16,7 @@ const config: Config = {
         g5: '#dff0c0',
         g6: '#f3faeb',
         ink: '#0f1a06',
-        muted: '#5a6e47',
+        muted: '#4a5e37',
         faint: '#c8ddb0',
         cream: '#faf8f3',
         sand: '#f0ead8',

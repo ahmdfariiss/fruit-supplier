@@ -39,8 +39,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${lora.variable} ${dmSans.variable}`}>
-      <head />
+      <head>
+        <link rel="preconnect" href="http://localhost:5010" />
+        <link rel="dns-prefetch" href="http://localhost:5010" />
+      </head>
       <body className="font-cabinet bg-cream text-ink antialiased">
+        <a href="#main-content" className="skip-link">
+          Langsung ke konten utama
+        </a>
         <Providers>{children}</Providers>
       </body>
     </html>
