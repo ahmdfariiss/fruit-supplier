@@ -23,6 +23,7 @@ function ProductsContent() {
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const filters = {
     search: searchParams.get('search') || undefined,
@@ -38,8 +39,14 @@ function ProductsContent() {
     seasonMonth: searchParams.get('seasonMonth')
       ? Number(searchParams.get('seasonMonth'))
       : undefined,
+    minPrice: searchParams.get('minPrice')
+      ? Number(searchParams.get('minPrice'))
+      : undefined,
+    maxPrice: searchParams.get('maxPrice')
+      ? Number(searchParams.get('maxPrice'))
+      : undefined,
     page,
-    limit: 9,
+    limit: 12,
   };
 
   const { data, isLoading } = useProducts(filters);
@@ -117,7 +124,7 @@ function ProductsContent() {
 
       {/* Katalog Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8 px-[6%] py-12 items-start">
-        {/* Sidebar */}
+        {/* Sidebar - Desktop */}
         <aside className="hidden lg:block sticky top-[90px]">
           <ProductFilter categories={categories || []} />
         </aside>
@@ -131,6 +138,13 @@ function ProductsContent() {
               <b className="text-ink">{data?.pagination?.totalItems || 0}</b>{' '}
               produk
             </div>
+            {/* Mobile filter button */}
+            <button
+              onClick={() => setMobileFilterOpen(true)}
+              className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-white border border-faint rounded-xl text-[0.82rem] font-bold text-muted hover:border-g3 hover:text-g1 transition-all"
+            >
+              <span>🔍</span> Filter & Urutkan
+            </button>
           </div>
 
           <ProductGrid
@@ -149,6 +163,30 @@ function ProductsContent() {
           )}
         </section>
       </div>
+
+      {/* Mobile Filter Drawer */}
+      {mobileFilterOpen && (
+        <div className="fixed inset-0 z-[999] lg:hidden">
+          <div
+            className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+            onClick={() => setMobileFilterOpen(false)}
+          />
+          <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[340px] bg-white overflow-y-auto animate-in slide-in-from-right duration-200">
+            <div className="sticky top-0 bg-white border-b border-faint px-5 py-4 flex items-center justify-between z-10">
+              <h3 className="font-bold text-ink text-base">Filter & Urutkan</h3>
+              <button
+                onClick={() => setMobileFilterOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-g6 transition-colors text-muted hover:text-ink"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-5">
+              <ProductFilter categories={categories || []} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Detail Modal */}
       {selectedProduct && (

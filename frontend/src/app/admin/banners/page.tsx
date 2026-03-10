@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import api from '@/lib/api';
 import Spinner from '@/components/ui/Spinner';
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
 import { getImageUrl } from '@/lib/image';
 
 interface Banner {
@@ -24,6 +25,7 @@ export default function AdminBannersPage() {
   const [adding, setAdding] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Banner | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-banners'],
@@ -71,16 +73,21 @@ export default function AdminBannersPage() {
   };
 
   const handleDelete = async (banner: Banner) => {
-    if (!confirm(`Hapus banner "${banner.title}"?`)) return;
-    setDeletingId(banner.id);
+    setDeleteTarget(banner);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
     try {
-      await api.delete(`/admin/banners/${banner.id}`);
+      await api.delete(`/admin/banners/${deleteTarget.id}`);
       queryClient.invalidateQueries({ queryKey: ['admin-banners'] });
       queryClient.invalidateQueries({ queryKey: ['banners'] });
     } catch {
       alert('Gagal menghapus banner');
     } finally {
       setDeletingId(null);
+      setDeleteTarget(null);
     }
   };
 
@@ -201,6 +208,14 @@ export default function AdminBannersPage() {
           </div>
         )}
       </div>
+
+      <DeleteConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        message={`Hapus banner "${deleteTarget?.title}"?`}
+        loading={!!deletingId}
+      />
     </div>
   );
 }

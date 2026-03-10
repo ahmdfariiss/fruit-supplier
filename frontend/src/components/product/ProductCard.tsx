@@ -87,26 +87,26 @@ export default function ProductCard({
       </div>
 
       {/* Body */}
-      <div className="px-5 pt-[18px] pb-5">
+      <div className="px-3 pt-3 pb-3 sm:px-5 sm:pt-[18px] sm:pb-5">
         {/* Origin */}
-        <div className="text-[0.68rem] font-bold text-g2 uppercase tracking-wide flex items-center gap-1 mb-[5px]">
+        <div className="text-[0.6rem] sm:text-[0.68rem] font-bold text-g2 uppercase tracking-wide flex items-center gap-1 mb-[3px] sm:mb-[5px]">
           📍 {product.category?.name || 'Buah Segar'}
         </div>
 
         {/* Name */}
-        <h3 className="font-lora text-base font-semibold leading-tight mb-[5px]">
+        <h3 className="font-lora text-sm sm:text-base font-semibold leading-tight mb-[3px] sm:mb-[5px] line-clamp-1 sm:line-clamp-none">
           {product.name}
         </h3>
 
         {/* Desc */}
-        <p className="text-[0.78rem] text-muted leading-relaxed mb-3 line-clamp-2">
+        <p className="hidden sm:block text-[0.78rem] text-muted leading-relaxed mb-3 line-clamp-2">
           {product.description?.substring(0, 80) ||
             'Buah segar berkualitas tinggi langsung dari petani.'}
           ...
         </p>
 
         {/* Rating */}
-        <div className="flex items-center gap-1.5 mb-3">
+        <div className="hidden sm:flex items-center gap-1.5 mb-3">
           <span className="text-[#f0a500] text-[0.8rem] tracking-wider">
             ★★★★★
           </span>
@@ -117,31 +117,33 @@ export default function ProductCard({
         </div>
 
         {/* Stock bar */}
-        <div className="h-[3px] bg-faint rounded-[10px] overflow-hidden">
-          <div
-            className="h-full rounded-[10px] bg-gradient-to-r from-g3 to-g4"
-            style={{ width: `${stockPct}%` }}
-          />
-        </div>
-        <div className="text-[0.67rem] text-muted font-semibold mt-1">
-          {product.stock < 20 ? '⚠️ Stok terbatas' : '✅ Stok tersedia'} ·{' '}
-          {stockPct}%
+        <div className="hidden sm:block">
+          <div className="h-[3px] bg-faint rounded-[10px] overflow-hidden">
+            <div
+              className="h-full rounded-[10px] bg-gradient-to-r from-g3 to-g4"
+              style={{ width: `${stockPct}%` }}
+            />
+          </div>
+          <div className="text-[0.67rem] text-muted font-semibold mt-1">
+            {product.stock < 20 ? '⚠️ Stok terbatas' : '✅ Stok tersedia'} ·{' '}
+            {stockPct}%
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between mt-3">
+        <div className="flex items-center justify-between mt-2 sm:mt-3">
           <div>
             {showResellerPrice &&
               product.priceReseller < product.priceConsumer && (
-                <span className="text-[0.72rem] text-muted line-through block">
+                <span className="text-[0.62rem] sm:text-[0.72rem] text-muted line-through block">
                   {formatRupiah(product.priceConsumer)}
                 </span>
               )}
             <span
-              className={`text-base font-black ${showResellerPrice ? 'text-[#c47d00]' : 'text-g1'}`}
+              className={`text-sm sm:text-base font-black ${showResellerPrice ? 'text-[#c47d00]' : 'text-g1'}`}
             >
               {formatRupiah(displayPrice)}
-              <span className="text-[0.72rem] font-medium text-muted">
+              <span className="text-[0.6rem] sm:text-[0.72rem] font-medium text-muted">
                 /{product.unit}
               </span>
             </span>
@@ -154,7 +156,7 @@ export default function ProductCard({
           <button
             onClick={handleAdd}
             aria-label={`Tambahkan ${product.name} ke keranjang`}
-            className="w-[38px] h-[38px] rounded-full bg-g1 text-white border-none text-xl flex items-center justify-center transition-all duration-250 hover:bg-g3 hover:scale-[1.12] hover:rotate-90 flex-shrink-0"
+            className="w-8 h-8 sm:w-[38px] sm:h-[38px] rounded-full bg-g1 text-white border-none text-lg sm:text-xl flex items-center justify-center transition-all duration-250 hover:bg-g3 hover:scale-[1.12] hover:rotate-90 flex-shrink-0"
           >
             +
           </button>

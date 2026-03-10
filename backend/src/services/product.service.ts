@@ -216,7 +216,14 @@ export const deleteProduct = async (id: string) => {
     throw new AppError('Produk tidak ditemukan.', 404);
   }
 
-  return prisma.product.delete({ where: { id } });
+  // Use transaction to clean up all related records before deleting the product
+  // OrderItem already stores productName/productImage/price so order history is preserved
+  await prisma.$transaction([
+    prisma.cartItem.deleteMany({ where: { productId: id } }),
+    prisma.review.deleteMany({ where: { productId: id } }),
+    prisma.orderItem.deleteMany({ where: { productId: id } }),
+    prisma.product.delete({ where: { id } }),
+  ]);
 };
 
 export const toggleFeatured = async (id: string, isFeatured: boolean) => {

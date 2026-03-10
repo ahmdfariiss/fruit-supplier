@@ -5,29 +5,30 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { formatDateTime } from '@/lib/formatters';
 import Spinner from '@/components/ui/Spinner';
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
 
 interface Voucher {
   id: string;
   code: string;
-  type: 'PERCENTAGE' | 'FIXED';
-  value: number;
-  minOrder: number;
+  discountType: 'PERCENTAGE' | 'FIXED';
+  discountValue: number;
+  minPurchase: number;
   maxDiscount: number | null;
   usageLimit: number | null;
-  usageCount: number;
+  usedCount: number;
   isActive: boolean;
-  expiresAt: string | null;
+  validUntil: string | null;
   createdAt: string;
 }
 
 const EMPTY_FORM = {
   code: '',
-  type: 'PERCENTAGE' as 'PERCENTAGE' | 'FIXED',
-  value: '',
-  minOrder: '0',
+  discountType: 'PERCENTAGE' as 'PERCENTAGE' | 'FIXED',
+  discountValue: '',
+  minPurchase: '0',
   maxDiscount: '',
   usageLimit: '',
-  expiresAt: '',
+  validUntil: '',
 };
 
 export default function AdminVouchersPage() {
@@ -37,6 +38,7 @@ export default function AdminVouchersPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Voucher | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-vouchers'],
@@ -58,17 +60,17 @@ export default function AdminVouchersPage() {
 
   const handleSave = async () => {
     if (!form.code.trim()) return alert('Kode voucher wajib diisi');
-    if (!form.value || Number(form.value) <= 0) return alert('Nilai voucher wajib diisi');
+    if (!form.discountValue || Number(form.discountValue) <= 0) return alert('Nilai voucher wajib diisi');
     setSaving(true);
     try {
       await api.post('/admin/vouchers', {
         code: form.code.toUpperCase(),
-        type: form.type,
-        value: Number(form.value),
-        minOrder: Number(form.minOrder) || 0,
+        discountType: form.discountType,
+        discountValue: Number(form.discountValue),
+        minPurchase: Number(form.minPurchase) || 0,
         maxDiscount: form.maxDiscount ? Number(form.maxDiscount) : null,
         usageLimit: form.usageLimit ? Number(form.usageLimit) : null,
-        expiresAt: form.expiresAt || null,
+        validUntil: form.validUntil || null,
       });
       queryClient.invalidateQueries({ queryKey: ['admin-vouchers'] });
       setForm(EMPTY_FORM);
@@ -94,15 +96,20 @@ export default function AdminVouchersPage() {
   };
 
   const handleDelete = async (v: Voucher) => {
-    if (!confirm(`Hapus voucher "${v.code}"?`)) return;
-    setDeletingId(v.id);
+    setDeleteTarget(v);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
     try {
-      await api.delete(`/admin/vouchers/${v.id}`);
+      await api.delete(`/admin/vouchers/${deleteTarget.id}`);
       queryClient.invalidateQueries({ queryKey: ['admin-vouchers'] });
     } catch {
       alert('Gagal menghapus voucher');
     } finally {
       setDeletingId(null);
+      setDeleteTarget(null);
     }
   };
 
@@ -153,9 +160,9 @@ export default function AdminVouchersPage() {
                 {(['PERCENTAGE', 'FIXED'] as const).map(t => (
                   <button
                     key={t}
-                    onClick={() => set('type', t)}
+                    onClick={() => set('discountType', t)}
                     className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all ${
-                      form.type === t ? 'bg-g1 text-white border-g1' : 'border-faint text-muted hover:border-g3'
+                      form.discountType === t ? 'bg-g1 text-white border-g1' : 'border-faint text-muted hover:border-g3'
                     }`}
                   >
                     {t === 'PERCENTAGE' ? '% Persentase' : 'Rp Nominal'}
@@ -167,15 +174,15 @@ export default function AdminVouchersPage() {
             {/* Value */}
             <div>
               <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">
-                Nilai Diskon * {form.type === 'PERCENTAGE' ? '(%)' : '(Rp)'}
+                Nilai Diskon * {form.discountType === 'PERCENTAGE' ? '(%)' : '(Rp)'}
               </label>
               <input
                 type="number"
-                value={form.value}
-                onChange={e => set('value', e.target.value)}
-                placeholder={form.type === 'PERCENTAGE' ? '10' : '15000'}
+                value={form.discountValue}
+                onChange={e => set('discountValue', e.target.value)}
+                placeholder={form.discountType === 'PERCENTAGE' ? '10' : '15000'}
                 min="0"
-                max={form.type === 'PERCENTAGE' ? '100' : undefined}
+                max={form.discountType === 'PERCENTAGE' ? '100' : undefined}
                 className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
               />
             </div>
@@ -185,8 +192,8 @@ export default function AdminVouchersPage() {
               <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Min. Belanja (Rp)</label>
               <input
                 type="number"
-                value={form.minOrder}
-                onChange={e => set('minOrder', e.target.value)}
+                value={form.minPurchase}
+                onChange={e => set('minPurchase', e.target.value)}
                 placeholder="50000"
                 min="0"
                 className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
@@ -194,7 +201,7 @@ export default function AdminVouchersPage() {
             </div>
 
             {/* Max Discount (only for percentage) */}
-            {form.type === 'PERCENTAGE' && (
+            {form.discountType === 'PERCENTAGE' && (
               <div>
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Maks. Diskon (Rp, opsional)</label>
                 <input
@@ -226,15 +233,15 @@ export default function AdminVouchersPage() {
               <label className="block text-xs font-extrabold uppercase tracking-wider text-muted mb-1.5">Tanggal Kedaluwarsa (opsional)</label>
               <input
                 type="datetime-local"
-                value={form.expiresAt}
-                onChange={e => set('expiresAt', e.target.value)}
+                value={form.validUntil}
+                onChange={e => set('validUntil', e.target.value)}
                 className="w-full px-3.5 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
               />
             </div>
           </div>
 
           {/* Preview */}
-          {form.code && form.value && (
+          {form.code && form.discountValue && (
             <div className="mb-5 p-4 bg-g6 rounded-xl border border-faint">
               <p className="text-xs font-extrabold text-muted uppercase tracking-wider mb-1">Preview Voucher</p>
               <div className="flex items-center gap-3">
@@ -243,11 +250,11 @@ export default function AdminVouchersPage() {
                 </span>
                 <div className="text-sm">
                   <p className="font-bold text-ink">
-                    Diskon {form.type === 'PERCENTAGE' ? `${form.value}%` : `Rp ${Number(form.value).toLocaleString('id-ID')}`}
-                    {form.maxDiscount && form.type === 'PERCENTAGE' && ` (maks. Rp ${Number(form.maxDiscount).toLocaleString('id-ID')})`}
+                    Diskon {form.discountType === 'PERCENTAGE' ? `${form.discountValue}%` : `Rp ${Number(form.discountValue).toLocaleString('id-ID')}`}
+                    {form.maxDiscount && form.discountType === 'PERCENTAGE' && ` (maks. Rp ${Number(form.maxDiscount).toLocaleString('id-ID')})`}
                   </p>
-                  {Number(form.minOrder) > 0 && (
-                    <p className="text-xs text-muted">Min. belanja Rp {Number(form.minOrder).toLocaleString('id-ID')}</p>
+                  {Number(form.minPurchase) > 0 && (
+                    <p className="text-xs text-muted">Min. belanja Rp {Number(form.minPurchase).toLocaleString('id-ID')}</p>
                   )}
                 </div>
               </div>
@@ -297,8 +304,8 @@ export default function AdminVouchersPage() {
               </thead>
               <tbody>
                 {vouchers.map(v => {
-                  const isExpired = v.expiresAt && new Date(v.expiresAt) < new Date();
-                  const isExhausted = v.usageLimit !== null && v.usageCount >= v.usageLimit;
+                  const isExpired = v.validUntil && new Date(v.validUntil) < new Date();
+                  const isExhausted = v.usageLimit !== null && v.usedCount >= v.usageLimit;
                   return (
                     <tr key={v.id} className="border-b border-faint/60 hover:bg-g6/40 transition-colors">
                       <td className="py-3.5 px-4">
@@ -307,22 +314,22 @@ export default function AdminVouchersPage() {
                         </span>
                       </td>
                       <td className="py-3.5 px-4 font-bold">
-                        {v.type === 'PERCENTAGE'
-                          ? `${v.value ?? 0}%${v.maxDiscount ? ` (maks. Rp ${Number(v.maxDiscount).toLocaleString('id-ID')})` : ''}`
-                          : `Rp ${Number(v.value ?? 0).toLocaleString('id-ID')}`
+                        {v.discountType === 'PERCENTAGE'
+                          ? `${v.discountValue ?? 0}%${v.maxDiscount ? ` (maks. Rp ${Number(v.maxDiscount).toLocaleString('id-ID')})` : ''}`
+                          : `Rp ${Number(v.discountValue ?? 0).toLocaleString('id-ID')}`
                         }
                       </td>
                       <td className="py-3.5 px-4 text-muted">
-                        {(v.minOrder ?? 0) > 0 ? `Rp ${Number(v.minOrder).toLocaleString('id-ID')}` : '-'}
+                        {(v.minPurchase ?? 0) > 0 ? `Rp ${Number(v.minPurchase).toLocaleString('id-ID')}` : '-'}
                       </td>
                       <td className="py-3.5 px-4">
                         <span className={`text-xs font-bold ${isExhausted ? 'text-red' : 'text-ink'}`}>
-                          {v.usageCount}/{v.usageLimit ?? '∞'}
+                          {v.usedCount}/{v.usageLimit ?? '∞'}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-xs text-muted">
-                        {v.expiresAt
-                          ? <span className={isExpired ? 'text-red font-bold' : ''}>{formatDateTime(v.expiresAt)}</span>
+                        {v.validUntil
+                          ? <span className={isExpired ? 'text-red font-bold' : ''}>{formatDateTime(v.validUntil)}</span>
                           : '∞ Tidak ada'}
                       </td>
                       <td className="py-3.5 px-4">
@@ -355,6 +362,14 @@ export default function AdminVouchersPage() {
           </div>
         )}
       </div>
+
+      <DeleteConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        message={`Hapus voucher "${deleteTarget?.code}"?`}
+        loading={!!deletingId}
+      />
     </div>
   );
 }

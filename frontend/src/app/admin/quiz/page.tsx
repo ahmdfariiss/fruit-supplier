@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import Spinner from '@/components/ui/Spinner';
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
 
 interface QuizQuestion {
   id: string;
@@ -27,6 +28,7 @@ export default function AdminQuizPage() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<QuizQuestion | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-quiz'],
@@ -82,15 +84,20 @@ export default function AdminQuizPage() {
   };
 
   const handleDelete = async (q: QuizQuestion) => {
-    if (!confirm(`Hapus soal "${q.question.substring(0, 50)}..."?`)) return;
-    setDeletingId(q.id);
+    setDeleteTarget(q);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
     try {
-      await api.delete(`/admin/quiz/${q.id}`);
+      await api.delete(`/admin/quiz/${deleteTarget.id}`);
       queryClient.invalidateQueries({ queryKey: ['admin-quiz'] });
     } catch {
       alert('Gagal menghapus soal');
     } finally {
       setDeletingId(null);
+      setDeleteTarget(null);
     }
   };
 
@@ -231,6 +238,14 @@ export default function AdminQuizPage() {
           </div>
         )}
       </div>
+
+      <DeleteConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        message={`Hapus soal "${deleteTarget?.question.substring(0, 50)}..."?`}
+        loading={!!deletingId}
+      />
     </div>
   );
 }

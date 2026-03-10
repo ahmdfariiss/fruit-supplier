@@ -1,28 +1,127 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback, useMemo, useRef, useEffect, lazy, Suspense, memo } from 'react';
+import Link from 'next/link';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { formatRupiah } from '@/lib/formatters';
 import Spinner from '@/components/ui/Spinner';
-import Image from 'next/image';
 import type { Product } from '@/types/product';
 import { getImageUrl } from '@/lib/image';
 
+const DeleteConfirmModal = lazy(() => import('@/components/ui/DeleteConfirmModal'));
+
+// Debounce hook
+function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
+// Memoized table row
+const ProductRow = memo(function ProductRow({
+  product,
+  togglingId,
+  deletingId,
+  onToggleFeatured,
+  onDelete,
+}: {
+  product: Product;
+  togglingId: string | null;
+  deletingId: string | null;
+  onToggleFeatured: (product: Product) => void;
+  onDelete: (product: Product) => void;
+}) {
+  return (
+    <tr className="border-b border-faint/60 hover:bg-g6/40 transition-colors">
+      <td className="py-3.5 px-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-g6 overflow-hidden flex-shrink-0 relative">
+            {product.imageUrl
+              ? <img src={getImageUrl(product.imageUrl)} alt={product.name} loading="lazy" decoding="async" width={40} height={40} className="object-cover w-full h-full" />
+              : <div className="absolute inset-0 flex items-center justify-center text-xl">🍊</div>
+            }
+          </div>
+          <div>
+            <p className="font-bold text-ink">{product.name}</p>
+            <p className="text-xs text-muted">/{product.unit}</p>
+          </div>
+        </div>
+      </td>
+      <td className="py-3.5 px-4">
+        <span className="text-xs bg-g5 text-g1 px-2 py-1 rounded-full font-bold">
+          {product.category?.icon} {product.category?.name}
+        </span>
+      </td>
+      <td className="py-3.5 px-4 font-semibold">{formatRupiah(product.priceConsumer)}</td>
+      <td className="py-3.5 px-4 font-semibold text-g1">{formatRupiah(product.priceReseller)}</td>
+      <td className="py-3.5 px-4">
+        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+          product.stock > 10 ? 'bg-g5 text-g1' : product.stock > 0 ? 'bg-[#fff3e0] text-[#c47d00]' : 'bg-red/10 text-red'
+        }`}>
+          {product.stock} {product.unit}
+        </span>
+      </td>
+      <td className="py-3.5 px-4">
+        <button
+          onClick={() => onToggleFeatured(product)}
+          disabled={togglingId === product.id}
+          className={`w-10 h-6 rounded-full transition-all relative ${
+            product.isFeatured ? 'bg-g1' : 'bg-faint'
+          } disabled:opacity-50`}
+        >
+          <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+            product.isFeatured ? 'left-5' : 'left-1'
+          }`} />
+        </button>
+      </td>
+      <td className="py-3.5 px-4">
+        <div className="flex gap-1.5">
+          <Link
+            href={`/admin/products/${product.id}`}
+            className="px-3 py-1.5 rounded-lg border border-faint text-xs font-bold text-muted hover:border-g3 hover:text-g1 transition-all no-underline"
+          >
+            Edit
+          </Link>
+          <button
+            onClick={() => onDelete(product)}
+            disabled={deletingId === product.id}
+            className="px-3 py-1.5 rounded-lg bg-red/10 text-red text-xs font-bold hover:bg-red/20 transition-all disabled:opacity-50"
+          >
+            {deletingId === product.id ? '...' : 'Hapus'}
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+});
+
 export default function AdminProductsPage() {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+
+  // Reset page when debounced search changes
+  const prevSearchRef = useRef(debouncedSearch);
+  useEffect(() => {
+    if (prevSearchRef.current !== debouncedSearch) {
+      prevSearchRef.current = debouncedSearch;
+      setPage(1);
+    }
+  }, [debouncedSearch]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-products', search, page],
+    queryKey: ['admin-products', debouncedSearch, page],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (search) params.append('search', search);
+      if (debouncedSearch) params.append('search', debouncedSearch);
       params.append('page', String(page));
       params.append('limit', '12');
       const { data } = await api.get(`/admin/products?${params.toString()}`);
@@ -33,7 +132,7 @@ export default function AdminProductsPage() {
   const products: Product[] = data?.data || [];
   const pagination = data?.pagination;
 
-  const handleToggleFeatured = async (product: Product) => {
+  const handleToggleFeatured = useCallback(async (product: Product) => {
     setTogglingId(product.id);
     try {
       await api.patch(`/admin/products/${product.id}`, { isFeatured: !product.isFeatured });
@@ -43,31 +142,41 @@ export default function AdminProductsPage() {
     } finally {
       setTogglingId(null);
     }
-  };
+  }, [queryClient]);
 
-  const handleDelete = async (product: Product) => {
-    if (!confirm(`Hapus produk "${product.name}"? Tindakan ini tidak bisa dibatalkan.`)) return;
-    setDeletingId(product.id);
+  const handleDelete = useCallback((product: Product) => {
+    setDeleteTarget(product);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
     try {
-      await api.delete(`/admin/products/${product.id}`);
+      await api.delete(`/admin/products/${deleteTarget.id}`);
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
     } catch {
       alert('Gagal menghapus produk');
     } finally {
       setDeletingId(null);
+      setDeleteTarget(null);
     }
-  };
+  }, [deleteTarget, queryClient]);
+
+  const paginationButtons = useMemo(() => {
+    if (!pagination || pagination.totalPages <= 1) return null;
+    return Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => i + 1);
+  }, [pagination]);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <h1 className="font-lora text-2xl font-semibold text-ink">Produk</h1>
-        <button
-          onClick={() => router.push('/admin/products/new')}
-          className="px-5 py-2.5 bg-g1 text-white rounded-xl text-sm font-bold hover:bg-g2 transition-colors flex items-center gap-2"
+        <Link
+          href="/admin/products/new"
+          className="px-5 py-2.5 bg-g1 text-white rounded-xl text-sm font-bold hover:bg-g2 transition-colors flex items-center gap-2 no-underline"
         >
           + Tambah Produk
-        </button>
+        </Link>
       </div>
 
       {/* Search */}
@@ -75,7 +184,7 @@ export default function AdminProductsPage() {
         <input
           type="text"
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="🔍 Cari nama produk..."
           className="w-full px-4 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
         />
@@ -102,79 +211,27 @@ export default function AdminProductsPage() {
               </thead>
               <tbody>
                 {products.map((product) => (
-                  <tr key={product.id} className="border-b border-faint/60 hover:bg-g6/40 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-g6 overflow-hidden flex-shrink-0 relative">
-                          {product.imageUrl
-                            ? <Image src={getImageUrl(product.imageUrl)} alt={product.name} fill className="object-cover" />
-                            : <div className="absolute inset-0 flex items-center justify-center text-xl">🍊</div>
-                          }
-                        </div>
-                        <div>
-                          <p className="font-bold text-ink">{product.name}</p>
-                          <p className="text-xs text-muted">/{product.unit}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="text-xs bg-g5 text-g1 px-2 py-1 rounded-full font-bold">
-                        {product.category?.icon} {product.category?.name}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 font-semibold">{formatRupiah(product.priceConsumer)}</td>
-                    <td className="py-3.5 px-4 font-semibold text-g1">{formatRupiah(product.priceReseller)}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                        product.stock > 10 ? 'bg-g5 text-g1' : product.stock > 0 ? 'bg-[#fff3e0] text-[#c47d00]' : 'bg-red/10 text-red'
-                      }`}>
-                        {product.stock} {product.unit}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <button
-                        onClick={() => handleToggleFeatured(product)}
-                        disabled={togglingId === product.id}
-                        className={`w-10 h-6 rounded-full transition-all relative ${
-                          product.isFeatured ? 'bg-g1' : 'bg-faint'
-                        } disabled:opacity-50`}
-                      >
-                        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
-                          product.isFeatured ? 'left-5' : 'left-1'
-                        }`} />
-                      </button>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex gap-1.5">
-                        <button
-                          onClick={() => router.push(`/admin/products/${product.id}`)}
-                          className="px-3 py-1.5 rounded-lg border border-faint text-xs font-bold text-muted hover:border-g3 hover:text-g1 transition-all"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product)}
-                          disabled={deletingId === product.id}
-                          className="px-3 py-1.5 rounded-lg bg-red/10 text-red text-xs font-bold hover:bg-red/20 transition-all disabled:opacity-50"
-                        >
-                          {deletingId === product.id ? '...' : 'Hapus'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  <ProductRow
+                    key={product.id}
+                    product={product}
+                    togglingId={togglingId}
+                    deletingId={deletingId}
+                    onToggleFeatured={handleToggleFeatured}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </tbody>
             </table>
           </div>
         )}
 
-        {pagination && pagination.totalPages > 1 && (
+        {paginationButtons && pagination && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-faint">
             <span className="text-xs text-muted">{pagination.totalItems} produk</span>
             <div className="flex gap-1.5">
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
                 className="w-8 h-8 rounded-lg border border-faint text-sm font-bold disabled:opacity-40 hover:border-g3">‹</button>
-              {Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => i + 1).map((p) => (
+              {paginationButtons.map((p) => (
                 <button key={p} onClick={() => setPage(p)}
                   className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${page === p ? 'bg-g1 text-white' : 'border border-faint hover:border-g3'}`}>
                   {p}
@@ -186,6 +243,18 @@ export default function AdminProductsPage() {
           </div>
         )}
       </div>
+
+      {deleteTarget && (
+        <Suspense fallback={null}>
+          <DeleteConfirmModal
+            isOpen={!!deleteTarget}
+            onClose={() => setDeleteTarget(null)}
+            onConfirm={confirmDelete}
+            message={`Hapus produk "${deleteTarget?.name}"? Tindakan ini tidak bisa dibatalkan.`}
+            loading={!!deletingId}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

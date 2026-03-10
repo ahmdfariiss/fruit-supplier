@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import Spinner from '@/components/ui/Spinner';
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal';
 import dynamic from 'next/dynamic';
 
 const ResellerMap = dynamic(() => import('@/components/maps/ResellerMap'), { ssr: false });
@@ -31,6 +32,7 @@ export default function AdminResellerMapsPage() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ResellerLocation | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-reseller-maps'],
@@ -73,16 +75,21 @@ export default function AdminResellerMapsPage() {
   };
 
   const handleDelete = async (loc: ResellerLocation) => {
-    if (!confirm(`Hapus lokasi "${loc.name}"?`)) return;
-    setDeletingId(loc.id);
+    setDeleteTarget(loc);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
     try {
-      await api.delete(`/admin/reseller-maps/${loc.id}`);
+      await api.delete(`/admin/reseller-maps/${deleteTarget.id}`);
       queryClient.invalidateQueries({ queryKey: ['admin-reseller-maps'] });
       queryClient.invalidateQueries({ queryKey: ['reseller-maps'] });
     } catch {
       alert('Gagal menghapus lokasi');
     } finally {
       setDeletingId(null);
+      setDeleteTarget(null);
     }
   };
 
@@ -237,6 +244,14 @@ export default function AdminResellerMapsPage() {
           </div>
         )}
       </div>
+
+      <DeleteConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        message={`Hapus lokasi "${deleteTarget?.name}"?`}
+        loading={!!deletingId}
+      />
     </div>
   );
 }
