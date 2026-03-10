@@ -28,16 +28,6 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-<<<<<<< Updated upstream
-              <Image
-                src="/images/logo.png"
-                alt=""
-                width={38}
-                height={38}
-                className="rounded-full object-contain"
-              />
-              <span className="font-lora text-xl font-semibold">BuahKita</span>
-=======
               <img 
                 src="/images/contoh logo2.png" 
                 alt="BuahKita Logo" 
@@ -46,7 +36,6 @@ export default function Footer() {
                 className="object-contain" 
                 />
               {/* <span className="font-lora text-xl font-semibold">BuahKita</span> */}
->>>>>>> Stashed changes
             </div>
             <p className="text-white/70 text-sm leading-relaxed max-w-xs mb-6">
               Platform buah segar terpercaya. Menghubungkan kebun lokal dengan
