@@ -51,6 +51,7 @@ export default function Navbar() {
         `}
       >
         {/* Logo */}
+<<<<<<< Updated upstream
         <Link href="/" className="flex items-center gap-2 no-underline" aria-label="BuahKita - Kembali ke beranda">
           <Image
             src="/images/logo.png"
@@ -59,6 +60,15 @@ export default function Navbar() {
             height={38}
             className="rounded-full object-contain"
             priority
+=======
+        <Link href="/" className="flex items-center gap-2 no-underline">
+          <img 
+                src="/images/contoh logo2(2).png" 
+                alt="BuahKita Logo" 
+                width={38}
+                height={38}
+                className="rounded-full object-contain" 
+>>>>>>> Stashed changes
           />
           <span className="font-lora text-[1.2rem] font-semibold text-g1 tracking-tight">
             BuahKita
