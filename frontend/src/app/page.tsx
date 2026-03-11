@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 import { Suspense } from 'react';
 import Link from 'next/link';
+=======
+import Navbar from '@/components/layout/Navbar';
+>>>>>>> origin/feature/fe-admin-panel
 import Footer from '@/components/layout/Footer';
 import Ticker from '@/components/home/Ticker';
 import WhyUsSection from '@/components/home/WhyUsSection';
@@ -8,7 +12,34 @@ import ImpactCounter from '@/components/home/ImpactCounter';
 import ResellerBand from '@/components/home/ResellerBand';
 import HomeContent from '@/components/home/HomeContent';
 
+<<<<<<< HEAD
 export default function HomePage() {
+=======
+export const revalidate = 60;
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+
+async function getBannersAndProducts() {
+  try {
+    const [bannersRes, productsRes] = await Promise.all([
+      fetch(`${BASE_URL}/banners`, { next: { revalidate: 60 } }),
+      fetch(`${BASE_URL}/products?featured=true`, { next: { revalidate: 60 } }),
+    ]);
+    const bannersData = bannersRes.ok ? await bannersRes.json() : { data: [] };
+    const productsData = productsRes.ok ? await productsRes.json() : { data: [] };
+    return {
+      banners: bannersData.data || [],
+      featuredProducts: productsData.data || [],
+    };
+  } catch {
+    return { banners: [], featuredProducts: [] };
+  }
+}
+
+export default async function HomePage() {
+  const { banners, featuredProducts } = await getBannersAndProducts();
+
+>>>>>>> origin/feature/fe-admin-panel
   return (
     <>
       <Suspense fallback={
@@ -22,10 +53,60 @@ export default function HomePage() {
         <HomeContent />
       </Suspense>
 
+<<<<<<< HEAD
       <main id="main-content">
         {/* ═══ TICKER ═══ */}
         <Ticker />
 
+=======
+          {/* Hero Right Collage */}
+          <div className="grid grid-cols-2 grid-rows-2 gap-3.5 min-h-[480px]">
+            <div className="row-span-2 rounded-[22px] bg-g5 border-2 border-dashed border-g4 flex items-center justify-center overflow-hidden hover:border-g2 hover:shadow-card transition-all cursor-pointer">
+              <div className="text-center p-5">
+                <span className="text-5xl block mb-2">🍊</span>
+                <span className="text-[0.82rem] font-extrabold text-g1">
+                  Hero Image
+                </span>
+                <p className="text-[0.72rem] text-muted mt-1 max-w-[160px] leading-[1.5]">
+                  Ganti dengan foto buah segar hero
+                </p>
+              </div>
+            </div>
+            <div className="rounded-[22px] bg-g5 border-2 border-dashed border-g4 flex items-center justify-center overflow-hidden hover:border-g2 hover:shadow-card transition-all cursor-pointer">
+              <span className="text-3xl">🍎</span>
+            </div>
+            <div className="rounded-[22px] bg-g5 border-2 border-dashed border-g4 flex items-center justify-center overflow-hidden hover:border-g2 hover:shadow-card transition-all cursor-pointer">
+              <span className="text-3xl">🥭</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ BANNER STRIP ═══ */}
+        {banners && banners.length > 0 && (
+          <section className="py-10 px-[6%]">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-4">
+              <BannerSlider banners={banners} />
+              {banners.length > 1 && (
+                <div className="rounded-[22px] bg-ink border-2 border-dashed border-white/[0.18] flex items-center justify-center h-[150px] text-center cursor-pointer hover:border-g4 hover:shadow-card transition-all overflow-hidden">
+                  <div>
+                    <span className="text-2xl block mb-1">📢</span>
+                    <span className="text-white/50 text-[0.78rem] font-bold">
+                      Banner Promo
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* ═══ TICKER ═══ */}
+        <Ticker />
+
+        {/* ═══ FEATURED PRODUCTS ═══ */}
+        <FeaturedProducts products={featuredProducts} />
+
+>>>>>>> origin/feature/fe-admin-panel
         {/* ═══ WHY US ═══ */}
         <WhyUsSection />
 
