@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               key={item.href}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl mb-1 text-[0.88rem] font-semibold no-underline transition-all duration-200
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl mb-1 text-[0.88rem] font-semibold no-underline transition-colors duration-150
                 ${isActive(item)
                   ? 'bg-white/15 text-white font-extrabold'
                   : 'text-white/60 hover:bg-white/8 hover:text-white'
@@ -100,7 +100,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <button
             onClick={() => { useAuthStore.getState().logout(); router.push('/'); }}
-            className="w-full mt-3 py-2 px-3 rounded-xl bg-white/8 text-white/60 text-[0.78rem] font-semibold hover:bg-white/15 hover:text-white transition-all text-left"
+            className="w-full mt-3 py-2 px-3 rounded-xl bg-white/8 text-white/60 text-[0.78rem] font-semibold hover:bg-white/15 hover:text-white transition-colors duration-150 text-left"
           >
             🚪 Keluar
           </button>
@@ -116,12 +116,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main */}
-      <div className="flex-1 lg:ml-[240px] flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-[240px] flex flex-col min-h-screen" style={{ contain: 'style layout' }}>
         {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-white border-b border-faint px-6 py-3.5 flex items-center gap-4">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden w-9 h-9 rounded-xl border border-faint flex items-center justify-center text-ink hover:bg-g6 transition-colors"
+            className="lg:hidden w-9 h-9 rounded-xl border border-faint flex items-center justify-center text-ink hover:bg-g6 transition-colors duration-150"
           >
             ☰
           </button>
@@ -139,7 +139,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6" style={{ contain: 'content' }}>
           {children}
         </main>
       </div>

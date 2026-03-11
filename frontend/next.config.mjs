@@ -28,6 +28,8 @@ const nextConfig = {
       'axios',
       'react-hook-form',
       '@hookform/resolvers',
+      'lucide-react',
+      'date-fns',
     ],
   },
   async rewrites() {

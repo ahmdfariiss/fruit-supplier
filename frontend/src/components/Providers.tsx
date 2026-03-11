@@ -1,10 +1,11 @@
 'use client';
 
 import { QueryClientProvider } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { queryClient } from '@/lib/queryClient';
 import { useAuthStore } from '@/store/authStore';
-import Toast from '@/components/ui/Toast';
+
+const Toast = lazy(() => import('@/components/ui/Toast'));
 
 function AuthInitializer() {
   const { isLoading, fetchUser } = useAuthStore();
@@ -31,7 +32,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthInitializer />
       {children}
-      <Toast />
+      <Suspense fallback={null}>
+        <Toast />
+      </Suspense>
     </QueryClientProvider>
   );
 }

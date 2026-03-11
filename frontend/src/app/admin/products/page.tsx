@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useCallback, useMemo, useRef, useEffect, lazy, Suspense, memo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect, lazy, Suspense, memo, startTransition } from 'react';
 import Link from 'next/link';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { formatRupiah } from '@/lib/formatters';
-import Spinner from '@/components/ui/Spinner';
 import type { Product } from '@/types/product';
 import { getImageUrl } from '@/lib/image';
 
@@ -21,7 +20,17 @@ function useDebouncedValue<T>(value: T, delay: number): T {
   return debounced;
 }
 
-// Memoized table row
+// Lightweight inline spinner to avoid importing Spinner component
+function MiniSpinner() {
+  return (
+    <svg className="animate-spin h-10 w-10 text-g3 mx-auto" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
+  );
+}
+
+// Memoized table row — uses specific transition properties instead of transition-all
 const ProductRow = memo(function ProductRow({
   product,
   togglingId,
@@ -36,13 +45,13 @@ const ProductRow = memo(function ProductRow({
   onDelete: (product: Product) => void;
 }) {
   return (
-    <tr className="border-b border-faint/60 hover:bg-g6/40 transition-colors">
+    <tr className="border-b border-faint/60 hover:bg-g6/40 transition-[background-color] duration-150">
       <td className="py-3.5 px-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-g6 overflow-hidden flex-shrink-0 relative">
+          <div className="w-10 h-10 rounded-xl bg-g6 overflow-hidden flex-shrink-0">
             {product.imageUrl
-              ? <img src={getImageUrl(product.imageUrl)} alt={product.name} loading="lazy" decoding="async" width={40} height={40} className="object-cover w-full h-full" />
-              : <div className="absolute inset-0 flex items-center justify-center text-xl">🍊</div>
+              ? <img src={getImageUrl(product.imageUrl)} alt="" loading="lazy" decoding="async" width={40} height={40} className="object-cover w-full h-full" />
+              : <div className="w-full h-full flex items-center justify-center text-xl">🍊</div>
             }
           </div>
           <div>
@@ -69,11 +78,11 @@ const ProductRow = memo(function ProductRow({
         <button
           onClick={() => onToggleFeatured(product)}
           disabled={togglingId === product.id}
-          className={`w-10 h-6 rounded-full transition-all relative ${
+          className={`w-10 h-6 rounded-full transition-colors duration-150 relative ${
             product.isFeatured ? 'bg-g1' : 'bg-faint'
           } disabled:opacity-50`}
         >
-          <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+          <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-[left] duration-150 ${
             product.isFeatured ? 'left-5' : 'left-1'
           }`} />
         </button>
@@ -82,14 +91,14 @@ const ProductRow = memo(function ProductRow({
         <div className="flex gap-1.5">
           <Link
             href={`/admin/products/${product.id}`}
-            className="px-3 py-1.5 rounded-lg border border-faint text-xs font-bold text-muted hover:border-g3 hover:text-g1 transition-all no-underline"
+            className="px-3 py-1.5 rounded-lg border border-faint text-xs font-bold text-muted hover:border-g3 hover:text-g1 transition-colors duration-150 no-underline"
           >
             Edit
           </Link>
           <button
             onClick={() => onDelete(product)}
             disabled={deletingId === product.id}
-            className="px-3 py-1.5 rounded-lg bg-red/10 text-red text-xs font-bold hover:bg-red/20 transition-all disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg bg-red/10 text-red text-xs font-bold hover:bg-red/20 transition-colors duration-150 disabled:opacity-50"
           >
             {deletingId === product.id ? '...' : 'Hapus'}
           </button>
@@ -98,6 +107,9 @@ const ProductRow = memo(function ProductRow({
     </tr>
   );
 });
+
+// Table header - static, no need to re-render
+const TABLE_HEADERS = ['Produk', 'Kategori', 'Harga Konsumen', 'Harga Reseller', 'Stok', 'Unggulan', 'Aksi'] as const;
 
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
@@ -117,7 +129,7 @@ export default function AdminProductsPage() {
     }
   }, [debouncedSearch]);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ['admin-products', debouncedSearch, page],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -127,6 +139,7 @@ export default function AdminProductsPage() {
       const { data } = await api.get(`/admin/products?${params.toString()}`);
       return data;
     },
+    placeholderData: keepPreviousData,
   });
 
   const products: Product[] = data?.data || [];
@@ -167,13 +180,18 @@ export default function AdminProductsPage() {
     return Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => i + 1);
   }, [pagination]);
 
+  // Use startTransition for pagination to yield to browser
+  const handlePageChange = useCallback((newPage: number) => {
+    startTransition(() => setPage(newPage));
+  }, []);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <h1 className="font-lora text-2xl font-semibold text-ink">Produk</h1>
         <Link
           href="/admin/products/new"
-          className="px-5 py-2.5 bg-g1 text-white rounded-xl text-sm font-bold hover:bg-g2 transition-colors flex items-center gap-2 no-underline"
+          className="px-5 py-2.5 bg-g1 text-white rounded-xl text-sm font-bold hover:bg-g2 transition-colors duration-150 flex items-center gap-2 no-underline"
         >
           + Tambah Produk
         </Link>
@@ -186,14 +204,15 @@ export default function AdminProductsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="🔍 Cari nama produk..."
-          className="w-full px-4 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
+          className="w-full px-4 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-[border-color] duration-150"
         />
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-faint overflow-hidden">
+      <div className={`bg-white rounded-2xl border border-faint overflow-hidden ${isFetching && !isLoading ? 'opacity-70' : ''}`}
+           style={{ contain: 'layout style' }}>
         {isLoading ? (
-          <div className="flex justify-center py-16"><Spinner size="lg" /></div>
+          <div className="flex justify-center py-16"><MiniSpinner /></div>
         ) : products.length === 0 ? (
           <div className="text-center py-16 text-muted">
             <span className="text-4xl block mb-3">🍎</span>
@@ -201,10 +220,10 @@ export default function AdminProductsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm" style={{ contain: 'layout style' }}>
               <thead className="bg-g6 border-b border-faint">
                 <tr>
-                  {['Produk', 'Kategori', 'Harga Konsumen', 'Harga Reseller', 'Stok', 'Unggulan', 'Aksi'].map((h) => (
+                  {TABLE_HEADERS.map((h) => (
                     <th key={h} className="text-left py-3 px-4 text-xs font-extrabold uppercase tracking-wider text-muted">{h}</th>
                   ))}
                 </tr>
@@ -229,15 +248,15 @@ export default function AdminProductsPage() {
           <div className="flex items-center justify-between px-4 py-3 border-t border-faint">
             <span className="text-xs text-muted">{pagination.totalItems} produk</span>
             <div className="flex gap-1.5">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
+              <button onClick={() => handlePageChange(Math.max(1, page - 1))} disabled={page <= 1}
                 className="w-8 h-8 rounded-lg border border-faint text-sm font-bold disabled:opacity-40 hover:border-g3">‹</button>
               {paginationButtons.map((p) => (
-                <button key={p} onClick={() => setPage(p)}
-                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${page === p ? 'bg-g1 text-white' : 'border border-faint hover:border-g3'}`}>
+                <button key={p} onClick={() => handlePageChange(p)}
+                  className={`w-8 h-8 rounded-lg text-xs font-bold ${page === p ? 'bg-g1 text-white' : 'border border-faint hover:border-g3'}`}>
                   {p}
                 </button>
               ))}
-              <button onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))} disabled={page >= pagination.totalPages}
+              <button onClick={() => handlePageChange(Math.min(pagination.totalPages, page + 1))} disabled={page >= pagination.totalPages}
                 className="w-8 h-8 rounded-lg border border-faint text-sm font-bold disabled:opacity-40 hover:border-g3">›</button>
             </div>
           </div>
