@@ -159,7 +159,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
             min={0}
-            className="flex-1 border-[1.5px] border-faint rounded-[10px] px-3 py-2 font-sans text-[0.82rem] text-ink bg-white outline-none focus:border-g3 transition-colors"
+            className="w-[90px] h-8 border-[1.5px] border-faint rounded-[10px] px-3 font-sans text-[0.82rem] text-ink bg-white outline-none focus:border-g3 transition-colors"
           />
           <span className="text-muted text-[0.8rem]">—</span>
           <input
@@ -169,7 +169,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
             min={0}
-            className="flex-1 border-[1.5px] border-faint rounded-[10px] px-3 py-2 font-sans text-[0.82rem] text-ink bg-white outline-none focus:border-g3 transition-colors"
+            className="w-[90px] h-8 border-[1.5px] border-faint rounded-[10px] px-3 font-sans text-[0.82rem] text-ink bg-white outline-none focus:border-g3 transition-colors"
           />
         </div>
       </div>
