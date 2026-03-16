@@ -19,25 +19,25 @@ const MapSection = dynamic(
 const TEAM = [
   {
     ava: '🧑‍🌾',
-    name: 'Ahmad Farhan',
+    name: 'Ahmad Faris',
     role: 'Founder & CEO',
     desc: 'Penggerak utama. Membangun BuahKita dari mimpi sederhana memotong rantai distribusi buah.',
   },
   {
     ava: '👩‍💻',
-    name: 'Sari Dewi',
+    name: 'Mohammad Malik',
     role: 'Head of Operations',
     desc: 'Memastikan setiap pesanan berjalan lancar dari sortir, packing, hingga pengiriman tepat waktu.',
   },
   {
     ava: '👨‍💼',
-    name: 'Rizki Pratama',
+    name: 'Renaldi Simamora',
     role: 'Reseller Relations',
     desc: 'Mengelola kemitraan dengan 150+ reseller dan memastikan semua mitra puas dan bertumbuh.',
   },
   {
     ava: '👩‍🔬',
-    name: 'Ayu Lestari',
+    name: 'Nabil Rozano',
     role: 'Quality Assurance',
     desc: 'Quality control ketat. Bertanggung jawab atas standar kualitas setiap buah yang keluar dari gudang.',
   },

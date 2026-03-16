@@ -76,7 +76,7 @@ export default function Navbar() {
                   ${
                     pathname === link.href
                       ? 'bg-g1 text-white'
-                      : 'text-muted hover:bg-g6 hover:text-g1'
+                      : 'text-muted hover:bg-g5 hover:text-g1'
                   }
                 `}
               >
@@ -107,7 +107,7 @@ export default function Navbar() {
               <Link
                 href="/orders"
                 aria-label="Lihat pesanan saya"
-                className="hidden sm:flex items-center gap-1 px-3.5 py-2 rounded-full text-[0.82rem] font-bold text-muted hover:bg-g6 hover:text-g1 transition-all no-underline"
+                className="hidden sm:flex items-center gap-1 px-3.5 py-2 rounded-full text-[0.82rem] font-bold text-muted hover:bg-g5 hover:text-g1 transition-all no-underline"
               >
                 <span aria-hidden="true">📦</span> Pesanan
               </Link>

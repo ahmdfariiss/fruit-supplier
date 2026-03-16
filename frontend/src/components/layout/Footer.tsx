@@ -20,7 +20,7 @@ const footerLinks = {
 
 export default function Footer() {
   return (
-    <footer className="bg-ink text-white cv-auto">
+    <footer className="bg-cream text-black cv-auto">
       <div className="max-w-7xl mx-auto px-6 py-16">
         {/* Top */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
@@ -36,23 +36,22 @@ export default function Footer() {
                 />
               {/* <span className="font-lora text-xl font-semibold">BuahKita</span> */}
             </div>
-            <p className="text-white/70 text-sm leading-relaxed max-w-xs mb-6">
+            <p className="text-black/70 text-sm leading-relaxed max-w-xs mb-6">
               Platform buah segar terpercaya. Menghubungkan kebun lokal dengan
               konsumen dan reseller di seluruh Indonesia.
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-5">
               {[
-                { icon: '📧', label: 'Email kami' },
-                { icon: '📱', label: 'Hubungi kami' },
-                { icon: '📍', label: 'Lokasi kami' },
+                { src: '/images/emailKami.png', label: 'Email kami' },
+                { src: '/images/hubungiKami.png', label: 'Hubungi kami' },
+                { src: '/images/lokasiKami.png', label: 'Lokasi kami' },
               ].map((item, i) => (
                 <span
                   key={i}
-                  role="img"
                   aria-label={item.label}
-                  className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm hover:bg-white/20 transition-colors cursor-pointer"
+                  className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
                 >
-                  {item.icon}
+                  <img src={item.src} alt={item.label} className="w-8 h-8 object-contain" />
                 </span>
               ))}
             </div>
@@ -61,13 +60,13 @@ export default function Footer() {
           {/* Links */}
           {Object.entries(footerLinks).map(([title, links]) => (
             <div key={title}>
-              <h3 className="font-bold text-sm mb-4 text-white/90">{title}</h3>
+              <h3 className="font-bold text-sm mb-4 text-black/90">{title}</h3>
               <ul className="space-y-2.5 list-none">
                 {links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-white/70 text-sm hover:text-white transition-colors no-underline"
+                      className="text-black/70 text-sm hover:text-black transition-colors no-underline"
                     >
                       {link.label}
                     </Link>
@@ -79,15 +78,15 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-white/80 text-xs">
+        <div className="border-t border-black/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-black/80 text-xs">
             © {new Date().getFullYear()} BuahKita. Semua hak dilindungi.
           </p>
           <div className="flex gap-6">
-            <span className="text-white/80 text-xs hover:text-white cursor-pointer transition-colors">
+            <span className="text-black/80 text-xs hover:text-black cursor-pointer transition-colors">
               Kebijakan Privasi
             </span>
-            <span className="text-white/80 text-xs hover:text-white cursor-pointer transition-colors">
+            <span className="text-black/80 text-xs hover:text-black cursor-pointer transition-colors">
               Syarat & Ketentuan
             </span>
           </div>
