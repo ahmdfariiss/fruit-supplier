@@ -143,8 +143,9 @@ model Review {
   productId String
   orderId   String
   rating    Int
-  comment   String?
+  comment   String   // hapus ? agar wajib diisi
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt  // tambah ini
 
   user    User    @relation(fields: [userId], references: [id])
   product Product @relation(fields: [productId], references: [id])

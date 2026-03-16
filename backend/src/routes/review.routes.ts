@@ -6,6 +6,8 @@ const router = Router();
 
 router.get('/latest', reviewController.getLatestReviews);
 router.get('/product/:id', reviewController.getProductReviews);
+router.get('/product/:id/summary', reviewController.getProductRatingSummary);
 router.post('/', authenticate, reviewController.createReview);
+router.delete('/:id', authenticate, reviewController.deleteReview);
 
 export default router;

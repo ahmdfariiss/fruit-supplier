@@ -92,3 +92,37 @@ export const getLatestReviews = async (limit = 6) => {
     },
   });
 };
+
+export const getProductRatingSummary = async (productId: string) => {
+  const reviews = await prisma.review.findMany({
+    where: { productId },
+    select: { rating: true },
+  });
+
+  if (reviews.length === 0) {
+    return { average: 0, total: 0, breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
+  }
+
+  const breakdown: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  let sum = 0;
+
+  for (const r of reviews) {
+    sum += r.rating;
+    breakdown[r.rating] = (breakdown[r.rating] || 0) + 1;
+  }
+
+  return {
+    average: parseFloat((sum / reviews.length).toFixed(1)),
+    total: reviews.length,
+    breakdown,
+  };
+};
+
+export const deleteReview = async (reviewId: string, userId: string) => {
+  const review = await prisma.review.findUnique({ where: { id: reviewId } });
+
+  if (!review) throw new AppError('Review tidak ditemukan.', 404);
+  if (review.userId !== userId) throw new AppError('Tidak berhak menghapus review ini.', 403);
+
+  return prisma.review.delete({ where: { id: reviewId } });
+};

@@ -50,3 +50,29 @@ export const getLatestReviews = async (
     next(error);
   }
 };
+
+export const getProductRatingSummary = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const summary = await reviewService.getProductRatingSummary(req.params.id as string);
+    success(res, summary);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteReview = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    await reviewService.deleteReview(req.params.id as string, req.user!.userId);
+    success(res, null, 'Review berhasil dihapus.');
+  } catch (error) {
+    next(error);
+  }
+};
