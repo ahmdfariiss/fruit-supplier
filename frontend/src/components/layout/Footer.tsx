@@ -28,30 +28,30 @@ export default function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <img 
-                src="/images/contoh logo2.png" 
+                src="/images/logo2.png" 
                 alt="BuahKita Logo" 
-                width={200}
-                height={200}
+                width={150}
+                height={150}
                 className="object-contain" 
                 />
               {/* <span className="font-lora text-xl font-semibold">BuahKita</span> */}
             </div>
-            <p className="text-black/70 text-sm leading-relaxed max-w-xs mb-6">
+            <p className="text-black/100 text-sm leading-relaxed max-w-xs mb-8 mt-8">
               Platform buah segar terpercaya. Menghubungkan kebun lokal dengan
               konsumen dan reseller di seluruh Indonesia.
             </p>
             <div className="flex gap-5">
               {[
                 { src: '/images/emailKami.png', label: 'Email kami' },
-                { src: '/images/hubungiKami.png', label: 'Hubungi kami' },
-                { src: '/images/lokasiKami.png', label: 'Lokasi kami' },
+                { src: '/images/hubungi.png', label: 'Hubungi kami' },
+                { src: '/images/location.png', label: 'Lokasi kami' },
               ].map((item, i) => (
                 <span
                   key={i}
                   aria-label={item.label}
                   className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
                 >
-                  <img src={item.src} alt={item.label} className="w-8 h-8 object-contain" />
+                  <img src={item.src} alt={item.label} className="w-6 h-6 object-contain" />
                 </span>
               ))}
             </div>
@@ -79,7 +79,7 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="border-t border-black/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-black/80 text-xs">
+          <p className="text-black/80 text-xs" suppressHydrationWarning>
             © {new Date().getFullYear()} BuahKita. Semua hak dilindungi.
           </p>
           <div className="flex gap-6">

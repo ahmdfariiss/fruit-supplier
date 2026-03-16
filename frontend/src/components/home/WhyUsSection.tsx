@@ -51,9 +51,10 @@ export default function WhyUsSection() {
             Harga Bersahabat
           </h2>
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             {points.map((pt) => (
-              <div key={pt.title} className="flex gap-4">
+              <div key={pt.title} className="flex items-center gap-4 bg-g2/5 border border-faint/10 rounded-[18px] p-5 
+                transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:bg-g2/10 hover:border-g2/30 cursor-pointer">
                 <div className="w-12 h-12 rounded-2xl bg-g6 flex items-center justify-center text-xl flex-shrink-0 border border-g5">
                   {pt.icon}
                 </div>
