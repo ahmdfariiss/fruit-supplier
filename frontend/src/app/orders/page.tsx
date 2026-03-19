@@ -12,6 +12,8 @@ import api from '@/lib/api';
 import type { Order, OrderStatus } from '@/types/order';
 import { getImageUrl } from '@/lib/image';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5010/api/v1';
+
 /* ═══════════════  STATUS CONFIG  ═══════════════ */
 const STATUS_MAP: Record<
   OrderStatus,
@@ -357,6 +359,14 @@ export default function OrdersPage() {
                           ⭐ Beri Ulasan
                         </button>
                       )}
+                      <a
+                        href={`${API_BASE_URL}/orders/${o.id}/invoice`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-2 px-4 rounded-pill text-[0.78rem] font-bold cursor-pointer bg-white border-[1.5px] border-faint text-muted hover:border-g2 hover:text-g2 transition-all"
+                      >
+                        📄 Invoice
+                      </a>
                       <button
                         onClick={() => router.push(`/orders/${o.id}`)}
                         className="py-2 px-4 rounded-pill text-[0.78rem] font-bold cursor-pointer bg-white border-[1.5px] border-faint text-muted hover:border-g2 hover:text-g2 transition-all"

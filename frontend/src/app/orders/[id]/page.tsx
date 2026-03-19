@@ -18,6 +18,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { getImageUrl } from '@/lib/image';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5010/api/v1';
+
 const TIMELINE_STEPS: { status: OrderStatus; label: string; icon: string }[] = [
   { status: 'PENDING', label: 'Dibuat', icon: '📝' },
   { status: 'CONFIRMED', label: 'Dikonfirmasi', icon: '✅' },
@@ -456,7 +458,7 @@ export default function OrderDetailPage() {
               <div className="bg-white rounded-3xl border border-faint p-6">
                 <h3 className="font-bold text-ink mb-3 text-sm">📄 Invoice</h3>
                 <a
-                  href={`${process.env.NEXT_PUBLIC_API_URL}/orders/${order.id}/invoice`}
+                  href={`${API_BASE_URL}/orders/${order.id}/invoice`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full py-2.5 bg-g6 text-ink text-sm font-bold rounded-xl text-center border border-faint hover:bg-g5 transition-colors"

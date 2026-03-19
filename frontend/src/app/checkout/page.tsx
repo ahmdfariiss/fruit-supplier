@@ -56,6 +56,7 @@ function StepBar({ current }: { current: number }) {
 
 /* ═══════════════  MAIN CHECKOUT  ═══════════════ */
 export default function CheckoutPage() {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5010/api/v1';
   const { toast } = useToast();
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
@@ -881,7 +882,7 @@ export default function CheckoutPage() {
 
             <div className="flex gap-3 flex-wrap justify-center">
               <a
-                href={`${process.env.NEXT_PUBLIC_API_URL}/orders/${orderId}/invoice`}
+                href={`${API_BASE_URL}/orders/${orderId}/invoice`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-white text-ink border-[1.5px] border-faint py-3.5 px-7 rounded-pill text-[0.88rem] font-extrabold no-underline transition-all hover:border-g2 hover:text-g2"

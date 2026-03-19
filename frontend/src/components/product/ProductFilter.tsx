@@ -47,6 +47,12 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
   const [seasonEnabled, setSeasonEnabled] = useState(
     !!searchParams.get('seasonMonth'),
   );
+  // Diset di client saja agar HTML awal server & client konsisten
+  const [currentMonth, setCurrentMonth] = useState<number | null>(null);
+
+  useEffect(() => {
+    setCurrentMonth(new Date().getMonth() + 1);
+  }, []);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -235,7 +241,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
             {MONTH_NAMES.map((name, idx) => (
               <option key={idx + 1} value={String(idx + 1)}>
                 {name}{' '}
-                {idx + 1 === new Date().getMonth() + 1 ? '(Sekarang)' : ''}
+                {currentMonth && idx + 1 === currentMonth ? '(Sekarang)' : ''}
               </option>
             ))}
           </select>

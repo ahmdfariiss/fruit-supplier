@@ -14,6 +14,7 @@ import { getImageUrl } from '@/lib/image';
 const ALL_STATUSES: OrderStatus[] = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DONE', 'CANCELLED'];
 
 export default function AdminOrderDetailPage() {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5010/api/v1';
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -226,7 +227,7 @@ export default function AdminOrderDetailPage() {
           <div className="bg-white rounded-2xl border border-faint p-5">
             <h3 className="font-bold text-ink mb-3">Invoice</h3>
             <a
-              href={`${process.env.NEXT_PUBLIC_API_URL}/orders/${order.id}/invoice`}
+              href={`${API_BASE_URL}/orders/${order.id}/invoice`}
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full py-2.5 bg-g6 text-ink text-sm font-bold rounded-xl text-center border border-faint hover:bg-g5 transition-colors no-underline"
