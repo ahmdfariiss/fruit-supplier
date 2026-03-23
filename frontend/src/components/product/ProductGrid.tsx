@@ -2,6 +2,7 @@
 
 import type { Product } from '@/types/product';
 import ProductCard from './ProductCard';
+import { SearchIcon } from '@/components/ui/icons';
 
 interface ProductGridProps {
   products: Product[];
@@ -42,7 +43,9 @@ export default function ProductGrid({
   if (products.length === 0) {
     return (
       <div className="text-center py-20 text-muted col-span-full">
-        <span className="text-[3.5rem] block mb-3">🔍</span>
+        <span className="block mb-3">
+          <SearchIcon className="w-12 h-12 text-muted mx-auto" />
+        </span>
         <h3 className="font-lora text-xl mb-2 text-ink">{emptyMessage}</h3>
         <p className="text-[0.85rem] leading-relaxed">
           Coba ubah filter atau kata kunci pencarian kamu.

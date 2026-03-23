@@ -10,6 +10,7 @@ export const useAuth = () => {
     if (store.isLoading) {
       store.fetchUser();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return store;

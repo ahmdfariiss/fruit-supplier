@@ -14,6 +14,7 @@ import Badge from '@/components/ui/Badge';
 import Image from 'next/image';
 import { formatRupiah } from '@/lib/formatters';
 import type { Product, Review } from '@/app/products/[slug]/page';
+import { FruitIcon } from '@/components/ui/icons';
 
 interface ProductInteractionsProps {
   product: Product;
@@ -31,7 +32,9 @@ export default function ProductInteractions({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [quantity, setQuantity] = useState(1);
-  const [priceMode, setPriceMode] = useState<'consumer' | 'reseller'>('consumer');
+  const [priceMode, setPriceMode] = useState<'consumer' | 'reseller'>(
+    'consumer',
+  );
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [reviewOrderId, setReviewOrderId] = useState('');
@@ -54,7 +57,9 @@ export default function ProductInteractions({
       const { data } = await api.get('/orders?status=DONE');
       const orders = data.data || [];
       return orders.filter((o: { items?: { productId: string }[] }) =>
-        o.items?.some((item: { productId: string }) => item.productId === product.id),
+        o.items?.some(
+          (item: { productId: string }) => item.productId === product.id,
+        ),
       );
     },
     enabled: isAuthenticated,
@@ -117,8 +122,8 @@ export default function ProductInteractions({
                 priority
               />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-7xl">
-                🍊
+              <div className="absolute inset-0 flex items-center justify-center text-7xl text-g2">
+                <FruitIcon className="w-20 h-20" />
               </div>
             )}
           </div>
@@ -171,7 +176,9 @@ export default function ProductInteractions({
             <button
               onClick={() => setPriceMode('consumer')}
               className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
-                priceMode === 'consumer' ? 'bg-g1 text-white shadow-sm' : 'text-muted'
+                priceMode === 'consumer'
+                  ? 'bg-g1 text-white shadow-sm'
+                  : 'text-muted'
               }`}
             >
               Konsumen
@@ -179,7 +186,9 @@ export default function ProductInteractions({
             <button
               onClick={() => setPriceMode('reseller')}
               className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
-                priceMode === 'reseller' ? 'bg-g1 text-white shadow-sm' : 'text-muted'
+                priceMode === 'reseller'
+                  ? 'bg-g1 text-white shadow-sm'
+                  : 'text-muted'
               }`}
             >
               Reseller
@@ -224,7 +233,9 @@ export default function ProductInteractions({
               >
                 −
               </button>
-              <span className="w-12 text-center font-bold text-sm">{quantity}</span>
+              <span className="w-12 text-center font-bold text-sm">
+                {quantity}
+              </span>
               <button
                 onClick={() => setQuantity(quantity + 1)}
                 className="w-10 h-10 flex items-center justify-center text-lg hover:bg-g6 transition-colors"
@@ -276,8 +287,8 @@ export default function ProductInteractions({
                       className="object-cover group-hover:scale-105 transition-transform"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-4xl">
-                      🍊
+                    <div className="absolute inset-0 flex items-center justify-center text-4xl text-g2">
+                      <FruitIcon className="w-10 h-10" />
                     </div>
                   )}
                 </div>
@@ -287,10 +298,14 @@ export default function ProductInteractions({
                       {rp.category.name}
                     </span>
                   )}
-                  <p className="text-sm font-bold text-ink mt-1 line-clamp-1">{rp.name}</p>
+                  <p className="text-sm font-bold text-ink mt-1 line-clamp-1">
+                    {rp.name}
+                  </p>
                   <p className="text-sm font-extrabold text-g1 mt-1">
                     {formatRupiah(rp.priceConsumer)}
-                    <span className="text-xs text-muted font-normal">/{rp.unit}</span>
+                    <span className="text-xs text-muted font-normal">
+                      /{rp.unit}
+                    </span>
                   </p>
                 </div>
               </a>
@@ -319,16 +334,22 @@ export default function ProductInteractions({
                 className="w-full px-4 py-2.5 rounded-xl border border-faint text-sm focus:outline-none focus:border-g3 transition-colors"
               >
                 <option value="">Pilih pesanan...</option>
-                {eligibleOrders.map((o: { id: string; orderNumber: string }) => (
-                  <option key={o.id} value={o.id}>
-                    {o.orderNumber}
-                  </option>
-                ))}
+                {eligibleOrders.map(
+                  (o: { id: string; orderNumber: string }) => (
+                    <option key={o.id} value={o.id}>
+                      {o.orderNumber}
+                    </option>
+                  ),
+                )}
               </select>
             </div>
             <div className="flex items-center gap-2 mb-4">
               <span className="text-sm text-muted font-semibold">Rating:</span>
-              <StarRating rating={reviewRating} interactive onChange={setReviewRating} />
+              <StarRating
+                rating={reviewRating}
+                interactive
+                onChange={setReviewRating}
+              />
             </div>
             <textarea
               value={reviewComment}
@@ -354,7 +375,9 @@ export default function ProductInteractions({
         {/* Reviews List */}
         <div className="space-y-4">
           {reviews && reviews.length > 0 ? (
-            reviews.map((review) => <ReviewCard key={review.id} review={review} />)
+            reviews.map((review) => (
+              <ReviewCard key={review.id} review={review} />
+            ))
           ) : (
             <p className="text-center text-muted py-8">
               Belum ada ulasan untuk produk ini

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '@/store/cartStore';
 import { formatRupiah } from '@/lib/formatters';
+import { CartIcon, CloseIcon, FruitIcon } from '@/components/ui/icons';
 
 interface CartDrawerProps {
   open: boolean;
@@ -60,19 +61,21 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
             onClick={onClose}
             className="w-9 h-9 rounded-full border-none bg-g6 cursor-pointer text-base flex items-center justify-center hover:bg-g5 transition-colors"
           >
-            ✕
+            <CloseIcon className="w-4 h-4" />
           </button>
         </div>
 
         {/* Items */}
         {isLoading ? (
           <div className="text-center py-16 text-muted">
-            <span className="animate-spin inline-block text-2xl">⏳</span>
+            <CartIcon className="animate-spin inline-block w-8 h-8 mx-auto" />
             <p className="text-sm mt-2">Memuat keranjang...</p>
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-16 text-muted">
-            <span className="text-[4rem] block mb-3">🛒</span>
+            <span className="block mb-3">
+              <CartIcon className="w-12 h-12 mx-auto" />
+            </span>
             <p className="text-[0.9rem] font-semibold">Keranjangmu kosong</p>
             <small className="text-muted">Yuk pilih buah segar!</small>
           </div>
@@ -91,7 +94,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                     className="flex gap-3 items-center py-3.5 border-b border-[#f5f5f5]"
                   >
                     <div className="w-[52px] h-[52px] rounded-[14px] bg-g6 flex items-center justify-center text-[2rem] flex-shrink-0">
-                      {item.product.imageUrl ? '🍊' : '🍊'}
+                      <FruitIcon className="w-8 h-8 text-g2" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <strong className="block text-[0.88rem] font-extrabold mb-[2px] truncate">

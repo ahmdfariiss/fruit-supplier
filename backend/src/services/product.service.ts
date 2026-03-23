@@ -102,9 +102,27 @@ export const getProducts = async (filters: ProductFilters) => {
       orderBy,
       skip,
       take: limit,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        categoryId: true,
+        priceConsumer: true,
+        priceReseller: true,
+        minOrderReseller: true,
+        stock: true,
+        unit: true,
+        imageUrl: true,
+        images: true,
+        isFeatured: true,
+        seasonStart: true,
+        seasonEnd: true,
+        tags: true,
+        createdAt: true,
+        updatedAt: true,
         category: { select: { id: true, name: true, slug: true, icon: true } },
-        reviews: { select: { rating: true } },
+        _count: { select: { reviews: true } },
       },
     }),
     prisma.product.count({ where }),
@@ -113,16 +131,11 @@ export const getProducts = async (filters: ProductFilters) => {
   const totalPages = Math.ceil(totalItems / limit);
 
   const productsWithRating = products.map((p: any) => {
-    const ratings = p.reviews.map((r: any) => r.rating);
-    const avgRating =
-      ratings.length > 0
-        ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length
-        : 0;
-    const { reviews, ...rest } = p;
+    const { _count, ...rest } = p;
     return {
       ...rest,
-      avgRating: Math.round(avgRating * 10) / 10,
-      reviewCount: ratings.length,
+      avgRating: 0, // calculated per-product via aggregate on detail page
+      reviewCount: _count.reviews,
     };
   });
 

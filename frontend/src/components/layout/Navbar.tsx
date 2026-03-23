@@ -3,9 +3,19 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
+import { useHydrated } from '@/hooks/useHydrated';
+import {
+  CartIcon,
+  CloseIcon,
+  LogoutIcon,
+  MenuIcon,
+  PackageIcon,
+  SettingsIcon,
+} from '@/components/ui/icons';
 
 const navLinks = [
   { href: '/', label: 'Beranda' },
@@ -14,26 +24,35 @@ const navLinks = [
   { href: '/about', label: 'Tentang' },
 ];
 
-export default function Navbar() {
+function NavbarInner() {
+  const hydrated = useHydrated();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, isLoading, logout } = useAuthStore();
   const cartItems = useCartStore((s) => s.totalItems);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 30;
-      if (isScrolled !== scrolled) setScrolled(isScrolled);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 30);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [scrolled]);
+  }, []);
 
   // Don't show navbar on admin pages
   if (pathname?.startsWith('/admin')) return null;
+  if (!hydrated) return null;
 
   const itemCount = cartItems();
+  const showAuthenticatedActions = !isLoading && isAuthenticated;
 
   return (
     <header className="fixed top-[18px] left-1/2 -translate-x-1/2 z-[999] w-[calc(100%-40px)] max-w-[1080px]">
@@ -51,18 +70,22 @@ export default function Navbar() {
         `}
       >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 no-underline" aria-label="BuahKita - Kembali ke beranda">
+        <Link
+          href="/"
+          className="flex items-center gap-2 no-underline"
+          aria-label="BuahKita - Kembali ke beranda"
+        >
           <Image
             src="/images/logo.png"
             alt=""
             width={38}
             height={38}
-            className="rounded-full object-contain"
+            className="rounded-full object-contain h-auto w-auto"
             priority
           />
-          <span className="font-lora text-[1.2rem] font-semibold text-g1 tracking-tight">
+          <strong className="font-lora text-[1.2rem] font-semibold text-g1 tracking-tight">
             BuahKita
-          </span>
+          </strong>
         </Link>
 
         {/* Nav Links - Desktop */}
@@ -91,27 +114,30 @@ export default function Navbar() {
         {/* Right Actions */}
         <div className="flex items-center gap-2">
           {/* Cart */}
-          <Link
-            href="/cart"
-            aria-label={`Keranjang belanja${itemCount > 0 ? `, ${itemCount} item` : ', kosong'}`}
-            className="relative w-[38px] h-[38px] rounded-full bg-g6 flex items-center justify-center hover:bg-g5 transition-all hover:scale-105"
-          >
-            <span className="text-base" aria-hidden="true">🛒</span>
-            {itemCount > 0 && (
-              <span aria-hidden="true" className="absolute top-0.5 right-0.5 w-[15px] h-[15px] rounded-full bg-[#e84d1c] text-white text-[0.55rem] font-extrabold flex items-center justify-center border-2 border-white">
-                {itemCount}
-              </span>
-            )}
-          </Link>
+          <div className="relative w-[38px] h-[38px]">
+            <Link
+              href="/cart"
+              aria-label={`Keranjang belanja${itemCount > 0 ? `, ${itemCount} item` : ', kosong'}`}
+              className="w-[38px] h-[38px] rounded-full bg-g6 flex items-center justify-center hover:bg-g5 transition-all hover:scale-105"
+            >
+              <CartIcon className="w-[17px] h-[17px] text-ink" />
+            </Link>
+            <span
+              aria-hidden="true"
+              className={`absolute top-0.5 right-0.5 w-[15px] h-[15px] rounded-full bg-[#e84d1c] text-white text-[0.55rem] font-extrabold flex items-center justify-center border-2 border-white transition-opacity ${itemCount > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            >
+              {itemCount > 0 ? itemCount : ''}
+            </span>
+          </div>
 
-          {isAuthenticated ? (
+          {showAuthenticatedActions ? (
             <>
               <Link
                 href="/orders"
                 aria-label="Lihat pesanan saya"
                 className="hidden sm:flex items-center gap-1 px-3.5 py-2 rounded-full text-[0.82rem] font-bold text-muted hover:bg-g6 hover:text-g1 transition-all no-underline"
               >
-                <span aria-hidden="true">📦</span> Pesanan
+                <PackageIcon className="w-3.5 h-3.5" /> Pesanan
               </Link>
               {user?.role === 'ADMIN' && (
                 <Link
@@ -119,7 +145,7 @@ export default function Navbar() {
                   aria-label="Panel admin"
                   className="hidden sm:flex items-center gap-1 px-3.5 py-2 rounded-full text-[0.82rem] font-bold bg-g6 text-g1 hover:bg-g5 transition-all no-underline"
                 >
-                  <span aria-hidden="true">⚙️</span> Admin
+                  <SettingsIcon className="w-3.5 h-3.5" /> Admin
                 </Link>
               )}
               <button
@@ -152,10 +178,16 @@ export default function Navbar() {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-expanded={mobileOpen}
             aria-controls="mobile-menu"
-            aria-label={mobileOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+            aria-label={
+              mobileOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'
+            }
             className="md:hidden w-[38px] h-[38px] rounded-full bg-g6 flex items-center justify-center text-lg hover:bg-g5 transition-all"
           >
-            <span aria-hidden="true">{mobileOpen ? '✕' : '☰'}</span>
+            {mobileOpen ? (
+              <CloseIcon className="w-[18px] h-[18px] text-ink" />
+            ) : (
+              <MenuIcon className="w-[18px] h-[18px] text-ink" />
+            )}
           </button>
         </div>
       </nav>
@@ -190,7 +222,35 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          {!isAuthenticated && (
+          {showAuthenticatedActions ? (
+            <div className="flex flex-col gap-2 mt-2 border-t border-faint pt-4">
+              <Link
+                href="/orders"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold text-muted hover:bg-g6 hover:text-g1 no-underline"
+              >
+                <PackageIcon className="w-4 h-4" /> Pesanan Saya
+              </Link>
+              {user?.role === 'ADMIN' && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold bg-g6 text-g1 hover:bg-g5 no-underline"
+                >
+                  <SettingsIcon className="w-4 h-4" /> Panel Admin
+                </Link>
+              )}
+              <button
+                onClick={() => {
+                  logout();
+                  setMobileOpen(false);
+                }}
+                className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 no-underline bg-transparent border-none cursor-pointer text-left w-full"
+              >
+                <LogoutIcon className="w-4 h-4" /> Keluar
+              </button>
+            </div>
+          ) : (
             <div className="flex gap-2">
               <Link
                 href="/auth/login"
@@ -213,3 +273,9 @@ export default function Navbar() {
     </header>
   );
 }
+
+const Navbar = dynamic(() => Promise.resolve(NavbarInner), {
+  ssr: false,
+});
+
+export default Navbar;

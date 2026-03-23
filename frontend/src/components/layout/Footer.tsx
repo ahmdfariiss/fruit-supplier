@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { MailIcon, MapPinIcon, PhoneIcon } from '@/components/ui/icons';
 
 const footerLinks = {
   Produk: [
@@ -33,7 +34,7 @@ export default function Footer() {
                 alt=""
                 width={38}
                 height={38}
-                className="rounded-full object-contain"
+                className="rounded-full object-contain h-auto w-auto"
               />
               <span className="font-lora text-xl font-semibold">BuahKita</span>
             </div>
@@ -43,9 +44,9 @@ export default function Footer() {
             </p>
             <div className="flex gap-3">
               {[
-                { icon: '📧', label: 'Email kami' },
-                { icon: '📱', label: 'Hubungi kami' },
-                { icon: '📍', label: 'Lokasi kami' },
+                { Icon: MailIcon, label: 'Email kami' },
+                { Icon: PhoneIcon, label: 'Hubungi kami' },
+                { Icon: MapPinIcon, label: 'Lokasi kami' },
               ].map((item, i) => (
                 <span
                   key={i}
@@ -53,7 +54,7 @@ export default function Footer() {
                   aria-label={item.label}
                   className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm hover:bg-white/20 transition-colors cursor-pointer"
                 >
-                  {item.icon}
+                  <item.Icon className="w-4 h-4" />
                 </span>
               ))}
             </div>

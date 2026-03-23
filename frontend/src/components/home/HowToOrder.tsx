@@ -1,26 +1,33 @@
+import {
+  CartIcon,
+  CreditCardIcon,
+  PackageIcon,
+  SearchIcon,
+} from '@/components/ui/icons';
+
 export default function HowToOrder() {
   const steps = [
     {
       num: 1,
-      icon: '🔍',
+      icon: <SearchIcon className="w-7 h-7 text-g1" />,
       title: 'Pilih Buah',
       desc: 'Jelajahi katalog dan pilih buah favorit kamu',
     },
     {
       num: 2,
-      icon: '🛒',
+      icon: <CartIcon className="w-7 h-7 text-g1" />,
       title: 'Masukkan Keranjang',
       desc: 'Atur jumlah dan tipe pembeli (konsumen/reseller)',
     },
     {
       num: 3,
-      icon: '💳',
+      icon: <CreditCardIcon className="w-7 h-7 text-g1" />,
       title: 'Checkout & Transfer',
       desc: 'Konfirmasi pesanan dan transfer ke rekening kami',
     },
     {
       num: 4,
-      icon: '📦',
+      icon: <PackageIcon className="w-7 h-7 text-g1" />,
       title: 'Terima di Rumah',
       desc: 'Buah segar dikirim dengan packaging khusus',
     },

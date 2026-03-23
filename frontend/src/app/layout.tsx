@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Lora, DM_Sans } from 'next/font/google';
 
 import './globals.css';
@@ -15,6 +15,13 @@ const dmSans = DM_Sans({
   variable: '--font-dm-sans',
   display: 'swap',
 });
+
+export const viewport: Viewport = {
+  themeColor: '#2d5a00',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   title: {
@@ -39,10 +46,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${lora.variable} ${dmSans.variable}`}>
-      <head>
-        <link rel="preconnect" href="http://localhost:5010" />
-        <link rel="dns-prefetch" href="http://localhost:5010" />
-      </head>
       <body className="font-cabinet bg-cream text-ink antialiased">
         <a href="#main-content" className="skip-link">
           Langsung ke konten utama

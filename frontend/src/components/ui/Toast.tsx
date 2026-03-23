@@ -1,19 +1,18 @@
 'use client';
 
 import { useToast } from '@/hooks/useToast';
+import {
+  AlertTriangleIcon,
+  CheckCircleIcon,
+  CloseIcon,
+  InfoIcon,
+} from '@/components/ui/icons';
 
 const typeStyles = {
   success: 'bg-g1 text-white',
   error: 'bg-red-500 text-red',
   info: 'bg-blue-500 text-blue',
   warning: 'bg-yellow-500 text-yellow',
-};
-
-const typeIcons = {
-  success: '✓',
-  error: '✕',
-  info: 'ℹ',
-  warning: '⚠',
 };
 
 export default function Toast() {
@@ -33,13 +32,22 @@ export default function Toast() {
             ${typeStyles[toast.type]}
           `}
         >
-          <span className="text-lg">{typeIcons[toast.type]}</span>
+          <span className="text-lg">
+            {toast.type === 'success' && (
+              <CheckCircleIcon className="w-5 h-5" />
+            )}
+            {toast.type === 'error' && <CloseIcon className="w-5 h-5" />}
+            {toast.type === 'info' && <InfoIcon className="w-5 h-5" />}
+            {toast.type === 'warning' && (
+              <AlertTriangleIcon className="w-5 h-5" />
+            )}
+          </span>
           <p className="flex-1">{toast.message}</p>
           <button
             onClick={() => removeToast(toast.id)}
             className="opacity-70 hover:opacity-100 transition-opacity text-lg"
           >
-            ✕
+            <CloseIcon className="w-4 h-4" />
           </button>
         </div>
       ))}

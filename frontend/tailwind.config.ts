@@ -25,7 +25,7 @@ const config: Config = {
         blue: '#0779e4',
       },
       fontFamily: {
-        cabinet: ["'DM Sans'", 'system-ui', 'sans-serif'],
+        cabinet: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
         lora: ['var(--font-lora)', "'Lora'", 'serif'],
       },
       boxShadow: {

@@ -9,6 +9,14 @@ import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/useToast';
 import Link from 'next/link';
 import AuthLayout from '@/components/auth/AuthLayout';
+import {
+  EyeIcon,
+  EyeOffIcon,
+  KeyIcon,
+  LeafIcon,
+  MailIcon,
+  PhoneIcon,
+} from '@/components/ui/icons';
 
 function getPasswordStrength(pw: string) {
   let s = 0;
@@ -101,7 +109,9 @@ export default function RegisterPage() {
                 className={errors.phone ? 'err' : ''}
                 {...register('phone')}
               />
-              <span className="inp-ico">📱</span>
+              <span className="inp-ico">
+                <PhoneIcon className="w-4 h-4" />
+              </span>
             </div>
             {errors.phone && (
               <span className="text-[0.71rem] text-[#e84d1c]">
@@ -123,7 +133,9 @@ export default function RegisterPage() {
               className={errors.email ? 'err' : ''}
               {...register('email')}
             />
-            <span className="inp-ico">📧</span>
+            <span className="inp-ico">
+              <MailIcon className="w-4 h-4" />
+            </span>
           </div>
           {errors.email && (
             <span className="text-[0.71rem] text-[#e84d1c]">
@@ -145,7 +157,11 @@ export default function RegisterPage() {
               {...register('password')}
             />
             <span className="inp-ico" onClick={() => setShowPw(!showPw)}>
-              {showPw ? '🙈' : '👁️'}
+              {showPw ? (
+                <EyeOffIcon className="w-4 h-4" />
+              ) : (
+                <EyeIcon className="w-4 h-4" />
+              )}
             </span>
           </div>
           {/* Strength bars */}
@@ -192,7 +208,9 @@ export default function RegisterPage() {
               className={errors.confirmPassword ? 'err' : ''}
               {...register('confirmPassword')}
             />
-            <span className="inp-ico">🔑</span>
+            <span className="inp-ico">
+              <KeyIcon className="w-4 h-4" />
+            </span>
           </div>
           {errors.confirmPassword && (
             <span className="text-[0.71rem] text-[#e84d1c]">
@@ -230,7 +248,9 @@ export default function RegisterPage() {
               Mendaftar...
             </>
           ) : (
-            <>🌿 Buat Akun Gratis</>
+            <>
+              <LeafIcon className="w-4 h-4" /> Buat Akun Gratis
+            </>
           )}
         </button>
 

@@ -9,6 +9,9 @@ import Spinner from '@/components/ui/Spinner';
 import Image from 'next/image';
 import type { Product } from '@/types/product';
 import { getImageUrl } from '@/lib/image';
+import Modal from '@/components/ui/Modal';
+import { useToast } from '@/hooks/useToast';
+import { FruitIcon, SearchIcon } from '@/components/ui/icons';
 
 export default function AdminProductsPage() {
   const router = useRouter();
@@ -16,7 +19,9 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const { addToast } = useToast();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-products', search, page],
@@ -36,7 +41,9 @@ export default function AdminProductsPage() {
   const handleToggleFeatured = async (product: Product) => {
     setTogglingId(product.id);
     try {
-      await api.patch(`/admin/products/${product.id}`, { isFeatured: !product.isFeatured });
+      await api.patch(`/admin/products/${product.id}`, {
+        isFeatured: !product.isFeatured,
+      });
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
     } catch {
       alert('Gagal mengubah status unggulan');
@@ -45,14 +52,15 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleDelete = async (product: Product) => {
-    if (!confirm(`Hapus produk "${product.name}"? Tindakan ini tidak bisa dibatalkan.`)) return;
-    setDeletingId(product.id);
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
     try {
-      await api.delete(`/admin/products/${product.id}`);
+      await api.delete(`/admin/products/${deleteTarget.id}`);
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      setDeleteTarget(null);
     } catch {
-      alert('Gagal menghapus produk');
+      addToast({ type: 'error', message: 'Gagal menghapus produk' });
     } finally {
       setDeletingId(null);
     }
@@ -72,22 +80,32 @@ export default function AdminProductsPage() {
 
       {/* Search */}
       <div className="bg-white rounded-2xl border border-faint p-4 mb-5">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="🔍 Cari nama produk..."
-          className="w-full px-4 py-2.5 border border-faint rounded-xl text-sm outline-none focus:border-g3 transition-colors"
-        />
+        <div className="flex items-center gap-2.5 border border-faint rounded-xl px-3.5 py-2.5 focus-within:border-g3 transition-colors">
+          <SearchIcon className="w-4 h-4 text-muted" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Cari nama produk..."
+            className="w-full text-sm outline-none bg-transparent"
+          />
+        </div>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-2xl border border-faint overflow-hidden">
         {isLoading ? (
-          <div className="flex justify-center py-16"><Spinner size="lg" /></div>
+          <div className="flex justify-center py-16">
+            <Spinner size="lg" />
+          </div>
         ) : products.length === 0 ? (
           <div className="text-center py-16 text-muted">
-            <span className="text-4xl block mb-3">🍎</span>
+            <span className="block mb-3">
+              <FruitIcon className="w-10 h-10 mx-auto text-g2" />
+            </span>
             <p className="font-semibold">Tidak ada produk ditemukan</p>
           </div>
         ) : (
@@ -95,21 +113,45 @@ export default function AdminProductsPage() {
             <table className="w-full text-sm">
               <thead className="bg-g6 border-b border-faint">
                 <tr>
-                  {['Produk', 'Kategori', 'Harga Konsumen', 'Harga Reseller', 'Stok', 'Unggulan', 'Aksi'].map((h) => (
-                    <th key={h} className="text-left py-3 px-4 text-xs font-extrabold uppercase tracking-wider text-muted">{h}</th>
+                  {[
+                    'Produk',
+                    'Kategori',
+                    'Harga Konsumen',
+                    'Harga Reseller',
+                    'Stok',
+                    'Unggulan',
+                    'Aksi',
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left py-3 px-4 text-xs font-extrabold uppercase tracking-wider text-muted"
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {products.map((product) => (
-                  <tr key={product.id} className="border-b border-faint/60 hover:bg-g6/40 transition-colors">
+                  <tr
+                    key={product.id}
+                    className="border-b border-faint/60 hover:bg-g6/40 transition-colors"
+                  >
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-g6 overflow-hidden flex-shrink-0 relative">
-                          {product.imageUrl
-                            ? <Image src={getImageUrl(product.imageUrl)} alt={product.name} fill className="object-cover" />
-                            : <div className="absolute inset-0 flex items-center justify-center text-xl">🍊</div>
-                          }
+                          {product.imageUrl ? (
+                            <Image
+                              src={getImageUrl(product.imageUrl)}
+                              alt={product.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-xl">
+                              <FruitIcon className="w-5 h-5 text-g2" />
+                            </div>
+                          )}
                         </div>
                         <div>
                           <p className="font-bold text-ink">{product.name}</p>
@@ -122,12 +164,22 @@ export default function AdminProductsPage() {
                         {product.category?.icon} {product.category?.name}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-semibold">{formatRupiah(product.priceConsumer)}</td>
-                    <td className="py-3.5 px-4 font-semibold text-g1">{formatRupiah(product.priceReseller)}</td>
+                    <td className="py-3.5 px-4 font-semibold">
+                      {formatRupiah(product.priceConsumer)}
+                    </td>
+                    <td className="py-3.5 px-4 font-semibold text-g1">
+                      {formatRupiah(product.priceReseller)}
+                    </td>
                     <td className="py-3.5 px-4">
-                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                        product.stock > 10 ? 'bg-g5 text-g1' : product.stock > 0 ? 'bg-[#fff3e0] text-[#c47d00]' : 'bg-red/10 text-red'
-                      }`}>
+                      <span
+                        className={`text-xs font-bold px-2 py-1 rounded-full ${
+                          product.stock > 10
+                            ? 'bg-g5 text-g1'
+                            : product.stock > 0
+                              ? 'bg-[#fff3e0] text-[#c47d00]'
+                              : 'bg-red/10 text-red'
+                        }`}
+                      >
                         {product.stock} {product.unit}
                       </span>
                     </td>
@@ -139,21 +191,25 @@ export default function AdminProductsPage() {
                           product.isFeatured ? 'bg-g1' : 'bg-faint'
                         } disabled:opacity-50`}
                       >
-                        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
-                          product.isFeatured ? 'left-5' : 'left-1'
-                        }`} />
+                        <span
+                          className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                            product.isFeatured ? 'left-5' : 'left-1'
+                          }`}
+                        />
                       </button>
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="flex gap-1.5">
                         <button
-                          onClick={() => router.push(`/admin/products/${product.id}`)}
+                          onClick={() =>
+                            router.push(`/admin/products/${product.id}`)
+                          }
                           className="px-3 py-1.5 rounded-lg border border-faint text-xs font-bold text-muted hover:border-g3 hover:text-g1 transition-all"
                         >
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(product)}
+                          onClick={() => setDeleteTarget(product)}
                           disabled={deletingId === product.id}
                           className="px-3 py-1.5 rounded-lg bg-red/10 text-red text-xs font-bold hover:bg-red/20 transition-all disabled:opacity-50"
                         >
@@ -170,22 +226,73 @@ export default function AdminProductsPage() {
 
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-faint">
-            <span className="text-xs text-muted">{pagination.totalItems} produk</span>
+            <span className="text-xs text-muted">
+              {pagination.totalItems} produk
+            </span>
             <div className="flex gap-1.5">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
-                className="w-8 h-8 rounded-lg border border-faint text-sm font-bold disabled:opacity-40 hover:border-g3">‹</button>
-              {Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => i + 1).map((p) => (
-                <button key={p} onClick={() => setPage(p)}
-                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${page === p ? 'bg-g1 text-white' : 'border border-faint hover:border-g3'}`}>
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="w-8 h-8 rounded-lg border border-faint text-sm font-bold disabled:opacity-40 hover:border-g3"
+              >
+                ‹
+              </button>
+              {Array.from(
+                { length: Math.min(pagination.totalPages, 5) },
+                (_, i) => i + 1,
+              ).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${page === p ? 'bg-g1 text-white' : 'border border-faint hover:border-g3'}`}
+                >
                   {p}
                 </button>
               ))}
-              <button onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))} disabled={page >= pagination.totalPages}
-                className="w-8 h-8 rounded-lg border border-faint text-sm font-bold disabled:opacity-40 hover:border-g3">›</button>
+              <button
+                onClick={() =>
+                  setPage((p) => Math.min(pagination.totalPages, p + 1))
+                }
+                disabled={page >= pagination.totalPages}
+                className="w-8 h-8 rounded-lg border border-faint text-sm font-bold disabled:opacity-40 hover:border-g3"
+              >
+                ›
+              </button>
             </div>
           </div>
         )}
       </div>
+
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => !deletingId && setDeleteTarget(null)}
+        title="Konfirmasi Hapus"
+        size="sm"
+      >
+        <p className="text-sm text-muted mb-5">
+          Hapus produk{' '}
+          <span className="font-bold text-ink">
+            &quot;{deleteTarget?.name}&quot;
+          </span>
+          ? Tindakan ini tidak bisa dibatalkan.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setDeleteTarget(null)}
+            disabled={!!deletingId}
+            className="flex-1 py-2.5 bg-white border border-faint rounded-xl text-sm font-bold text-muted hover:border-g3 transition-all disabled:opacity-50"
+          >
+            Batal
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={!!deletingId}
+            className="flex-1 py-2.5 bg-red text-white rounded-xl text-sm font-bold hover:bg-red/90 transition-colors disabled:opacity-50"
+          >
+            {deletingId ? 'Menghapus...' : 'Hapus'}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

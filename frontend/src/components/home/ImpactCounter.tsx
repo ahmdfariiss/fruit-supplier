@@ -1,9 +1,32 @@
+import {
+  FruitIcon,
+  LeafIcon,
+  MapPinIcon,
+  PackageIcon,
+} from '@/components/ui/icons';
+
 export default function ImpactCounter() {
   const stats = [
-    { value: '150+', label: 'Petani Mitra', icon: '🌾' },
-    { value: '500+', label: 'Jenis Buah', icon: '🍊' },
-    { value: '10K+', label: 'Pesanan Selesai', icon: '📦' },
-    { value: '50+', label: 'Kota Terjangkau', icon: '🏙️' },
+    {
+      value: '150+',
+      label: 'Petani Mitra',
+      icon: <LeafIcon className="w-8 h-8 mx-auto text-white" />,
+    },
+    {
+      value: '500+',
+      label: 'Jenis Buah',
+      icon: <FruitIcon className="w-8 h-8 mx-auto text-white" />,
+    },
+    {
+      value: '10K+',
+      label: 'Pesanan Selesai',
+      icon: <PackageIcon className="w-8 h-8 mx-auto text-white" />,
+    },
+    {
+      value: '50+',
+      label: 'Kota Terjangkau',
+      icon: <MapPinIcon className="w-8 h-8 mx-auto text-white" />,
+    },
   ];
 
   return (

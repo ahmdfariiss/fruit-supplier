@@ -16,7 +16,8 @@ function AuthInitializer() {
         ? requestIdleCallback(() => fetchUser())
         : setTimeout(() => fetchUser(), 100);
       return () => {
-        if (typeof cancelIdleCallback !== 'undefined') cancelIdleCallback(id as number);
+        if (typeof cancelIdleCallback !== 'undefined')
+          cancelIdleCallback(id as number);
         else clearTimeout(id as ReturnType<typeof setTimeout>);
       };
     }

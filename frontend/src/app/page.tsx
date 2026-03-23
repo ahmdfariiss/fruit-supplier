@@ -7,22 +7,35 @@ import HowToOrder from '@/components/home/HowToOrder';
 import ImpactCounter from '@/components/home/ImpactCounter';
 import ResellerBand from '@/components/home/ResellerBand';
 import HomeContent from '@/components/home/HomeContent';
+import HeroSection from '@/components/home/HeroSection';
+import Navbar from '@/components/layout/Navbar';
 
 export default function HomePage() {
   return (
     <>
-      <Suspense fallback={
-        <div className="min-h-screen bg-g6 flex items-center justify-center">
-          <div className="animate-pulse text-center">
-            <span className="text-5xl block mb-4">🍊</span>
-            <span className="text-muted font-semibold">Memuat...</span>
-          </div>
-        </div>
-      }>
-        <HomeContent />
-      </Suspense>
+      {/* Navbar rendered eagerly — server-side */}
+      <Navbar />
+
+      {/* Hero section is a pure server component — rendered immediately */}
+      <HeroSection />
 
       <main id="main-content">
+        {/* Dynamic content (banners, featured products, testimonials) */}
+        <Suspense
+          fallback={
+            <div className="py-10 px-[6%]">
+              <div className="rounded-3xl bg-g5 aspect-[21/9] md:aspect-[3/1] animate-pulse mb-10" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="bg-g5 rounded-[22px] h-[320px] animate-pulse" />
+                ))}
+              </div>
+            </div>
+          }
+        >
+          <HomeContent />
+        </Suspense>
+
         {/* ═══ TICKER ═══ */}
         <Ticker />
 

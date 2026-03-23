@@ -1,19 +1,20 @@
 import Link from 'next/link';
+import { TicketIcon, TruckIcon, WalletIcon } from '@/components/ui/icons';
 
 export default function ResellerBand() {
   const perks = [
     {
-      icon: '💰',
+      icon: <WalletIcon className="w-5 h-5 text-white" />,
       title: 'Harga Grosir',
       desc: 'Diskon hingga 30% dari harga konsumen',
     },
     {
-      icon: '📋',
+      icon: <TicketIcon className="w-5 h-5 text-white" />,
       title: 'Invoice Otomatis',
       desc: 'Setiap transaksi langsung dapat invoice PDF',
     },
     {
-      icon: '🚚',
+      icon: <TruckIcon className="w-5 h-5 text-white" />,
       title: 'Prioritas Kirim',
       desc: 'Pengiriman prioritas untuk reseller aktif',
     },

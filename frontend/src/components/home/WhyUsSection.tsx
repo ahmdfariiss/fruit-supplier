@@ -1,22 +1,29 @@
+import {
+  LeafIcon,
+  PackageIcon,
+  TruckIcon,
+  WalletIcon,
+} from '@/components/ui/icons';
+
 export default function WhyUsSection() {
   const points = [
     {
-      icon: '🌿',
+      icon: <LeafIcon className="w-5 h-5 text-g1" />,
       title: 'Langsung dari Kebun',
       desc: 'Buah dipetik langsung dari kebun mitra petani terpercaya. Tanpa perantara, kualitas lebih terjaga.',
     },
     {
-      icon: '💰',
+      icon: <WalletIcon className="w-5 h-5 text-g1" />,
       title: 'Harga Transparan',
       desc: 'Harga konsumen dan reseller transparan, tanpa biaya tersembunyi. Hemat hingga 30% untuk reseller.',
     },
     {
-      icon: '📦',
+      icon: <PackageIcon className="w-5 h-5 text-g1" />,
       title: 'Packaging Khusus',
       desc: 'Packaging premium khusus buah dengan foam net, bubble wrap, dan kontrol suhu optimal.',
     },
     {
-      icon: '🚚',
+      icon: <TruckIcon className="w-5 h-5 text-g1" />,
       title: 'Pengiriman Cepat',
       desc: 'Dikirim same-day untuk area lokal. Next-day delivery untuk kota besar di Pulau Jawa.',
     },
@@ -35,7 +42,9 @@ export default function WhyUsSection() {
               <div className="text-2xl font-black text-white">150+</div>
             </div>
             <div className="text-center w-full">
-              <span className="text-[5rem] block mb-4">🌾</span>
+              <span className="block mb-4">
+                <LeafIcon className="w-20 h-20 mx-auto text-white" />
+              </span>
               <p className="text-white/90 text-sm font-semibold">
                 Kebun Mitra BuahKita
               </p>

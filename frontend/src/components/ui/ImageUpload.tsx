@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import Image from 'next/image';
+import { CameraIcon, CloseIcon } from '@/components/ui/icons';
 
 interface ImageUploadProps {
   value?: File | string | null;
@@ -45,8 +46,7 @@ export default function ImageUpload({
 
   // kalau value berupa File, buat preview URL-nya
   const displayPreview =
-    preview ||
-    (value instanceof File ? URL.createObjectURL(value) : null);
+    preview || (value instanceof File ? URL.createObjectURL(value) : null);
 
   return (
     <div className="w-full">
@@ -64,12 +64,21 @@ export default function ImageUpload({
         `}
       >
         {displayPreview ? (
-          <Image src={displayPreview} alt="Preview" fill className="object-cover" />
+          <Image
+            src={displayPreview}
+            alt="Preview"
+            fill
+            className="object-cover"
+          />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <span className="text-3xl">📷</span>
-            <p className="text-sm font-semibold text-muted">Klik untuk upload</p>
-            <p className="text-xs text-muted">JPG, PNG, WebP · Maks {maxSizeMB}MB</p>
+            <CameraIcon className="w-8 h-8 text-muted" />
+            <p className="text-sm font-semibold text-muted">
+              Klik untuk upload
+            </p>
+            <p className="text-xs text-muted">
+              JPG, PNG, WebP · Maks {maxSizeMB}MB
+            </p>
           </div>
         )}
       </div>
@@ -80,18 +89,16 @@ export default function ImageUpload({
         onChange={handleChange}
         className="hidden"
       />
-      {error && (
-        <p className="mt-1 text-xs text-red font-semibold">{error}</p>
-      )}
+      {error && <p className="mt-1 text-xs text-red font-semibold">{error}</p>}
       {displayPreview && (
         <button
           onClick={(e) => {
             e.stopPropagation();
             setPreview(null);
           }}
-          className="mt-2 text-xs text-muted hover:text-red transition-colors font-semibold"
+          className="mt-2 text-xs text-muted hover:text-red transition-colors font-semibold inline-flex items-center gap-1"
         >
-          ✕ Hapus gambar
+          <CloseIcon className="w-3.5 h-3.5" /> Hapus gambar
         </button>
       )}
     </div>

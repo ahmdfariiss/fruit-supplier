@@ -7,6 +7,13 @@ import { getImageUrl } from '@/lib/image';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/useToast';
+import {
+  AlertTriangleIcon,
+  CheckCircleIcon,
+  FruitIcon,
+  MapPinIcon,
+} from '@/components/ui/icons';
+import StarRating from '@/components/ui/StarRating';
 
 interface ProductCardProps {
   product: Product;
@@ -80,9 +87,7 @@ export default function ProductCard({
             loading={priority ? 'eager' : 'lazy'}
           />
         ) : (
-          <span className="relative z-[1] transition-transform duration-[350ms] ease-[cubic-bezier(.34,1.5,.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[8deg]">
-            🍊
-          </span>
+          <FruitIcon className="relative z-[1] w-16 h-16 text-g2 transition-transform duration-[350ms] ease-[cubic-bezier(.34,1.5,.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[8deg]" />
         )}
       </div>
 
@@ -90,7 +95,8 @@ export default function ProductCard({
       <div className="px-5 pt-[18px] pb-5">
         {/* Origin */}
         <div className="text-[0.68rem] font-bold text-g2 uppercase tracking-wide flex items-center gap-1 mb-[5px]">
-          📍 {product.category?.name || 'Buah Segar'}
+          <MapPinIcon className="w-3.5 h-3.5" />{' '}
+          {product.category?.name || 'Buah Segar'}
         </div>
 
         {/* Name */}
@@ -107,9 +113,7 @@ export default function ProductCard({
 
         {/* Rating */}
         <div className="flex items-center gap-1.5 mb-3">
-          <span className="text-[#f0a500] text-[0.8rem] tracking-wider">
-            ★★★★★
-          </span>
+          <StarRating rating={product.avgRating || 4.5} size="sm" />
           <span className="text-[0.78rem] text-muted">
             {product.avgRating?.toFixed(1) || '4.5'} ({product.reviewCount || 0}
             )
@@ -123,9 +127,16 @@ export default function ProductCard({
             style={{ width: `${stockPct}%` }}
           />
         </div>
-        <div className="text-[0.67rem] text-muted font-semibold mt-1">
-          {product.stock < 20 ? '⚠️ Stok terbatas' : '✅ Stok tersedia'} ·{' '}
-          {stockPct}%
+        <div className="text-[0.67rem] text-muted font-semibold mt-1 inline-flex items-center gap-1">
+          {product.stock < 20 ? (
+            <AlertTriangleIcon className="w-3.5 h-3.5 text-[#c47d00]" />
+          ) : (
+            <CheckCircleIcon className="w-3.5 h-3.5 text-g1" />
+          )}
+          <span>
+            {product.stock < 20 ? 'Stok terbatas' : 'Stok tersedia'} ·{' '}
+            {stockPct}%
+          </span>
         </div>
 
         {/* Footer */}

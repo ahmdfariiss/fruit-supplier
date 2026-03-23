@@ -11,6 +11,7 @@ import Footer from '@/components/layout/Footer';
 import api from '@/lib/api';
 import type { Order, OrderStatus } from '@/types/order';
 import { getImageUrl } from '@/lib/image';
+import { useHydrated } from '@/hooks/useHydrated';
 
 /* ═══════════════  STATUS CONFIG  ═══════════════ */
 const STATUS_MAP: Record<
@@ -70,6 +71,7 @@ function getStepNumber(status: OrderStatus): number {
 }
 
 export default function OrdersPage() {
+  const hydrated = useHydrated();
   const { toast } = useToast();
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
@@ -128,7 +130,7 @@ export default function OrdersPage() {
     }
   };
 
-  if (authLoading) {
+  if (!hydrated || authLoading) {
     return (
       <>
         <Navbar />

@@ -2,16 +2,27 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  ArrowLeftIcon,
+  BannerIcon,
+  BrainIcon,
+  DashboardIcon,
+  FruitIcon,
+  MapPinIcon,
+  PackageIcon,
+  TicketIcon,
+  UsersIcon,
+} from '@/components/ui/icons';
 
 const sidebarLinks = [
-  { href: '/admin', label: 'Dashboard', icon: '📊' },
-  { href: '/admin/products', label: 'Produk', icon: '🍎' },
-  { href: '/admin/orders', label: 'Pesanan', icon: '📦' },
-  { href: '/admin/banners', label: 'Banner', icon: '🖼️' },
-  { href: '/admin/quiz', label: 'Quiz', icon: '❓' },
-  { href: '/admin/vouchers', label: 'Voucher', icon: '🎟️' },
-  { href: '/admin/reseller-maps', label: 'Peta Reseller', icon: '🗺️' },
-  { href: '/admin/users', label: 'Pengguna', icon: '👤' },
+  { href: '/admin', label: 'Dashboard', icon: DashboardIcon },
+  { href: '/admin/products', label: 'Produk', icon: FruitIcon },
+  { href: '/admin/orders', label: 'Pesanan', icon: PackageIcon },
+  { href: '/admin/banners', label: 'Banner', icon: BannerIcon },
+  { href: '/admin/quiz', label: 'Quiz', icon: BrainIcon },
+  { href: '/admin/vouchers', label: 'Voucher', icon: TicketIcon },
+  { href: '/admin/reseller-maps', label: 'Peta Reseller', icon: MapPinIcon },
+  { href: '/admin/users', label: 'Pengguna', icon: UsersIcon },
 ];
 
 export default function Sidebar() {
@@ -28,7 +39,7 @@ export default function Sidebar() {
             alt="BuahKita"
             width={38}
             height={38}
-            className="rounded-full object-contain"
+            className="rounded-full object-contain h-auto w-auto"
           />
           <div>
             <span className="font-lora text-lg font-semibold text-white block">
@@ -63,7 +74,7 @@ export default function Sidebar() {
                     }
                   `}
                 >
-                  <span className="text-base">{link.icon}</span>
+                  <link.icon className="w-4 h-4" />
                   {link.label}
                 </Link>
               </li>
@@ -79,7 +90,7 @@ export default function Sidebar() {
           className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold
             text-white/70 hover:bg-white/8 hover:text-white transition-all no-underline"
         >
-          ← Kembali ke Toko
+          <ArrowLeftIcon className="w-4 h-4" /> Kembali ke Toko
         </Link>
       </div>
     </aside>

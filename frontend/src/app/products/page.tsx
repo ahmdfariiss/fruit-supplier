@@ -10,9 +10,17 @@ import Footer from '@/components/layout/Footer';
 import ProductGrid from '@/components/product/ProductGrid';
 import ProductFilter from '@/components/product/ProductFilter';
 import Pagination from '@/components/ui/Pagination';
+import {
+  BriefcaseIcon,
+  CartIcon,
+  SearchIcon,
+  StoreIcon,
+} from '@/components/ui/icons';
 import type { Category, Product } from '@/types/product';
 
-const ProductDetailModal = lazy(() => import('@/components/product/ProductDetailModal'));
+const ProductDetailModal = lazy(
+  () => import('@/components/product/ProductDetailModal'),
+);
 const CartDrawer = lazy(() => import('@/components/product/CartDrawer'));
 
 function ProductsContent() {
@@ -23,6 +31,7 @@ function ProductsContent() {
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
 
   const filters = {
     search: searchParams.get('search') || undefined,
@@ -89,7 +98,9 @@ function ProductsContent() {
                 : 'bg-transparent text-muted'
             }`}
           >
-            🛒 Konsumen
+            <span className="inline-flex items-center gap-1.5">
+              <CartIcon className="w-4 h-4" /> Konsumen
+            </span>
           </button>
           <button
             onClick={() => setBuyerMode('reseller')}
@@ -99,14 +110,16 @@ function ProductsContent() {
                 : 'bg-transparent text-muted'
             }`}
           >
-            🏪 Reseller / Toko
+            <span className="inline-flex items-center gap-1.5">
+              <StoreIcon className="w-4 h-4" /> Reseller / Toko
+            </span>
           </button>
         </div>
 
         {/* Reseller notice */}
         {buyerMode === 'reseller' && (
           <div className="mt-3.5 bg-white border border-g4 rounded-[14px] px-[18px] py-3 text-[0.82rem] text-muted max-w-[500px] flex items-center gap-2">
-            💼{' '}
+            <BriefcaseIcon className="w-4 h-4 text-g1 flex-shrink-0" />
             <span>
               Menampilkan <b className="text-g1">harga grosir reseller</b>.
               Harga berlaku untuk pembelian minimum sesuai ketentuan.
@@ -124,6 +137,26 @@ function ProductsContent() {
 
         {/* Main Grid */}
         <section>
+          {/* Mobile Filter Toggle */}
+          <div className="lg:hidden mb-4">
+            <button
+              onClick={() => setShowMobileFilter(!showMobileFilter)}
+              className="w-full py-3 px-4 bg-white border-[1.5px] border-faint rounded-xl text-[0.85rem] font-bold text-ink flex items-center justify-between shadow-sm cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                <SearchIcon className="w-4 h-4" /> Filter & Pencarian
+              </span>
+              <span>{showMobileFilter ? 'Tutup' : 'Buka'}</span>
+            </button>
+          </div>
+
+          {/* Mobile Filter Content */}
+          {showMobileFilter && (
+            <div className="lg:hidden mb-8">
+              <ProductFilter categories={categories || []} />
+            </div>
+          )}
+
           {/* Grid top bar */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div className="text-[0.85rem] text-muted font-semibold">

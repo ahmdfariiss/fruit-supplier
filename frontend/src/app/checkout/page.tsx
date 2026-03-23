@@ -11,6 +11,7 @@ import Footer from '@/components/layout/Footer';
 import Image from 'next/image';
 import api from '@/lib/api';
 import { getImageUrl } from '@/lib/image';
+import { useHydrated } from '@/hooks/useHydrated';
 
 /* ═══════════════  5-STEP INDICATOR (Spec §6.6)  ═══════════════ */
 const STEPS = [
@@ -56,6 +57,7 @@ function StepBar({ current }: { current: number }) {
 
 /* ═══════════════  MAIN CHECKOUT  ═══════════════ */
 export default function CheckoutPage() {
+  const hydrated = useHydrated();
   const { toast } = useToast();
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
@@ -205,7 +207,7 @@ export default function CheckoutPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  if (authLoading || cartLoading) {
+  if (!hydrated || authLoading || cartLoading) {
     return (
       <>
         <Navbar />
