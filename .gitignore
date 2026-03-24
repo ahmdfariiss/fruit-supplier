@@ -25,6 +25,7 @@ node_modules/
 /backend/uploads/
 
 # ---- Documentation & Mockup (excluded) ----
+DEPLOYMENT_VERCEL_RENDER.md
 SPECIFICATION.md
 docs.pdf
 *.pdf

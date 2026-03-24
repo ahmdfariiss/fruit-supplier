@@ -25,8 +25,15 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ══ Static Files (uploads) ══
-app.use('/uploads', express.static(path.join(__dirname, '..', env.UPLOAD_DIR)));
+// ══ Static Files (uploads) with caching ══
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
+    next();
+  },
+  express.static(path.join(__dirname, '..', env.UPLOAD_DIR))
+);
 
 // ══ API Routes ══
 app.use('/api/v1', apiRouter);

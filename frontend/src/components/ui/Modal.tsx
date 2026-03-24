@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { CloseIcon } from '@/components/ui/icons';
 
 interface ModalProps {
   isOpen: boolean;
@@ -66,7 +67,7 @@ export default function Modal({
               className="w-8 h-8 rounded-full flex items-center justify-center
                 hover:bg-g6 transition-colors text-muted hover:text-ink"
             >
-              ✕
+              <CloseIcon className="w-4 h-4" />
             </button>
           </div>
         )}

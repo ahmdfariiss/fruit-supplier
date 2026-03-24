@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Category } from '@/types/product';
+import { FruitIcon, LeafIcon, SearchIcon } from '@/components/ui/icons';
 
 interface ProductFilterProps {
   categories: Category[];
@@ -95,10 +96,11 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
           <span className="flex-1 h-px bg-faint" />
         </div>
         <div className="flex items-center gap-2.5 bg-g6 border-[1.5px] border-faint rounded-pill px-4 py-2.5 focus-within:border-g3 transition-colors">
-          <span className="text-muted text-base">🔍</span>
+          <SearchIcon className="w-4 h-4 text-muted" />
           <input
             type="text"
             placeholder="Ketik nama buah..."
+            aria-label="Cari produk"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="border-none bg-transparent outline-none font-sans text-[0.85rem] text-ink w-full placeholder:text-muted"
@@ -121,7 +123,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
                 : 'text-muted hover:bg-g6 hover:text-g1'
             }`}
           >
-            <span>🌿 Semua Buah</span>
+            <span className="inline-flex items-center gap-1.5"><LeafIcon className="w-4 h-4" /> Semua Buah</span>
             <span className="text-[0.7rem] font-extrabold opacity-60 bg-white/20 px-[7px] py-[2px] rounded-pill">
               {categories.length || '—'}
             </span>
@@ -136,9 +138,14 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
                   : 'text-muted hover:bg-g6 hover:text-g1'
               }`}
             >
-              <span>
-                {cat.icon || '🍊'} {cat.name}
-              </span>
+                <span className="inline-flex items-center gap-1.5">
+                  {cat.icon ? (
+                    <span>{cat.icon}</span>
+                  ) : (
+                    <FruitIcon className="w-4 h-4" />
+                  )}{' '}
+                  {cat.name}
+                </span>
             </button>
           ))}
         </div>
@@ -150,23 +157,25 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
           Rentang Harga
           <span className="flex-1 h-px bg-faint" />
         </div>
-        <div className="flex gap-2 items-center mb-2">
+        <div className="flex gap-2 items-center mb-2 lg:flex-col lg:items-stretch lg:gap-2.5">
           <input
             type="number"
             placeholder="Min"
+            aria-label="Harga minimum"
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
             min={0}
-            className="flex-1 border-[1.5px] border-faint rounded-[10px] px-3 py-2 font-sans text-[0.82rem] text-ink bg-white outline-none focus:border-g3 transition-colors"
+            className="flex-1 min-w-0 border-[1.5px] border-faint rounded-[10px] px-3 py-2 font-sans text-[0.82rem] text-ink bg-white outline-none focus:border-g3 transition-colors"
           />
-          <span className="text-muted text-[0.8rem]">—</span>
+          <span className="text-muted text-[0.8rem] lg:hidden">—</span>
           <input
             type="number"
             placeholder="Max"
+            aria-label="Harga maksimum"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
             min={0}
-            className="flex-1 border-[1.5px] border-faint rounded-[10px] px-3 py-2 font-sans text-[0.82rem] text-ink bg-white outline-none focus:border-g3 transition-colors"
+            className="flex-1 min-w-0 border-[1.5px] border-faint rounded-[10px] px-3 py-2 font-sans text-[0.82rem] text-ink bg-white outline-none focus:border-g3 transition-colors"
           />
         </div>
       </div>
@@ -179,6 +188,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
         </div>
         <select
           value={sort}
+          aria-label="Urutkan produk"
           onChange={(e) => setSort(e.target.value)}
           className="w-full px-3.5 py-2.5 rounded-xl border-[1.5px] border-faint bg-white font-sans text-[0.85rem] text-ink outline-none cursor-pointer focus:border-g3 transition-colors"
         >
@@ -207,6 +217,9 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
                 setSeasonMonth(String(new Date().getMonth() + 1));
               }
             }}
+            role="switch"
+            aria-checked={seasonEnabled}
+            aria-label="Filter buah musiman"
             className={`w-10 h-[22px] rounded-full relative cursor-pointer transition-colors ${
               seasonEnabled ? 'bg-g1' : 'bg-faint'
             }`}
@@ -221,6 +234,7 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
         {seasonEnabled && (
           <select
             value={seasonMonth}
+            aria-label="Pilih bulan musim"
             onChange={(e) => setSeasonMonth(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-xl border-[1.5px] border-faint bg-white font-sans text-[0.85rem] text-ink outline-none cursor-pointer focus:border-g3 transition-colors"
           >

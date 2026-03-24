@@ -2,16 +2,27 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  ArrowLeftIcon,
+  BannerIcon,
+  BrainIcon,
+  DashboardIcon,
+  FruitIcon,
+  MapPinIcon,
+  PackageIcon,
+  TicketIcon,
+  UsersIcon,
+} from '@/components/ui/icons';
 
 const sidebarLinks = [
-  { href: '/admin', label: 'Dashboard', icon: '📊' },
-  { href: '/admin/products', label: 'Produk', icon: '🍎' },
-  { href: '/admin/orders', label: 'Pesanan', icon: '📦' },
-  { href: '/admin/banners', label: 'Banner', icon: '🖼️' },
-  { href: '/admin/quiz', label: 'Quiz', icon: '❓' },
-  { href: '/admin/vouchers', label: 'Voucher', icon: '🎟️' },
-  { href: '/admin/reseller-maps', label: 'Peta Reseller', icon: '🗺️' },
-  { href: '/admin/users', label: 'Pengguna', icon: '👤' },
+  { href: '/admin', label: 'Dashboard', icon: DashboardIcon },
+  { href: '/admin/products', label: 'Produk', icon: FruitIcon },
+  { href: '/admin/orders', label: 'Pesanan', icon: PackageIcon },
+  { href: '/admin/banners', label: 'Banner', icon: BannerIcon },
+  { href: '/admin/quiz', label: 'Quiz', icon: BrainIcon },
+  { href: '/admin/vouchers', label: 'Voucher', icon: TicketIcon },
+  { href: '/admin/reseller-maps', label: 'Peta Reseller', icon: MapPinIcon },
+  { href: '/admin/users', label: 'Pengguna', icon: UsersIcon },
 ];
 
 export default function Sidebar() {
@@ -22,14 +33,19 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-white/10">
         <Link href="/admin" className="flex items-center gap-2 no-underline">
-          <div className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-g2 to-g4 flex items-center justify-center text-sm">
-            🍊
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo.png"
+            alt="BuahKita"
+            width={38}
+            height={38}
+            className="rounded-full object-contain h-auto w-auto"
+          />
           <div>
             <span className="font-lora text-lg font-semibold text-white block">
               BuahKita
             </span>
-            <span className="text-[0.65rem] text-white/40 font-semibold tracking-widest uppercase">
+            <span className="text-[0.65rem] text-white/70 font-semibold tracking-widest uppercase">
               Admin Panel
             </span>
           </div>
@@ -58,7 +74,7 @@ export default function Sidebar() {
                     }
                   `}
                 >
-                  <span className="text-base">{link.icon}</span>
+                  <link.icon className="w-4 h-4" />
                   {link.label}
                 </Link>
               </li>
@@ -72,9 +88,9 @@ export default function Sidebar() {
         <Link
           href="/"
           className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold
-            text-white/50 hover:bg-white/8 hover:text-white transition-all no-underline"
+            text-white/70 hover:bg-white/8 hover:text-white transition-all no-underline"
         >
-          ← Kembali ke Toko
+          <ArrowLeftIcon className="w-4 h-4" /> Kembali ke Toko
         </Link>
       </div>
     </aside>

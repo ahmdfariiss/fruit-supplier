@@ -3,20 +3,30 @@
 import Image from 'next/image';
 import type { Product } from '@/types/product';
 import { formatRupiah } from '@/lib/formatters';
+import { getImageUrl } from '@/lib/image';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/useToast';
+import {
+  AlertTriangleIcon,
+  CheckCircleIcon,
+  FruitIcon,
+  MapPinIcon,
+} from '@/components/ui/icons';
+import StarRating from '@/components/ui/StarRating';
 
 interface ProductCardProps {
   product: Product;
   showResellerPrice?: boolean;
   onOpenDetail?: (product: Product) => void;
+  priority?: boolean;
 }
 
 export default function ProductCard({
   product,
   showResellerPrice = false,
   onOpenDetail,
+  priority = false,
 }: ProductCardProps) {
   const displayPrice = showResellerPrice
     ? product.priceReseller
@@ -51,7 +61,7 @@ export default function ProductCard({
 
   return (
     <div
-      className="group bg-white rounded-[22px] overflow-hidden border border-faint cursor-pointer relative transition-all duration-300 hover:-translate-y-[5px] hover:shadow-[0_16px_44px_rgba(45,90,0,.12)]"
+      className="group bg-white rounded-[22px] overflow-hidden border border-faint cursor-pointer relative transition-[transform,box-shadow] duration-300 hover:-translate-y-[5px] hover:shadow-[0_16px_44px_rgba(45,90,0,.12)]"
       onClick={() => onOpenDetail?.(product)}
     >
       {/* Badge */}
@@ -64,20 +74,20 @@ export default function ProductCard({
       )}
 
       {/* Image */}
-      <div className="bg-g5 flex items-center justify-center text-[4.5rem] p-7 transition-transform duration-400 min-h-[160px] relative overflow-hidden group-hover:scale-105">
+      <div className="bg-g5 flex items-center justify-center text-[4.5rem] transition-transform duration-400 relative overflow-hidden group-hover:scale-105 aspect-[4/3]">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(45,90,0,.06)]" />
         {product.imageUrl ? (
           <Image
-            src={product.imageUrl}
+            src={getImageUrl(product.imageUrl)}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-[350ms] ease-[cubic-bezier(.34,1.5,.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[8deg]"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 280px"
+            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
           />
         ) : (
-          <span className="relative z-[1] transition-transform duration-[350ms] ease-[cubic-bezier(.34,1.5,.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[8deg]">
-            🍊
-          </span>
+          <FruitIcon className="relative z-[1] w-16 h-16 text-g2 transition-transform duration-[350ms] ease-[cubic-bezier(.34,1.5,.64,1)] group-hover:scale-[1.15] group-hover:-rotate-[8deg]" />
         )}
       </div>
 
@@ -85,7 +95,8 @@ export default function ProductCard({
       <div className="px-5 pt-[18px] pb-5">
         {/* Origin */}
         <div className="text-[0.68rem] font-bold text-g2 uppercase tracking-wide flex items-center gap-1 mb-[5px]">
-          📍 {product.category?.name || 'Buah Segar'}
+          <MapPinIcon className="w-3.5 h-3.5" />{' '}
+          {product.category?.name || 'Buah Segar'}
         </div>
 
         {/* Name */}
@@ -102,9 +113,7 @@ export default function ProductCard({
 
         {/* Rating */}
         <div className="flex items-center gap-1.5 mb-3">
-          <span className="text-[#f0a500] text-[0.8rem] tracking-wider">
-            ★★★★★
-          </span>
+          <StarRating rating={product.avgRating || 4.5} size="sm" />
           <span className="text-[0.78rem] text-muted">
             {product.avgRating?.toFixed(1) || '4.5'} ({product.reviewCount || 0}
             )
@@ -118,9 +127,16 @@ export default function ProductCard({
             style={{ width: `${stockPct}%` }}
           />
         </div>
-        <div className="text-[0.67rem] text-muted font-semibold mt-1">
-          {product.stock < 20 ? '⚠️ Stok terbatas' : '✅ Stok tersedia'} ·{' '}
-          {stockPct}%
+        <div className="text-[0.67rem] text-muted font-semibold mt-1 inline-flex items-center gap-1">
+          {product.stock < 20 ? (
+            <AlertTriangleIcon className="w-3.5 h-3.5 text-[#c47d00]" />
+          ) : (
+            <CheckCircleIcon className="w-3.5 h-3.5 text-g1" />
+          )}
+          <span>
+            {product.stock < 20 ? 'Stok terbatas' : 'Stok tersedia'} ·{' '}
+            {stockPct}%
+          </span>
         </div>
 
         {/* Footer */}
@@ -148,6 +164,7 @@ export default function ProductCard({
           </div>
           <button
             onClick={handleAdd}
+            aria-label={`Tambahkan ${product.name} ke keranjang`}
             className="w-[38px] h-[38px] rounded-full bg-g1 text-white border-none text-xl flex items-center justify-center transition-all duration-250 hover:bg-g3 hover:scale-[1.12] hover:rotate-90 flex-shrink-0"
           >
             +

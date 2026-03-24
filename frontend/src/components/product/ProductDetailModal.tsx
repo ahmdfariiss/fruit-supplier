@@ -4,9 +4,20 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { Product } from '@/types/product';
 import { formatRupiah } from '@/lib/formatters';
+import { getImageUrl } from '@/lib/image';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/useToast';
+import StarRating from '@/components/ui/StarRating';
+import {
+  CartIcon,
+  CheckCircleIcon,
+  CloseIcon,
+  FruitIcon,
+  LeafIcon,
+  MapPinIcon,
+  StoreIcon,
+} from '@/components/ui/icons';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -51,15 +62,19 @@ export default function ProductDetailModal({
       <div
         className="fixed inset-0 z-[998] bg-ink/45 backdrop-blur-[8px] flex items-center justify-center p-5"
         onClick={(e) => e.target === e.currentTarget && onClose()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Detail produk: ${product.name}`}
       >
         {/* Modal */}
         <div className="bg-white rounded-[28px] w-full max-w-[900px] max-h-[90vh] overflow-y-auto shadow-[0_24px_80px_rgba(15,26,6,.2)] animate-[modalIn_0.35s_cubic-bezier(.34,1.1,.64,1)] relative">
           {/* Close */}
           <button
             onClick={onClose}
+            aria-label="Tutup detail produk"
             className="absolute top-5 right-5 z-[2] w-[38px] h-[38px] rounded-full bg-ink/[.07] border-none cursor-pointer text-base flex items-center justify-center hover:bg-ink/[.12] transition-colors"
           >
-            ✕
+            <CloseIcon className="w-4 h-4" />
           </button>
 
           <div className="grid grid-cols-1 md:grid-cols-2 min-h-[500px]">
@@ -69,32 +84,30 @@ export default function ProductDetailModal({
               {product.imageUrl ? (
                 <div className="relative w-[200px] h-[200px] z-[1] animate-[bob_3s_ease-in-out_infinite]">
                   <Image
-                    src={product.imageUrl}
+                    src={getImageUrl(product.imageUrl)}
                     alt={product.name}
                     fill
                     className="object-contain"
                   />
                 </div>
               ) : (
-                <span className="text-[8rem] relative z-[1] animate-[bob_3s_ease-in-out_infinite]">
-                  🍊
-                </span>
+                <FruitIcon className="text-g2 w-28 h-28 relative z-[1] animate-[bob_3s_ease-in-out_infinite]" />
               )}
               {/* Farm card */}
               <div className="bg-white rounded-2xl p-3.5 px-[18px] w-full border border-g4/40 relative z-[1]">
-                <div className="text-[0.68rem] font-extrabold text-g2 tracking-[0.07em] uppercase mb-1.5">
-                  🌱 Dari Kebun
+                <div className="text-[0.68rem] font-extrabold text-g2 tracking-[0.07em] uppercase mb-1.5 inline-flex items-center gap-1.5">
+                  <LeafIcon className="w-3.5 h-3.5" /> Dari Kebun
                 </div>
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-full bg-g5 flex items-center justify-center text-lg">
-                    👨‍🌾
+                    <LeafIcon className="w-4.5 h-4.5 text-g1" />
                   </div>
                   <div>
                     <strong className="block text-[0.85rem] font-extrabold">
                       Petani Mitra
                     </strong>
-                    <span className="text-[0.75rem] text-muted">
-                      📍 Indonesia
+                    <span className="text-[0.75rem] text-muted inline-flex items-center gap-1">
+                      <MapPinIcon className="w-3.5 h-3.5" /> Indonesia
                     </span>
                   </div>
                 </div>
@@ -111,7 +124,9 @@ export default function ProductDetailModal({
                   </span>
                 )}
                 <span className="text-[0.65rem] font-extrabold px-2.5 py-1 rounded-pill uppercase tracking-wide bg-[#e8f5e9] text-[#2e7d32]">
-                  ✅ Segar Hari Ini
+                  <span className="inline-flex items-center gap-1">
+                    <CheckCircleIcon className="w-3.5 h-3.5" /> Segar Hari Ini
+                  </span>
                 </span>
               </div>
 
@@ -122,9 +137,7 @@ export default function ProductDetailModal({
 
               {/* Rating */}
               <div className="flex items-center gap-2 mb-5">
-                <span className="text-[#f0a500] text-[0.95rem] tracking-[2px]">
-                  ★★★★★
-                </span>
+                <StarRating rating={product.avgRating || 4.5} size="sm" />
                 <span className="text-[0.8rem] text-muted">
                   {product.avgRating?.toFixed(1) || '4.5'} ·{' '}
                   {product.reviewCount || 0} ulasan
@@ -187,7 +200,9 @@ export default function ProductDetailModal({
                         : 'bg-white text-muted border-faint'
                     }`}
                   >
-                    🛒 Konsumen
+                    <span className="inline-flex items-center gap-1.5">
+                      <CartIcon className="w-3.5 h-3.5" /> Konsumen
+                    </span>
                   </button>
                   <button
                     onClick={() => setPriceMode('reseller')}
@@ -197,7 +212,9 @@ export default function ProductDetailModal({
                         : 'bg-white text-muted border-faint'
                     }`}
                   >
-                    🏪 Reseller
+                    <span className="inline-flex items-center gap-1.5">
+                      <StoreIcon className="w-3.5 h-3.5" /> Reseller
+                    </span>
                   </button>
                 </div>
                 <div className="flex items-end gap-2.5">
@@ -228,6 +245,7 @@ export default function ProductDetailModal({
                 <div className="flex items-center bg-white border-[1.5px] border-faint rounded-pill overflow-hidden">
                   <button
                     onClick={() => setQty(Math.max(1, qty - 1))}
+                    aria-label="Kurangi jumlah"
                     className="w-9 h-9 border-none bg-transparent cursor-pointer text-lg font-bold text-g1 flex items-center justify-center hover:bg-g6 transition-colors"
                   >
                     −
@@ -235,6 +253,7 @@ export default function ProductDetailModal({
                   <input
                     type="number"
                     value={qty}
+                    aria-label="Jumlah produk"
                     onChange={(e) =>
                       setQty(Math.max(1, parseInt(e.target.value) || 1))
                     }
@@ -244,6 +263,7 @@ export default function ProductDetailModal({
                   />
                   <button
                     onClick={() => setQty(Math.min(99, qty + 1))}
+                    aria-label="Tambah jumlah"
                     className="w-9 h-9 border-none bg-transparent cursor-pointer text-lg font-bold text-g1 flex items-center justify-center hover:bg-g6 transition-colors"
                   >
                     +
@@ -253,7 +273,7 @@ export default function ProductDetailModal({
                   onClick={handleAdd}
                   className="flex-1 bg-g1 text-white border-none py-3 px-6 rounded-pill text-[0.9rem] font-extrabold cursor-pointer font-sans transition-all duration-250 flex items-center justify-center gap-2 hover:bg-g2 hover:-translate-y-[2px] hover:shadow-[0_6px_20px_rgba(45,90,0,.3)]"
                 >
-                  🛒 Tambah ke Keranjang
+                  <CartIcon className="w-4 h-4" /> Tambah ke Keranjang
                 </button>
               </div>
             </div>

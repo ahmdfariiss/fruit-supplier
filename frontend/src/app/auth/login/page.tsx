@@ -9,6 +9,12 @@ import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/useToast';
 import Link from 'next/link';
 import AuthLayout from '@/components/auth/AuthLayout';
+import {
+  EyeIcon,
+  EyeOffIcon,
+  MailIcon,
+  UnlockIcon,
+} from '@/components/ui/icons';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -48,20 +54,20 @@ export default function LoginPage() {
       </p>
 
       {/* Social Buttons */}
-      <div className="flex gap-2 mb-4">
+      {/* <div className="flex gap-2 mb-4">
         <button className="flex-1 border-[1.5px] border-faint bg-white rounded-xl py-2.5 px-3 cursor-pointer text-[0.8rem] font-bold font-cabinet text-ink transition-all duration-200 flex items-center justify-center gap-1.5 hover:border-muted hover:bg-g6">
           🌐 Google
         </button>
         <button className="flex-1 border-[1.5px] border-faint bg-white rounded-xl py-2.5 px-3 cursor-pointer text-[0.8rem] font-bold font-cabinet text-ink transition-all duration-200 flex items-center justify-center gap-1.5 hover:border-muted hover:bg-g6">
           📘 Facebook
         </button>
-      </div>
+      </div> */}
 
-      <div className="flex items-center gap-2.5 my-4 text-muted text-[0.78rem] font-semibold">
+      {/* <div className="flex items-center gap-2.5 my-4 text-muted text-[0.78rem] font-semibold">
         <span className="flex-1 h-px bg-faint" />
         atau masuk dengan email
         <span className="flex-1 h-px bg-faint" />
-      </div>
+      </div> */}
 
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Email */}
@@ -76,7 +82,9 @@ export default function LoginPage() {
               className={errors.email ? 'err' : ''}
               {...register('email')}
             />
-            <span className="inp-ico">📧</span>
+            <span className="inp-ico">
+              <MailIcon className="w-4 h-4" />
+            </span>
           </div>
           {errors.email && (
             <span className="text-[0.71rem] text-[#e84d1c]">
@@ -98,7 +106,11 @@ export default function LoginPage() {
               {...register('password')}
             />
             <span className="inp-ico" onClick={() => setShowPw(!showPw)}>
-              {showPw ? '🙈' : '👁️'}
+              {showPw ? (
+                <EyeOffIcon className="w-4 h-4" />
+              ) : (
+                <EyeIcon className="w-4 h-4" />
+              )}
             </span>
           </div>
           {errors.password && (
@@ -144,7 +156,9 @@ export default function LoginPage() {
               Masuk...
             </>
           ) : (
-            <>🔓 Masuk ke Akun</>
+            <>
+              <UnlockIcon className="w-4 h-4" /> Masuk ke Akun
+            </>
           )}
         </button>
 

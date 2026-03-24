@@ -16,7 +16,7 @@ const config: Config = {
         g5: '#dff0c0',
         g6: '#f3faeb',
         ink: '#0f1a06',
-        muted: '#5a6e47',
+        muted: '#4a5e37',
         faint: '#c8ddb0',
         cream: '#faf8f3',
         sand: '#f0ead8',
@@ -25,7 +25,7 @@ const config: Config = {
         blue: '#0779e4',
       },
       fontFamily: {
-        cabinet: ["'DM Sans'", 'system-ui', 'sans-serif'],
+        cabinet: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
         lora: ['var(--font-lora)', "'Lora'", 'serif'],
       },
       boxShadow: {
@@ -49,6 +49,10 @@ const config: Config = {
           from: { transform: 'translateX(0)' },
           to: { transform: 'translateX(-50%)' },
         },
+        'ticker-reverse': {
+          from: { transform: 'translateX(-50%)' },
+          to: { transform: 'translateX(0)' },
+        },
         fadeInUp: {
           from: { opacity: '0', transform: 'translateY(24px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
@@ -59,7 +63,8 @@ const config: Config = {
         },
       },
       animation: {
-        ticker: 'ticker 22s linear infinite',
+        ticker: 'ticker 90s linear infinite',
+        'ticker-reverse': 'ticker-reverse 90s linear infinite',
         'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
         'fade-in': 'fadeIn 0.3s ease-out forwards',
       },

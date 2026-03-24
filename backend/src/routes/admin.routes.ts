@@ -37,6 +37,7 @@ router.put(
   upload.single('image'),
   productController.updateProduct,
 );
+router.patch('/products/:id', productController.toggleFeatured);
 router.delete('/products/:id', productController.deleteProduct);
 
 // Orders (reuse order controllers)
@@ -60,6 +61,7 @@ router.delete('/banners/:id', bannerController.deleteBanner);
 router.get('/vouchers', voucherController.getVouchers);
 router.post('/vouchers', voucherController.createVoucher);
 router.put('/vouchers/:id', voucherController.updateVoucher);
+router.patch('/vouchers/:id', voucherController.updateVoucher);
 router.delete('/vouchers/:id', voucherController.deleteVoucher);
 
 // Quiz CRUD

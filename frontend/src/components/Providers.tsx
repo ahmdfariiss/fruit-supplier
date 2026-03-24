@@ -1,7 +1,8 @@
 'use client';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { queryClient } from '@/lib/queryClient';
 import { useAuthStore } from '@/store/authStore';
 import Toast from '@/components/ui/Toast';
 
@@ -10,7 +11,15 @@ function AuthInitializer() {
 
   useEffect(() => {
     if (isLoading) {
-      fetchUser();
+      // Defer auth check to avoid blocking initial render
+      const id = requestIdleCallback
+        ? requestIdleCallback(() => fetchUser())
+        : setTimeout(() => fetchUser(), 100);
+      return () => {
+        if (typeof cancelIdleCallback !== 'undefined')
+          cancelIdleCallback(id as number);
+        else clearTimeout(id as ReturnType<typeof setTimeout>);
+      };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -19,18 +28,6 @@ function AuthInitializer() {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 30 * 1000, // 30 seconds
-            refetchOnWindowFocus: false,
-          },
-        },
-      }),
-  );
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthInitializer />

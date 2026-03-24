@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { env } from '../config/env';
 import { AppError } from './errorHandler';
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
 // Ensure upload directory exists
@@ -30,7 +30,7 @@ const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   } else {
     cb(
       new AppError(
-        'Format file tidak didukung. Gunakan JPG, PNG, atau WebP.',
+        'Format file tidak didukung. Gunakan JPG, PNG, WebP, atau PDF.',
         400,
       ) as unknown as Error,
     );

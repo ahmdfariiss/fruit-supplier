@@ -49,9 +49,12 @@ export const createOrder = async (userId: string, input: CreateOrderInput) => {
 
   // Voucher validation
   let discountAmount = 0;
-  if (input.voucherCode) {
+  let appliedVoucher: { id: string } | null = null;
+  let existingUserVoucher: { id: string; usedAt: Date | null } | null = null;
+  const normalizedVoucherCode = input.voucherCode?.trim().toUpperCase();
+  if (normalizedVoucherCode) {
     const voucher = await prisma.voucher.findUnique({
-      where: { code: input.voucherCode },
+      where: { code: normalizedVoucherCode },
     });
 
     if (!voucher) {
@@ -81,14 +84,25 @@ export const createOrder = async (userId: string, input: CreateOrderInput) => {
       );
     }
 
-    // Check if user already used this voucher
-    const userVoucher = await prisma.userVoucher.findUnique({
-      where: { userId_voucherId: { userId, voucherId: voucher.id } },
-    });
+    const [pendingAssignmentCount, userVoucher] = await Promise.all([
+      prisma.userVoucher.count({
+        where: { voucherId: voucher.id, usedAt: null },
+      }),
+      prisma.userVoucher.findUnique({
+        where: { userId_voucherId: { userId, voucherId: voucher.id } },
+        select: { id: true, usedAt: true },
+      }),
+    ]);
 
-    if (userVoucher) {
+    if (pendingAssignmentCount > 0 && !userVoucher) {
+      throw new AppError('Voucher ini bukan milik akun Anda.', 400);
+    }
+
+    if (userVoucher?.usedAt) {
       throw new AppError('Anda sudah menggunakan voucher ini.', 400);
     }
+
+    existingUserVoucher = userVoucher;
 
     if (voucher.discountType === 'PERCENTAGE') {
       discountAmount = (subtotal * Number(voucher.discountValue)) / 100;
@@ -102,54 +116,64 @@ export const createOrder = async (userId: string, input: CreateOrderInput) => {
       discountAmount = Number(voucher.discountValue);
     }
 
-    // Update voucher usage
-    await prisma.voucher.update({
-      where: { id: voucher.id },
-      data: { usedCount: { increment: 1 } },
-    });
-
-    // Record user voucher usage
-    await prisma.userVoucher.create({
-      data: { userId, voucherId: voucher.id, usedAt: new Date() },
-    });
+    appliedVoucher = { id: voucher.id };
   }
 
-  const total = subtotal - discountAmount;
+  const total = Math.max(0, subtotal - discountAmount);
   const orderNumber = await generateOrderNumber();
 
-  // Create order with items
-  const order = await prisma.order.create({
-    data: {
-      orderNumber,
-      userId,
-      buyerType: input.buyerType,
-      subtotal,
-      discountAmount,
-      total,
-      voucherCode: input.voucherCode,
-      shippingName: input.shippingName,
-      shippingPhone: input.shippingPhone,
-      shippingAddress: input.shippingAddress,
-      notes: input.notes,
-      items: {
-        create: orderItems,
+  const order = await prisma.$transaction(async (tx) => {
+    const createdOrder = await tx.order.create({
+      data: {
+        orderNumber,
+        userId,
+        buyerType: input.buyerType,
+        subtotal,
+        discountAmount,
+        total,
+        voucherCode: normalizedVoucherCode,
+        shippingName: input.shippingName,
+        shippingPhone: input.shippingPhone,
+        shippingAddress: input.shippingAddress,
+        notes: input.notes,
+        items: {
+          create: orderItems,
+        },
       },
-    },
-    include: {
-      items: true,
-    },
-  });
-
-  // Update stock
-  for (const item of cartItems) {
-    await prisma.product.update({
-      where: { id: item.productId },
-      data: { stock: { decrement: item.quantity } },
+      include: {
+        items: true,
+      },
     });
-  }
 
-  // Clear cart
-  await prisma.cartItem.deleteMany({ where: { userId } });
+    for (const item of cartItems) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+
+    if (appliedVoucher) {
+      await tx.voucher.update({
+        where: { id: appliedVoucher.id },
+        data: { usedCount: { increment: 1 } },
+      });
+
+      if (existingUserVoucher) {
+        await tx.userVoucher.update({
+          where: { id: existingUserVoucher.id },
+          data: { usedAt: new Date() },
+        });
+      } else {
+        await tx.userVoucher.create({
+          data: { userId, voucherId: appliedVoucher.id, usedAt: new Date() },
+        });
+      }
+    }
+
+    await tx.cartItem.deleteMany({ where: { userId } });
+
+    return createdOrder;
+  });
 
   return order;
 };

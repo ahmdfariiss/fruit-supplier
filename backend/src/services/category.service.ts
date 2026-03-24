@@ -1,11 +1,19 @@
 import { prisma } from '../config/database';
 import { AppError } from '../middlewares/errorHandler';
+import { cache, TTL } from '../helpers/cache';
 
 export const getAllCategories = async () => {
-  return prisma.category.findMany({
+  const cacheKey = 'categories:all';
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+
+  const result = await prisma.category.findMany({
     include: { _count: { select: { products: true } } },
     orderBy: { name: 'asc' },
   });
+
+  cache.set(cacheKey, result, TTL.LONG);
+  return result;
 };
 
 export const createCategory = async (
@@ -18,14 +26,18 @@ export const createCategory = async (
     throw new AppError('Kategori dengan slug ini sudah ada.', 409);
   }
 
-  return prisma.category.create({ data: { name, slug, icon } });
+  const result = await prisma.category.create({ data: { name, slug, icon } });
+  cache.invalidate('categories:all');
+  return result;
 };
 
 export const updateCategory = async (
   id: string,
   data: { name?: string; slug?: string; icon?: string },
 ) => {
-  return prisma.category.update({ where: { id }, data });
+  const result = await prisma.category.update({ where: { id }, data });
+  cache.invalidate('categories:all');
+  return result;
 };
 
 export const deleteCategory = async (id: string) => {
@@ -36,5 +48,7 @@ export const deleteCategory = async (id: string) => {
       400,
     );
   }
-  return prisma.category.delete({ where: { id } });
+  const result = await prisma.category.delete({ where: { id } });
+  cache.invalidate('categories:all');
+  return result;
 };

@@ -1,28 +1,27 @@
-'use client';
-
 import Link from 'next/link';
+import { TicketIcon, TruckIcon, WalletIcon } from '@/components/ui/icons';
 
 export default function ResellerBand() {
   const perks = [
     {
-      icon: '💰',
+      icon: <WalletIcon className="w-5 h-5 text-white" />,
       title: 'Harga Grosir',
       desc: 'Diskon hingga 30% dari harga konsumen',
     },
     {
-      icon: '📋',
+      icon: <TicketIcon className="w-5 h-5 text-white" />,
       title: 'Invoice Otomatis',
       desc: 'Setiap transaksi langsung dapat invoice PDF',
     },
     {
-      icon: '🚚',
+      icon: <TruckIcon className="w-5 h-5 text-white" />,
       title: 'Prioritas Kirim',
       desc: 'Pengiriman prioritas untuk reseller aktif',
     },
   ];
 
   return (
-    <section className="py-[90px] px-[6%] bg-ink relative overflow-hidden">
+    <section className="py-[90px] px-[6%] bg-ink relative overflow-hidden cv-auto">
       {/* Decorative */}
       <div className="absolute -top-[200px] -right-[200px] w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(45,90,0,0.3)_0%,transparent_70%)] pointer-events-none" />
 
@@ -37,7 +36,7 @@ export default function ResellerBand() {
             <br />
             <em className="italic text-g4">Raih Untung Lebih</em>
           </h2>
-          <p className="text-white/50 text-[0.9rem] leading-relaxed max-w-md mb-8">
+          <p className="text-white/80 text-[0.9rem] leading-relaxed max-w-md mb-8">
             Bergabung sebagai reseller BuahKita dan nikmati harga grosir
             eksklusif, invoice otomatis, dan prioritas pengiriman.
           </p>
@@ -50,7 +49,7 @@ export default function ResellerBand() {
             </Link>
             <Link
               href="/products?buyerType=reseller"
-              className="text-white/60 py-3 px-7 rounded-pill font-bold text-[0.88rem] no-underline border border-white/15 transition-all duration-200 hover:border-white/30 hover:text-white"
+              className="text-white/70 py-3 px-7 rounded-pill font-bold text-[0.88rem] no-underline border border-white/25 transition-all duration-200 hover:border-white/40 hover:text-white"
             >
               Lihat Harga Grosir
             </Link>
@@ -67,10 +66,10 @@ export default function ResellerBand() {
                 {p.icon}
               </div>
               <div>
-                <h4 className="text-[0.88rem] font-extrabold text-white mb-0.5">
+                <h3 className="text-[0.88rem] font-extrabold text-white mb-0.5">
                   {p.title}
-                </h4>
-                <p className="text-[0.78rem] text-white/45">{p.desc}</p>
+                </h3>
+                <p className="text-[0.78rem] text-white/80">{p.desc}</p>
               </div>
             </div>
           ))}

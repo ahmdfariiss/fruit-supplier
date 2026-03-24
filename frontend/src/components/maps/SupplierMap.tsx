@@ -23,8 +23,8 @@ interface SupplierMapProps {
 }
 
 export default function SupplierMap({
-  center = [-6.2, 106.816],
-  zoom = 12,
+  center = [-6.2748, 106.8672],
+  zoom = 15,
   className = '',
 }: SupplierMapProps) {
   return (
@@ -46,7 +46,9 @@ export default function SupplierMap({
             <div className="text-center">
               <strong>BuahKita HQ</strong>
               <br />
-              Supplier buah segar
+              Jl. H. Taiman Ujung No.67
+              <br />
+              Kramatjati, Jakarta Timur
             </div>
           </Popup>
         </Marker>

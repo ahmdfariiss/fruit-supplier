@@ -5,19 +5,47 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
 import Spinner from '@/components/ui/Spinner';
+import {
+  ArrowLeftIcon,
+  BannerIcon,
+  BrainIcon,
+  DashboardIcon,
+  FruitIcon,
+  LogoutIcon,
+  MapPinIcon,
+  MenuIcon,
+  PackageIcon,
+  TicketIcon,
+  UsersIcon,
+} from '@/components/ui/icons';
 
 const NAV_ITEMS = [
-  { href: '/admin', label: 'Dashboard', icon: '📊', exact: true },
-  { href: '/admin/orders', label: 'Pesanan', icon: '📦' },
-  { href: '/admin/products', label: 'Produk', icon: '🍎' },
-  { href: '/admin/banners', label: 'Banner', icon: '🖼️' },
-  { href: '/admin/quiz', label: 'Quiz', icon: '🧠' },
-  { href: '/admin/vouchers', label: 'Voucher', icon: '🎟️' },
-  { href: '/admin/reseller-maps', label: 'Peta Reseller', icon: '📍' },
-  { href: '/admin/users', label: 'Pengguna', icon: '👥' },
+  { href: '/admin', label: 'Dashboard', iconKey: 'dashboard', exact: true },
+  { href: '/admin/orders', label: 'Pesanan', iconKey: 'orders' },
+  { href: '/admin/products', label: 'Produk', iconKey: 'products' },
+  { href: '/admin/banners', label: 'Banner', iconKey: 'banners' },
+  { href: '/admin/quiz', label: 'Quiz', iconKey: 'quiz' },
+  { href: '/admin/vouchers', label: 'Voucher', iconKey: 'vouchers' },
+  { href: '/admin/reseller-maps', label: 'Peta Reseller', iconKey: 'maps' },
+  { href: '/admin/users', label: 'Pengguna', iconKey: 'users' },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+const navIcons = {
+  dashboard: DashboardIcon,
+  orders: PackageIcon,
+  products: FruitIcon,
+  banners: BannerIcon,
+  quiz: BrainIcon,
+  vouchers: TicketIcon,
+  maps: MapPinIcon,
+  users: UsersIcon,
+} as const;
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, fetchUser } = useAuthStore();
@@ -25,7 +53,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     fetchUser();
-  }, [fetchUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!isLoading) {
@@ -40,7 +69,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream">
-        <Spinner size="lg" />
+        <div className="text-center">
+          <Spinner size="lg" />
+          <p className="text-sm text-muted mt-3 font-semibold">Memuat...</p>
+        </div>
       </div>
     );
   }
@@ -60,32 +92,46 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Logo */}
         <div className="px-6 py-6 border-b border-white/10">
           <Link href="/" className="flex items-center gap-2.5 no-underline">
-            <div className="w-9 h-9 rounded-xl bg-g4 flex items-center justify-center text-lg">🍎</div>
+            <div className="w-9 h-9 rounded-xl bg-g4 flex items-center justify-center text-lg text-g1">
+              <FruitIcon className="w-5 h-5" />
+            </div>
             <div>
-              <div className="text-white font-extrabold text-[0.92rem] leading-none">BuahKita</div>
-              <div className="text-white/40 text-[0.65rem] font-semibold tracking-wider mt-0.5">ADMIN PANEL</div>
+              <div className="text-white font-extrabold text-[0.92rem] leading-none">
+                BuahKita
+              </div>
+              <div className="text-white/70 text-[0.65rem] font-semibold tracking-wider mt-0.5">
+                ADMIN PANEL
+              </div>
             </div>
           </Link>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl mb-1 text-[0.88rem] font-semibold no-underline transition-all duration-200
-                ${isActive(item)
-                  ? 'bg-white/15 text-white font-extrabold'
-                  : 'text-white/60 hover:bg-white/8 hover:text-white'
-                }`}
-            >
-              <span className="text-base w-5 text-center">{item.icon}</span>
-              {item.label}
-              {isActive(item) && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-g4" />}
-            </Link>
-          ))}
+          {NAV_ITEMS.map((item) =>
+            (() => {
+              const Icon = navIcons[item.iconKey as keyof typeof navIcons];
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl mb-1 text-[0.88rem] font-semibold no-underline transition-all duration-200
+                    ${
+                      isActive(item)
+                        ? 'bg-white/15 text-white font-extrabold'
+                        : 'text-white/60 hover:bg-white/8 hover:text-white'
+                    }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {item.label}
+                  {isActive(item) && (
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-g4" />
+                  )}
+                </Link>
+              );
+            })(),
+          )}
         </nav>
 
         {/* User Info */}
@@ -95,15 +141,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {user?.name?.[0]?.toUpperCase() || 'A'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white text-[0.8rem] font-bold truncate">{user?.name}</p>
-              <p className="text-white/40 text-[0.68rem] truncate">{user?.email}</p>
+              <p className="text-white text-[0.8rem] font-bold truncate">
+                {user?.name}
+              </p>
+              <p className="text-white/70 text-[0.68rem] truncate">
+                {user?.email}
+              </p>
             </div>
           </div>
           <button
-            onClick={() => { useAuthStore.getState().logout(); router.push('/'); }}
-            className="w-full mt-3 py-2 px-3 rounded-xl bg-white/8 text-white/60 text-[0.78rem] font-semibold hover:bg-white/15 hover:text-white transition-all text-left"
+            onClick={() => {
+              useAuthStore.getState().logout();
+              router.push('/');
+            }}
+            className="w-full mt-3 py-2 px-3 rounded-xl bg-white/8 text-white/60 text-[0.78rem] font-semibold hover:bg-white/15 hover:text-white transition-all text-left inline-flex items-center gap-2"
           >
-            🚪 Keluar
+            <LogoutIcon className="w-4 h-4" /> Keluar
           </button>
         </div>
       </aside>
@@ -124,7 +177,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden w-9 h-9 rounded-xl border border-faint flex items-center justify-center text-ink hover:bg-g6 transition-colors"
           >
-            ☰
+            <MenuIcon className="w-5 h-5" />
           </button>
           <div className="flex-1">
             <span className="text-[0.78rem] text-muted font-semibold">
@@ -133,16 +186,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <Link
             href="/"
-            className="text-[0.78rem] font-bold text-muted no-underline hover:text-g1 transition-colors"
+            className="text-[0.78rem] font-bold text-muted no-underline hover:text-g1 transition-colors inline-flex items-center gap-1"
           >
-            ← Lihat Toko
+            <ArrowLeftIcon className="w-4 h-4" /> Lihat Toko
           </Link>
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-6">
-          {children}
-        </main>
+        <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
   );

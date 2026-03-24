@@ -1,5 +1,3 @@
-'use client';
-
 export default function Ticker() {
   const items = [
     '🍊 Jeruk Pontianak',
@@ -17,7 +15,7 @@ export default function Ticker() {
   ];
 
   return (
-    <div className="ticker">
+    <div className="ticker" aria-hidden="true" role="marquee">
       <div className="ticker-track">
         {[...items, ...items].map((item, i) => (
           <span key={i} className="ticker-item">

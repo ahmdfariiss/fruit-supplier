@@ -7,6 +7,7 @@ import api from '@/lib/api';
 import ImageUpload from '@/components/ui/ImageUpload';
 import Spinner from '@/components/ui/Spinner';
 import type { Category } from '@/types/product';
+import { getImageUrl } from '@/lib/image';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
@@ -243,12 +244,12 @@ export default function AdminProductFormPage() {
           {!isNew && product?.imageUrl && !imageFile && (
             <div className="mb-3 relative w-24 h-24 rounded-xl overflow-hidden border border-faint">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+              <img src={getImageUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover" />
               <p className="text-xs text-muted mt-2">Foto saat ini</p>
             </div>
           )}
           <ImageUpload
-            value={imageFile}
+            value={!isNew && product?.imageUrl && !imageFile ? getImageUrl(product.imageUrl) : undefined}
             onChange={setImageFile}
             accept="image/jpeg,image/png,image/webp"
           />

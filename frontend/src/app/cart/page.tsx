@@ -4,14 +4,18 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCartStore } from '@/store/cartStore';
+import { getImageUrl } from '@/lib/image';
 import { useAuthStore } from '@/store/authStore';
 import { formatRupiah } from '@/lib/formatters';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
+import { useHydrated } from '@/hooks/useHydrated';
+import { CartIcon, FruitIcon, LockIcon } from '@/components/ui/icons';
 
 export default function CartPage() {
+  const hydrated = useHydrated();
   const {
     items,
     isLoading,
@@ -25,16 +29,28 @@ export default function CartPage() {
   const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
-    if (isAuthenticated) fetchCart();
+    if (hydrated && isAuthenticated) fetchCart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
+  }, [hydrated, isAuthenticated]);
+
+  // Show spinner while hydrating
+  if (!hydrated) {
+    return (
+      <>
+        <Navbar />
+        <div className="flex justify-center items-center min-h-screen">
+          <Spinner size="lg" />
+        </div>
+      </>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
       <>
         <Navbar />
         <main className="pt-28 pb-20 px-[6%] min-h-screen flex flex-col items-center justify-center">
-          <span className="text-5xl mb-4">🔒</span>
+          <LockIcon className="w-12 h-12 mb-4 text-muted" />
           <h2 className="text-xl font-bold text-ink mb-2">Login Diperlukan</h2>
           <p className="text-muted mb-6">
             Silakan login untuk melihat keranjang
@@ -70,7 +86,9 @@ export default function CartPage() {
 
           {items.length === 0 ? (
             <div className="text-center py-16">
-              <span className="text-5xl block mb-4">🛒</span>
+              <span className="block mb-4">
+                <CartIcon className="w-12 h-12 mx-auto text-muted" />
+              </span>
               <h3 className="text-lg font-bold text-ink mb-2">
                 Keranjang Kosong
               </h3>
@@ -125,14 +143,14 @@ export default function CartPage() {
                       <div className="relative w-20 h-20 rounded-xl bg-g6 overflow-hidden flex-shrink-0">
                         {item.product.imageUrl ? (
                           <Image
-                            src={item.product.imageUrl}
+                            src={getImageUrl(item.product.imageUrl)}
                             alt={item.product.name}
                             fill
                             className="object-cover"
                           />
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center text-2xl">
-                            🍊
+                            <FruitIcon className="w-8 h-8 text-g2" />
                           </div>
                         )}
                       </div>

@@ -27,5 +27,6 @@ router.post(
   upload.single('file'),
   orderController.uploadPaymentProof,
 );
+router.get('/:id/invoice', orderController.downloadInvoice);
 
 export default router;

@@ -8,7 +8,10 @@ import { useToast } from '@/hooks/useToast';
 import { formatRupiah } from '@/lib/formatters';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import Image from 'next/image';
 import api from '@/lib/api';
+import { getImageUrl } from '@/lib/image';
+import { useHydrated } from '@/hooks/useHydrated';
 
 /* ═══════════════  5-STEP INDICATOR (Spec §6.6)  ═══════════════ */
 const STEPS = [
@@ -22,11 +25,12 @@ const STEPS = [
 function StepBar({ current }: { current: number }) {
   return (
     <div className="pt-[100px] px-[6%] bg-g6">
-      <div className="flex items-center justify-center gap-0 pb-10 max-w-[700px] mx-auto">
+      <nav aria-label="Langkah checkout" className="flex items-center justify-center gap-0 pb-10 max-w-[700px] mx-auto">
         {STEPS.map((s, i) => (
           <div
             key={s.num}
             className="flex flex-col items-center gap-1.5 flex-1 relative"
+            aria-current={s.num === current ? 'step' : undefined}
           >
             {i < STEPS.length - 1 && (
               <div
@@ -46,13 +50,14 @@ function StepBar({ current }: { current: number }) {
             </div>
           </div>
         ))}
-      </div>
+      </nav>
     </div>
   );
 }
 
 /* ═══════════════  MAIN CHECKOUT  ═══════════════ */
 export default function CheckoutPage() {
+  const hydrated = useHydrated();
   const { toast } = useToast();
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
@@ -73,6 +78,7 @@ export default function CheckoutPage() {
   const [voucherCode, setVoucherCode] = useState('');
   const [voucherValid, setVoucherValid] = useState<boolean | null>(null);
   const [voucherMsg, setVoucherMsg] = useState('');
+  const [voucherDiscount, setVoucherDiscount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
   // Order result state
@@ -105,6 +111,7 @@ export default function CheckoutPage() {
   }, [user]);
 
   const subtotal = totalPrice();
+  const finalTotal = Math.max(0, subtotal - voucherDiscount);
 
   // Compute items with reseller pricing & warnings
   const cartItemsWithPricing = items.map((item) => {
@@ -124,6 +131,7 @@ export default function CheckoutPage() {
     if (!voucherCode.trim()) {
       setVoucherValid(null);
       setVoucherMsg('');
+      setVoucherDiscount(0);
       return;
     }
     try {
@@ -133,11 +141,13 @@ export default function CheckoutPage() {
       });
       setVoucherValid(true);
       setVoucherMsg(data.data?.message || 'Voucher valid!');
+      setVoucherDiscount(Number(data.data?.discountAmount || 0));
       toast('🎉 Voucher valid!', 'success');
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: string } } };
       setVoucherValid(false);
       setVoucherMsg(axiosErr?.response?.data?.error || 'Voucher tidak valid');
+      setVoucherDiscount(0);
       toast(
         '❌ ' + (axiosErr?.response?.data?.error || 'Voucher tidak valid'),
         'error',
@@ -197,7 +207,7 @@ export default function CheckoutPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  if (authLoading || cartLoading) {
+  if (!hydrated || authLoading || cartLoading) {
     return (
       <>
         <Navbar />
@@ -218,7 +228,10 @@ export default function CheckoutPage() {
       <Navbar />
       <StepBar current={step} />
 
-      {/* ═══ STEP 1: Pilih Tipe Pembeli (BuyerTypeSelector) ═══ */}
+      <main id="main-content">
+        <h1 className="sr-only">Checkout - Langkah {step} dari 5</h1>
+
+        {/* ═══ STEP 1: Pilih Tipe Pembeli (BuyerTypeSelector) ═══ */}
       {step === 1 && (
         <div className="max-w-[640px] mx-auto px-[6%] py-10 pb-20 animate-fadeInUp">
           <div className="bg-white rounded-3xl p-7 border border-faint">
@@ -336,11 +349,13 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-[52px] h-[52px] rounded-xl bg-g6 flex items-center justify-center shrink-0 overflow-hidden">
                       {item.product.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={item.product.imageUrl}
+                        <Image
+                          src={getImageUrl(item.product.imageUrl)}
                           alt={item.product.name}
+                          width={52}
+                          height={52}
                           className="w-full h-full object-cover"
+                          loading="lazy"
                         />
                       ) : (
                         <span className="text-[1.6rem]">🍊</span>
@@ -429,46 +444,53 @@ export default function CheckoutPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3.5">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[0.78rem] font-bold text-muted tracking-wide">
+                  <label htmlFor="shipping-name" className="text-[0.78rem] font-bold text-muted tracking-wide">
                     NAMA PENERIMA *
                   </label>
                   <input
+                    id="shipping-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Nama lengkap penerima"
+                    autoComplete="name"
                     className={inputCls}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[0.78rem] font-bold text-muted tracking-wide">
+                  <label htmlFor="shipping-phone" className="text-[0.78rem] font-bold text-muted tracking-wide">
                     NO. TELEPON *
                   </label>
                   <input
-                    type="text"
+                    id="shipping-phone"
+                    type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="08xxxxxxxxxx"
+                    autoComplete="tel"
                     className={inputCls}
                   />
                 </div>
               </div>
               <div className="flex flex-col gap-1.5 mb-3.5">
-                <label className="text-[0.78rem] font-bold text-muted tracking-wide">
+                <label htmlFor="shipping-address" className="text-[0.78rem] font-bold text-muted tracking-wide">
                   ALAMAT LENGKAP *
                 </label>
                 <textarea
+                  id="shipping-address"
                   value={addr}
                   onChange={(e) => setAddr(e.target.value)}
                   placeholder="Jl. Contoh No. 123, RT/RW, Kelurahan, Kecamatan, Kota"
+                  autoComplete="street-address"
                   className={`${inputCls} min-h-[80px] resize-y`}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[0.78rem] font-bold text-muted tracking-wide">
+                <label htmlFor="shipping-notes" className="text-[0.78rem] font-bold text-muted tracking-wide">
                   CATATAN (opsional)
                 </label>
                 <textarea
+                  id="shipping-notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Misal: tolong pilihkan yang belum terlalu matang..."
@@ -484,18 +506,21 @@ export default function CheckoutPage() {
               </div>
               <div className="flex gap-2">
                 <input
+                  id="voucher-code"
                   type="text"
                   value={voucherCode}
                   onChange={(e) => {
                     setVoucherCode(e.target.value.toUpperCase());
                     setVoucherValid(null);
                     setVoucherMsg('');
+                    setVoucherDiscount(0);
                   }}
                   placeholder="Masukkan kode voucher"
                   className={`flex-1 ${inputCls} ${voucherValid === true ? 'border-g3' : voucherValid === false ? 'border-red' : ''}`}
                 />
                 <button
                   onClick={validateVoucher}
+                  aria-label="Validasi kode voucher"
                   className="px-5 py-2.5 rounded-xl bg-g1 text-white text-[0.82rem] font-bold border-none cursor-pointer hover:bg-g2 transition-colors whitespace-nowrap"
                 >
                   Validasi
@@ -507,6 +532,12 @@ export default function CheckoutPage() {
                 >
                   {voucherValid ? '✅' : '❌'} {voucherMsg}
                 </p>
+              )}
+              {voucherValid && voucherDiscount > 0 && (
+                <div className="mt-3 bg-g6 border border-g4 rounded-xl p-3 flex items-center justify-between">
+                  <span className="text-[0.82rem] text-g1 font-semibold">🎉 Potongan diskon</span>
+                  <span className="text-[0.92rem] font-extrabold text-g1">-{formatRupiah(voucherDiscount)}</span>
+                </div>
               )}
             </div>
           </div>
@@ -541,13 +572,32 @@ export default function CheckoutPage() {
                   </div>
                 );
               })}
-              <div className="flex justify-between text-base font-extrabold pt-3 border-t border-faint mt-3">
-                <span>Total</span>
-                <span className="text-g1">{formatRupiah(subtotal)}</span>
+
+              {/* Subtotal */}
+              <div className="flex justify-between text-[0.85rem] pt-3 border-t border-faint mt-3">
+                <span className="text-muted">Subtotal</span>
+                <span className="font-semibold">{formatRupiah(subtotal)}</span>
               </div>
-              {voucherValid && (
-                <div className="text-[0.78rem] text-g3 font-semibold mt-2">
-                  ✅ Voucher diterapkan
+
+              {/* Diskon Voucher */}
+              {voucherValid && voucherDiscount > 0 && (
+                <div className="flex justify-between text-[0.85rem] py-1.5 text-g3">
+                  <span className="flex items-center gap-1">
+                    🎟️ Diskon Voucher
+                  </span>
+                  <span className="font-semibold">-{formatRupiah(voucherDiscount)}</span>
+                </div>
+              )}
+
+              {/* Total Bayar */}
+              <div className="flex justify-between text-base font-extrabold pt-3 border-t border-faint mt-1">
+                <span>Total Bayar</span>
+                <span className="text-g1">{formatRupiah(finalTotal)}</span>
+              </div>
+
+              {voucherValid && voucherDiscount > 0 && (
+                <div className="mt-2 bg-g6 border border-g4 rounded-lg px-3 py-2 text-[0.75rem] text-g1 font-semibold flex items-center gap-1.5">
+                  🎉 Anda hemat {formatRupiah(voucherDiscount)} dengan voucher <strong>{voucherCode}</strong>
                 </div>
               )}
             </div>
@@ -636,6 +686,7 @@ export default function CheckoutPage() {
                     {['Produk', 'Qty', 'Harga', 'Subtotal'].map((h) => (
                       <th
                         key={h}
+                        scope="col"
                         className={`text-[0.7rem] font-extrabold tracking-widest uppercase text-muted py-2 px-3 text-left border-b-2 border-faint ${h === 'Subtotal' ? 'text-right' : ''}`}
                       >
                         {h}
@@ -675,9 +726,15 @@ export default function CheckoutPage() {
                     <span>Subtotal</span>
                     <span>{formatRupiah(subtotal)}</span>
                   </div>
+                  {voucherValid && voucherDiscount > 0 && (
+                    <div className="flex justify-between text-[0.85rem] text-g3 py-1">
+                      <span>Diskon Voucher ({voucherCode})</span>
+                      <span>-{formatRupiah(voucherDiscount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-[1.05rem] font-black pt-3 mt-2 border-t-2 border-faint">
                     <span>Total Bayar</span>
-                    <span className="text-g1">{formatRupiah(subtotal)}</span>
+                    <span className="text-g1">{formatRupiah(finalTotal)}</span>
                   </div>
                 </div>
               </div>
@@ -712,6 +769,7 @@ export default function CheckoutPage() {
                             navigator.clipboard?.writeText(r.copyVal!);
                             toast('✅ Nomor rekening disalin!', 'success');
                           }}
+                          aria-label={`Salin ${r.label}`}
                           className="bg-g1 text-white border-none py-1 px-3 rounded-pill text-[0.72rem] font-bold cursor-pointer hover:bg-g2 transition-colors"
                         >
                           Salin
@@ -726,13 +784,14 @@ export default function CheckoutPage() {
                   </span>
                   <div className="flex items-center gap-2">
                     <strong className="text-g1 text-base font-black">
-                      {formatRupiah(subtotal)}
+                      {formatRupiah(finalTotal)}
                     </strong>
                     <button
                       onClick={() => {
-                        navigator.clipboard?.writeText(String(subtotal));
+                        navigator.clipboard?.writeText(String(finalTotal));
                         toast('✅ Jumlah transfer disalin!', 'success');
                       }}
+                      aria-label="Salin jumlah transfer"
                       className="bg-g1 text-white border-none py-1 px-3 rounded-pill text-[0.72rem] font-bold cursor-pointer hover:bg-g2 transition-colors"
                     >
                       Salin
@@ -740,6 +799,21 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Voucher savings banner */}
+              {voucherValid && voucherDiscount > 0 && (
+                <div className="bg-g6 border border-g4 rounded-2xl p-4 mb-6 flex items-center gap-3">
+                  <span className="text-[1.5rem]">🎉</span>
+                  <div>
+                    <div className="text-[0.85rem] font-extrabold text-g1">
+                      Anda hemat {formatRupiah(voucherDiscount)}!
+                    </div>
+                    <div className="text-[0.78rem] text-muted">
+                      Voucher <strong>{voucherCode}</strong> berhasil diterapkan pada pesanan ini.
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex gap-3">
@@ -832,6 +906,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       )}
+      </main>
 
       <Footer />
     </>

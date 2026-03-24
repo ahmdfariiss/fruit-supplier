@@ -1,41 +1,58 @@
-'use client';
+"use client";
 
-import { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useProducts } from '@/hooks/useProducts';
-import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import ProductGrid from '@/components/product/ProductGrid';
-import ProductFilter from '@/components/product/ProductFilter';
-import ProductDetailModal from '@/components/product/ProductDetailModal';
-import CartDrawer from '@/components/product/CartDrawer';
-import Pagination from '@/components/ui/Pagination';
-import type { Category, Product } from '@/types/product';
+import { useState, Suspense } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useProducts } from "@/hooks/useProducts";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import ProductGrid from "@/components/product/ProductGrid";
+import ProductFilter from "@/components/product/ProductFilter";
+import Pagination from "@/components/ui/Pagination";
+import {
+  BriefcaseIcon,
+  CartIcon,
+  SearchIcon,
+  StoreIcon,
+} from "@/components/ui/icons";
+import type { Category, Product } from "@/types/product";
+
+// Ganti React.lazy dengan next/dynamic — lebih stabil di Next.js 15
+// dynamic menangani Suspense boundary secara internal, tidak perlu wrapper manual
+const ProductDetailModal = dynamic(
+  () => import("@/components/product/ProductDetailModal"),
+  { loading: () => null },
+);
+const CartDrawer = dynamic(() => import("@/components/product/CartDrawer"), {
+  loading: () => null,
+});
 
 function ProductsContent() {
   const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
-  const [buyerMode, setBuyerMode] = useState<'consumer' | 'reseller'>(
-    'consumer',
+  const [buyerMode, setBuyerMode] = useState<"consumer" | "reseller">(
+    "consumer",
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
 
   const filters = {
-    search: searchParams.get('search') || undefined,
-    category: searchParams.get('category') || undefined,
+    search: searchParams.get("search") || undefined,
+    category: searchParams.get("category") || undefined,
     sort:
-      (searchParams.get('sort') as
-        | 'newest'
-        | 'price_asc'
-        | 'price_desc'
-        | 'popular') || undefined,
-    buyerType: buyerMode === 'reseller' ? ('reseller' as const) : undefined,
-    tags: searchParams.get('tags') || undefined,
-    seasonMonth: searchParams.get('seasonMonth')
-      ? Number(searchParams.get('seasonMonth'))
+      (searchParams.get("sort") as
+        | "newest"
+        | "price_asc"
+        | "price_desc"
+        | "popular") || undefined,
+    buyerType: buyerMode === "reseller" ? ("reseller" as const) : undefined,
+    tags: searchParams.get("tags") || undefined,
+    seasonMonth: searchParams.get("seasonMonth")
+      ? Number(searchParams.get("seasonMonth"))
       : undefined,
     page,
     limit: 9,
@@ -44,9 +61,9 @@ function ProductsContent() {
   const { data, isLoading } = useProducts(filters);
 
   const { data: categories } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ["categories"],
     queryFn: async () => {
-      const { data } = await api.get('/categories');
+      const { data } = await api.get("/categories");
       return data.data as Category[];
     },
   });
@@ -60,12 +77,12 @@ function ProductsContent() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-[0.78rem] font-semibold text-muted mb-5">
-          <a
+          <Link
             href="/"
             className="text-muted no-underline hover:text-g2 transition-colors"
           >
             Beranda
-          </a>
+          </Link>
           <span className="text-faint">›</span>
           <span>Katalog Produk</span>
         </div>
@@ -81,31 +98,35 @@ function ProductsContent() {
         {/* Mode Toggle */}
         <div className="inline-flex bg-white border border-faint rounded-pill p-1 gap-1 mt-7 shadow-[0_2px_12px_rgba(45,90,0,.07)]">
           <button
-            onClick={() => setBuyerMode('consumer')}
+            onClick={() => setBuyerMode("consumer")}
             className={`py-2.5 px-6 rounded-pill text-[0.85rem] font-bold border-none cursor-pointer font-sans transition-all duration-250 ${
-              buyerMode === 'consumer'
-                ? 'bg-g1 text-white shadow-[0_2px_10px_rgba(45,90,0,.3)]'
-                : 'bg-transparent text-muted'
+              buyerMode === "consumer"
+                ? "bg-g1 text-white shadow-[0_2px_10px_rgba(45,90,0,.3)]"
+                : "bg-transparent text-muted"
             }`}
           >
-            🛒 Konsumen
+            <span className="inline-flex items-center gap-1.5">
+              <CartIcon className="w-4 h-4" /> Konsumen
+            </span>
           </button>
           <button
-            onClick={() => setBuyerMode('reseller')}
+            onClick={() => setBuyerMode("reseller")}
             className={`py-2.5 px-6 rounded-pill text-[0.85rem] font-bold border-none cursor-pointer font-sans transition-all duration-250 ${
-              buyerMode === 'reseller'
-                ? 'bg-g1 text-white shadow-[0_2px_10px_rgba(45,90,0,.3)]'
-                : 'bg-transparent text-muted'
+              buyerMode === "reseller"
+                ? "bg-g1 text-white shadow-[0_2px_10px_rgba(45,90,0,.3)]"
+                : "bg-transparent text-muted"
             }`}
           >
-            🏪 Reseller / Toko
+            <span className="inline-flex items-center gap-1.5">
+              <StoreIcon className="w-4 h-4" /> Reseller / Toko
+            </span>
           </button>
         </div>
 
         {/* Reseller notice */}
-        {buyerMode === 'reseller' && (
+        {buyerMode === "reseller" && (
           <div className="mt-3.5 bg-white border border-g4 rounded-[14px] px-[18px] py-3 text-[0.82rem] text-muted max-w-[500px] flex items-center gap-2">
-            💼{' '}
+            <BriefcaseIcon className="w-4 h-4 text-g1 flex-shrink-0" />
             <span>
               Menampilkan <b className="text-g1">harga grosir reseller</b>.
               Harga berlaku untuk pembelian minimum sesuai ketentuan.
@@ -122,12 +143,32 @@ function ProductsContent() {
         </aside>
 
         {/* Main Grid */}
-        <main>
+        <section>
+          {/* Mobile Filter Toggle */}
+          <div className="lg:hidden mb-4">
+            <button
+              onClick={() => setShowMobileFilter(!showMobileFilter)}
+              className="w-full py-3 px-4 bg-white border-[1.5px] border-faint rounded-xl text-[0.85rem] font-bold text-ink flex items-center justify-between shadow-sm cursor-pointer"
+            >
+              <span className="flex items-center gap-2">
+                <SearchIcon className="w-4 h-4" /> Filter & Pencarian
+              </span>
+              <span>{showMobileFilter ? "Tutup" : "Buka"}</span>
+            </button>
+          </div>
+
+          {/* Mobile Filter Content */}
+          {showMobileFilter && (
+            <div className="lg:hidden mb-8">
+              <ProductFilter categories={categories || []} />
+            </div>
+          )}
+
           {/* Grid top bar */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div className="text-[0.85rem] text-muted font-semibold">
-              Menampilkan{' '}
-              <b className="text-ink">{data?.pagination?.totalItems || 0}</b>{' '}
+              Menampilkan{" "}
+              <b className="text-ink">{data?.pagination?.totalItems || 0}</b>{" "}
               produk
             </div>
           </div>
@@ -135,7 +176,7 @@ function ProductsContent() {
           <ProductGrid
             products={data?.data || []}
             isLoading={isLoading}
-            showResellerPrice={buyerMode === 'reseller'}
+            showResellerPrice={buyerMode === "reseller"}
             onOpenDetail={(p) => setSelectedProduct(p)}
           />
 
@@ -146,18 +187,22 @@ function ProductsContent() {
               onPageChange={setPage}
             />
           )}
-        </main>
+        </section>
       </div>
 
-      {/* Detail Modal */}
-      <ProductDetailModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        buyerMode={buyerMode}
-      />
+      {/* Detail Modal — dynamic menangani lazy loading tanpa explicit Suspense */}
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          buyerMode={buyerMode}
+        />
+      )}
 
       {/* Cart Drawer */}
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+      {cartOpen && (
+        <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+      )}
     </>
   );
 }
@@ -166,7 +211,8 @@ export default function ProductsPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen">
+      <main id="main-content" className="min-h-screen">
+        {/* Suspense diperlukan untuk useSearchParams() per Next.js 15 docs */}
         <Suspense
           fallback={
             <div className="pt-[120px] pb-20 px-[6%] bg-g6">

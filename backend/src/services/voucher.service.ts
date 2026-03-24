@@ -1,8 +1,17 @@
 import { prisma } from '../config/database';
 import { AppError } from '../middlewares/errorHandler';
 
-export const validateVoucher = async (code: string, orderTotal: number) => {
-  const voucher = await prisma.voucher.findUnique({ where: { code } });
+const UNLIMITED_USAGE_LIMIT = 2147483647;
+
+export const validateVoucher = async (
+  code: string,
+  orderTotal: number,
+  userId?: string,
+) => {
+  const normalizedCode = code.trim().toUpperCase();
+  const voucher = await prisma.voucher.findUnique({
+    where: { code: normalizedCode },
+  });
 
   if (!voucher) {
     throw new AppError('Kode voucher tidak valid.', 400);
@@ -31,6 +40,25 @@ export const validateVoucher = async (code: string, orderTotal: number) => {
     );
   }
 
+  if (userId) {
+    const [pendingAssignmentCount, userVoucher] = await Promise.all([
+      prisma.userVoucher.count({
+        where: { voucherId: voucher.id, usedAt: null },
+      }),
+      prisma.userVoucher.findUnique({
+        where: { userId_voucherId: { userId, voucherId: voucher.id } },
+      }),
+    ]);
+
+    if (pendingAssignmentCount > 0 && !userVoucher) {
+      throw new AppError('Voucher ini bukan milik akun kamu.', 400);
+    }
+
+    if (userVoucher?.usedAt) {
+      throw new AppError('Voucher ini sudah pernah kamu gunakan.', 400);
+    }
+  }
+
   let discountAmount: number;
   if (voucher.discountType === 'PERCENTAGE') {
     discountAmount = (orderTotal * voucher.discountValue) / 100;
@@ -38,7 +66,7 @@ export const validateVoucher = async (code: string, orderTotal: number) => {
       discountAmount = Math.min(discountAmount, Number(voucher.maxDiscount));
     }
   } else {
-    discountAmount = voucher.discountValue;
+    discountAmount = Math.min(orderTotal, voucher.discountValue);
   }
 
   return {
@@ -63,7 +91,11 @@ export const getVouchers = async (page = 1, limit = 10) => {
   ]);
 
   return {
-    vouchers,
+    vouchers: vouchers.map((voucher) => ({
+      ...voucher,
+      usageLimit:
+        voucher.usageLimit >= UNLIMITED_USAGE_LIMIT ? null : voucher.usageLimit,
+    })),
     pagination: {
       page,
       limit,
@@ -77,11 +109,15 @@ export const createVoucher = async (data: {
   code: string;
   discountType?: 'PERCENTAGE' | 'FIXED';
   discountValue: number;
+  type?: 'PERCENTAGE' | 'FIXED';
+  value?: number;
   minPurchase?: number;
+  minOrder?: number;
   maxDiscount?: number | null;
-  usageLimit?: number;
+  usageLimit?: number | null;
   validFrom?: string | Date;
   validUntil?: string | Date;
+  expiresAt?: string | Date;
   isActive?: boolean;
 }) => {
   const existing = await prisma.voucher.findUnique({
@@ -91,16 +127,30 @@ export const createVoucher = async (data: {
     throw new AppError('Kode voucher sudah ada.', 409);
   }
 
+  const resolvedDiscountType = data.discountType || data.type || 'PERCENTAGE';
+  const resolvedDiscountValue =
+    data.discountValue ?? data.value ?? Number.NaN;
+  const resolvedMinPurchase = data.minPurchase ?? data.minOrder ?? 0;
+  const resolvedValidUntil = data.validUntil ?? data.expiresAt ?? null;
+  const resolvedUsageLimit =
+    data.usageLimit == null
+      ? UNLIMITED_USAGE_LIMIT
+      : Math.max(1, Math.floor(data.usageLimit));
+
+  if (!Number.isFinite(resolvedDiscountValue) || resolvedDiscountValue <= 0) {
+    throw new AppError('Nilai diskon voucher wajib diisi dan harus > 0.', 400);
+  }
+
   return prisma.voucher.create({
     data: {
-      code: data.code,
-      discountType: data.discountType || 'PERCENTAGE',
-      discountValue: data.discountValue,
-      minPurchase: data.minPurchase || 0,
+      code: data.code.toUpperCase(),
+      discountType: resolvedDiscountType,
+      discountValue: resolvedDiscountValue,
+      minPurchase: resolvedMinPurchase,
       maxDiscount: data.maxDiscount ?? null,
-      usageLimit: data.usageLimit || 1,
+      usageLimit: resolvedUsageLimit,
       validFrom: data.validFrom ? new Date(data.validFrom) : new Date(),
-      validUntil: data.validUntil ? new Date(data.validUntil) : null,
+      validUntil: resolvedValidUntil ? new Date(resolvedValidUntil) : null,
       isActive: data.isActive ?? true,
     },
   });
@@ -112,11 +162,15 @@ export const updateVoucher = async (
     code?: string;
     discountType?: 'PERCENTAGE' | 'FIXED';
     discountValue?: number;
+    type?: 'PERCENTAGE' | 'FIXED';
+    value?: number;
     minPurchase?: number;
+    minOrder?: number;
     maxDiscount?: number | null;
-    usageLimit?: number;
+    usageLimit?: number | null;
     validFrom?: string | Date;
     validUntil?: string | Date;
+    expiresAt?: string | Date;
     isActive?: boolean;
   },
 ) => {
@@ -125,13 +179,41 @@ export const updateVoucher = async (
     throw new AppError('Voucher tidak ditemukan.', 404);
   }
 
-  const updateData: any = { ...data };
-  if (data.validFrom) updateData.validFrom = new Date(data.validFrom);
-  if (data.validUntil) updateData.validUntil = new Date(data.validUntil);
+  const updateData: any = {
+    ...data,
+    discountType: data.discountType ?? data.type,
+    discountValue: data.discountValue ?? data.value,
+    minPurchase: data.minPurchase ?? data.minOrder,
+    validUntil: data.validUntil ?? data.expiresAt,
+  };
+
+  delete updateData.type;
+  delete updateData.value;
+  delete updateData.minOrder;
+  delete updateData.expiresAt;
+
+  if (data.usageLimit !== undefined) {
+    updateData.usageLimit =
+      data.usageLimit == null
+        ? UNLIMITED_USAGE_LIMIT
+        : Math.max(1, Math.floor(data.usageLimit));
+  }
+
+  if (updateData.code) {
+    updateData.code = String(updateData.code).toUpperCase();
+  }
+
+  if (updateData.validFrom)
+    updateData.validFrom = new Date(updateData.validFrom);
+  if (updateData.validUntil)
+    updateData.validUntil = new Date(updateData.validUntil);
 
   return prisma.voucher.update({ where: { id }, data: updateData });
 };
 
 export const deleteVoucher = async (id: string) => {
-  return prisma.voucher.delete({ where: { id } });
+  return prisma.$transaction(async (tx) => {
+    await tx.userVoucher.deleteMany({ where: { voucherId: id } });
+    return tx.voucher.delete({ where: { id } });
+  });
 };
