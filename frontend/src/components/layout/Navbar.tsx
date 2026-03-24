@@ -193,8 +193,9 @@ function NavbarInner() {
       <div
         id="mobile-menu"
         role="navigation"
+        aria-hidden={!mobileOpen}
         aria-label="Menu navigasi mobile"
-        className={`md:hidden mt-3 bg-white/95 backdrop-blur-xl rounded-3xl border border-white/90 shadow-lg p-5 transition-all duration-300 ${
+        className={`md:hidden absolute left-0 right-0 top-[calc(100%+12px)] bg-white/95 backdrop-blur-xl rounded-3xl border border-white/90 shadow-lg p-5 transition-all duration-300 ${
           mobileOpen
             ? 'opacity-100 visible'
             : 'opacity-0 invisible pointer-events-none'
