@@ -1,17 +1,40 @@
 /** @type {import('next').NextConfig} */
+const apiOrigin = process.env.NEXT_PUBLIC_API_ORIGIN;
+
+const remotePatterns = [
+  {
+    protocol: 'http',
+    hostname: 'localhost',
+    port: '5010',
+    pathname: '/uploads/**',
+  },
+  {
+    protocol: 'https',
+    hostname: 'fruit-supplier.onrender.com',
+    pathname: '/uploads/**',
+  },
+];
+
+if (apiOrigin) {
+  try {
+    const parsed = new URL(apiOrigin);
+    remotePatterns.push({
+      protocol: parsed.protocol.replace(':', ''),
+      hostname: parsed.hostname,
+      port: parsed.port || undefined,
+      pathname: '/uploads/**',
+    });
+  } catch {
+    // ignore invalid NEXT_PUBLIC_API_ORIGIN
+  }
+}
+
 const nextConfig = {
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '5010',
-        pathname: '/uploads/**',
-      },
-    ],
+    remotePatterns,
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
