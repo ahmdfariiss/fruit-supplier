@@ -25,10 +25,7 @@ export const corsOptions: cors.CorsOptions = {
     const normalizedRequestOrigin = normalizeOrigin(requestOrigin);
     const isAllowed = allowedOrigins.includes(normalizedRequestOrigin);
 
-    callback(
-      isAllowed ? null : new Error('Not allowed by CORS'),
-      isAllowed ? normalizedRequestOrigin : false,
-    );
+    callback(null, isAllowed ? normalizedRequestOrigin : false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
