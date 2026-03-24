@@ -12,6 +12,9 @@ import { apiRouter } from './routes';
 
 const app = express();
 
+// Render/Proxy setup: required for correct client IP detection
+app.set('trust proxy', 1);
+
 // ══ Global Middleware ══
 app.use(
   helmet({

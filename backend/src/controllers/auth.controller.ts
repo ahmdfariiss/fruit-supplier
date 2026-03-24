@@ -2,10 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import * as authService from '../services/auth.service';
 import { success } from '../helpers/response.helper';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  secure: isProduction,
+  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
   path: '/',
 };
 
