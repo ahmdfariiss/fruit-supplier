@@ -156,12 +156,29 @@ export default function CheckoutPage() {
   };
 
   const placeOrder = async () => {
-    if (!name.trim() || !phone.trim()) {
+    const trimmedName = name.trim();
+    const trimmedPhone = phone.trim();
+    const trimmedAddress = addr.trim();
+    const trimmedNotes = notes.trim();
+
+    if (!trimmedName || !trimmedPhone) {
       toast('⚠️ Isi nama dan nomor telepon dulu!', 'error');
       return;
     }
-    if (!addr.trim()) {
+    if (trimmedName.length < 2) {
+      toast('⚠️ Nama penerima minimal 2 karakter.', 'error');
+      return;
+    }
+    if (trimmedPhone.length < 10) {
+      toast('⚠️ Nomor telepon minimal 10 digit.', 'error');
+      return;
+    }
+    if (!trimmedAddress) {
       toast('⚠️ Isi alamat pengiriman!', 'error');
+      return;
+    }
+    if (trimmedAddress.length < 10) {
+      toast('⚠️ Alamat pengiriman minimal 10 karakter.', 'error');
       return;
     }
     if (items.length === 0) {
@@ -173,11 +190,11 @@ export default function CheckoutPage() {
     try {
       const payload: Record<string, unknown> = {
         buyerType,
-        shippingName: name,
-        shippingPhone: phone,
-        shippingAddress: addr,
+        shippingName: trimmedName,
+        shippingPhone: trimmedPhone,
+        shippingAddress: trimmedAddress,
       };
-      if (notes.trim()) payload.notes = notes;
+      if (trimmedNotes) payload.notes = trimmedNotes;
       if (voucherCode.trim() && voucherValid) payload.voucherCode = voucherCode;
 
       const { data } = await api.post('/orders', payload);
@@ -192,9 +209,24 @@ export default function CheckoutPage() {
       toast(`🎉 Pesanan ${order.orderNumber} berhasil dibuat!`, 'success');
       goToStep(5);
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { error?: string } } };
+      const axiosErr = err as {
+        response?: {
+          data?: {
+            error?: string;
+            details?: Record<string, string[] | undefined>;
+          };
+        };
+      };
+
+      const details = axiosErr?.response?.data?.details;
+      const firstDetail = details
+        ? Object.values(details).flat().find((message) => !!message)
+        : undefined;
+
       toast(
-        axiosErr?.response?.data?.error || 'Gagal membuat pesanan. Coba lagi.',
+        firstDetail ||
+          axiosErr?.response?.data?.error ||
+          'Gagal membuat pesanan. Coba lagi.',
         'error',
       );
     } finally {
