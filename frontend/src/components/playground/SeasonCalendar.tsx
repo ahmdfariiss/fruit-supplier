@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { MONTH_NAMES } from '@/lib/constants';
+import { getJakartaCurrentMonth } from '@/lib/formatters';
 
 interface SeasonData {
   name: string;
@@ -31,7 +32,7 @@ export default function SeasonCalendar({
 }: SeasonCalendarProps) {
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
 
-  const currentMonth = new Date().getMonth() + 1;
+  const currentMonth = getJakartaCurrentMonth();
 
   return (
     <div className="bg-white rounded-3xl border border-faint p-6">

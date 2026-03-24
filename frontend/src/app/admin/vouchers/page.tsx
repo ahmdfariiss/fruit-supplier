@@ -23,6 +23,28 @@ interface Voucher {
   createdAt: string;
 }
 
+const normalizeVoucher = (item: Record<string, unknown>): Voucher => ({
+  id: String(item.id),
+  code: String(item.code ?? ''),
+  type: (item.type ?? item.discountType ?? 'PERCENTAGE') as
+    | 'PERCENTAGE'
+    | 'FIXED',
+  value: Number(item.value ?? item.discountValue ?? 0),
+  minOrder: Number(item.minOrder ?? item.minPurchase ?? 0),
+  maxDiscount:
+    item.maxDiscount === null || item.maxDiscount === undefined
+      ? null
+      : Number(item.maxDiscount),
+  usageLimit:
+    item.usageLimit === null || item.usageLimit === undefined
+      ? null
+      : Number(item.usageLimit),
+  usageCount: Number(item.usageCount ?? item.usedCount ?? 0),
+  isActive: Boolean(item.isActive),
+  expiresAt: (item.expiresAt ?? item.validUntil ?? null) as string | null,
+  createdAt: String(item.createdAt ?? ''),
+});
+
 const EMPTY_FORM = {
   code: '',
   type: 'PERCENTAGE' as 'PERCENTAGE' | 'FIXED',
@@ -41,13 +63,13 @@ export default function AdminVouchersPage() {
   const [deleteTarget, setDeleteTarget] = useState<Voucher | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-vouchers'],
     queryFn: async () => {
       const { data } = await api.get('/admin/vouchers');
-      return data.data as Voucher[];
+      return (data.data as Record<string, unknown>[]).map(normalizeVoucher);
     },
   });
 
@@ -70,12 +92,12 @@ export default function AdminVouchersPage() {
     try {
       await api.post('/admin/vouchers', {
         code: form.code.toUpperCase(),
-        type: form.type,
-        value: Number(form.value),
-        minOrder: Number(form.minOrder) || 0,
+        discountType: form.type,
+        discountValue: Number(form.value),
+        minPurchase: Number(form.minOrder) || 0,
         maxDiscount: form.maxDiscount ? Number(form.maxDiscount) : null,
         usageLimit: form.usageLimit ? Number(form.usageLimit) : null,
-        expiresAt: form.expiresAt || null,
+        validUntil: form.expiresAt || null,
       });
       queryClient.invalidateQueries({ queryKey: ['admin-vouchers'] });
       setForm(EMPTY_FORM);
@@ -107,7 +129,7 @@ export default function AdminVouchersPage() {
       await api.delete(`/admin/vouchers/${deleteTarget.id}`);
       queryClient.invalidateQueries({ queryKey: ['admin-vouchers'] });
     } catch {
-      addToast({ type: 'error', message: 'Gagal menghapus voucher' });
+      toast('Gagal menghapus voucher', 'error');
     } finally {
       setDeletingId(null);
       setDeleteTarget(null);

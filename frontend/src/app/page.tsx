@@ -1,14 +1,13 @@
-import { Suspense } from 'react';
-import Link from 'next/link';
-import Footer from '@/components/layout/Footer';
-import Ticker from '@/components/home/Ticker';
-import WhyUsSection from '@/components/home/WhyUsSection';
-import HowToOrder from '@/components/home/HowToOrder';
-import ImpactCounter from '@/components/home/ImpactCounter';
-import ResellerBand from '@/components/home/ResellerBand';
-import HomeContent from '@/components/home/HomeContent';
-import HeroSection from '@/components/home/HeroSection';
-import Navbar from '@/components/layout/Navbar';
+import Link from "next/link";
+import Footer from "@/components/layout/Footer";
+import Ticker from "@/components/home/Ticker";
+import WhyUsSection from "@/components/home/WhyUsSection";
+import HowToOrder from "@/components/home/HowToOrder";
+import ImpactCounter from "@/components/home/ImpactCounter";
+import ResellerBand from "@/components/home/ResellerBand";
+import HeroSection from "@/components/home/HeroSection";
+import Navbar from "@/components/layout/Navbar";
+import HomeContent from "@/components/home/HomeContent";
 
 export default function HomePage() {
   return (
@@ -21,20 +20,11 @@ export default function HomePage() {
 
       <main id="main-content">
         {/* Dynamic content (banners, featured products, testimonials) */}
-        <Suspense
-          fallback={
-            <div className="py-10 px-[6%]">
-              <div className="rounded-3xl bg-g5 aspect-[21/9] md:aspect-[3/1] animate-pulse mb-10" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="bg-g5 rounded-[22px] h-[320px] animate-pulse" />
-                ))}
-              </div>
-            </div>
-          }
-        >
-          <HomeContent />
-        </Suspense>
+        {/* HomeContent adalah 'use client' component — sub-components-nya
+            (BannerSlider, FeaturedProducts, TestimonialSection) sudah punya
+            dynamic + ssr:false di dalamnya, yang valid karena berada di
+            Client Component. Next.js 15 + React 19 menangani ini dengan benar. */}
+        <HomeContent />
 
         {/* ═══ TICKER ═══ */}
         <Ticker />

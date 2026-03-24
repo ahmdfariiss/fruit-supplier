@@ -1,4 +1,5 @@
 import StarRating from '@/components/ui/StarRating';
+import { formatDate } from '@/lib/formatters';
 
 interface ReviewCardProps {
   review: {
@@ -32,11 +33,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           <div className="flex items-center gap-2 mt-0.5">
             <StarRating rating={review.rating} size="sm" />
             <span className="text-xs text-muted">
-              {new Date(review.createdAt).toLocaleDateString('id-ID', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
+              {formatDate(review.createdAt)}
             </span>
           </div>
         </div>

@@ -1,17 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useOrders } from '@/hooks/useOrders';
-import { useAuthStore } from '@/store/authStore';
-import { useToast } from '@/hooks/useToast';
-import { formatRupiah, formatDateTime } from '@/lib/formatters';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import api from '@/lib/api';
-import type { Order, OrderStatus } from '@/types/order';
-import { getImageUrl } from '@/lib/image';
-import { useHydrated } from '@/hooks/useHydrated';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useOrders } from "@/hooks/useOrders";
+import { useAuthStore } from "@/store/authStore";
+import { useToast } from "@/hooks/useToast";
+import { formatRupiah, formatDateTime } from "@/lib/formatters";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import api from "@/lib/api";
+import type { Order, OrderStatus } from "@/types/order";
+import { getImageUrl } from "@/lib/image";
+import { useHydrated } from "@/hooks/useHydrated";
 
 /* ═══════════════  STATUS CONFIG  ═══════════════ */
 const STATUS_MAP: Record<
@@ -19,53 +20,53 @@ const STATUS_MAP: Record<
   { label: string; cls: string; emoji: string }
 > = {
   PENDING: {
-    label: 'Menunggu Pembayaran',
-    cls: 'bg-[#fff3e0] text-[#c47d00]',
-    emoji: '⏳',
+    label: "Menunggu Pembayaran",
+    cls: "bg-[#fff3e0] text-[#c47d00]",
+    emoji: "⏳",
   },
   CONFIRMED: {
-    label: 'Pembayaran Dikonfirmasi',
-    cls: 'bg-[#e3f2fd] text-[#0779e4]',
-    emoji: '✅',
+    label: "Pembayaran Dikonfirmasi",
+    cls: "bg-[#e3f2fd] text-[#0779e4]",
+    emoji: "✅",
   },
-  PROCESSING: { label: 'Sedang Diproses', cls: 'bg-g5 text-g1', emoji: '🔄' },
+  PROCESSING: { label: "Sedang Diproses", cls: "bg-g5 text-g1", emoji: "🔄" },
   SHIPPED: {
-    label: 'Dikirim',
-    cls: 'bg-[#f3e5f5] text-[#7b1fa2]',
-    emoji: '📦',
+    label: "Dikirim",
+    cls: "bg-[#f3e5f5] text-[#7b1fa2]",
+    emoji: "📦",
   },
-  DONE: { label: 'Selesai', cls: 'bg-[#e8f5e9] text-[#2e7d32]', emoji: '✨' },
-  CANCELLED: { label: 'Dibatalkan', cls: 'bg-[#fde8e0] text-red', emoji: '❌' },
+  DONE: { label: "Selesai", cls: "bg-[#e8f5e9] text-[#2e7d32]", emoji: "✨" },
+  CANCELLED: { label: "Dibatalkan", cls: "bg-[#fde8e0] text-red", emoji: "❌" },
 };
 
 const TL_STEPS: { emoji: string; label: string; status: OrderStatus }[] = [
-  { emoji: '📋', label: 'Pesanan Dibuat', status: 'PENDING' },
-  { emoji: '💳', label: 'Dikonfirmasi', status: 'CONFIRMED' },
-  { emoji: '🔄', label: 'Diproses', status: 'PROCESSING' },
-  { emoji: '📦', label: 'Dikirim', status: 'SHIPPED' },
-  { emoji: '✨', label: 'Selesai', status: 'DONE' },
+  { emoji: "📋", label: "Pesanan Dibuat", status: "PENDING" },
+  { emoji: "💳", label: "Dikonfirmasi", status: "CONFIRMED" },
+  { emoji: "🔄", label: "Diproses", status: "PROCESSING" },
+  { emoji: "📦", label: "Dikirim", status: "SHIPPED" },
+  { emoji: "✨", label: "Selesai", status: "DONE" },
 ];
 
 const STATUS_ORDER: OrderStatus[] = [
-  'PENDING',
-  'CONFIRMED',
-  'PROCESSING',
-  'SHIPPED',
-  'DONE',
+  "PENDING",
+  "CONFIRMED",
+  "PROCESSING",
+  "SHIPPED",
+  "DONE",
 ];
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
-  { value: '', label: '🗂️ Semua' },
-  { value: 'PENDING', label: '⏳ Menunggu' },
-  { value: 'CONFIRMED', label: '✅ Dikonfirmasi' },
-  { value: 'PROCESSING', label: '🔄 Diproses' },
-  { value: 'SHIPPED', label: '📦 Dikirim' },
-  { value: 'DONE', label: '✨ Selesai' },
-  { value: 'CANCELLED', label: '❌ Dibatalkan' },
+  { value: "", label: "🗂️ Semua" },
+  { value: "PENDING", label: "⏳ Menunggu" },
+  { value: "CONFIRMED", label: "✅ Dikonfirmasi" },
+  { value: "PROCESSING", label: "🔄 Diproses" },
+  { value: "SHIPPED", label: "📦 Dikirim" },
+  { value: "DONE", label: "✨ Selesai" },
+  { value: "CANCELLED", label: "❌ Dibatalkan" },
 ];
 
 function getStepNumber(status: OrderStatus): number {
-  if (status === 'CANCELLED') return 0;
+  if (status === "CANCELLED") return 0;
   const idx = STATUS_ORDER.indexOf(status);
   return idx >= 0 ? idx + 1 : 1;
 }
@@ -75,7 +76,7 @@ export default function OrdersPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [uploadOpen, setUploadOpen] = useState<Record<string, boolean>>({});
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
@@ -87,7 +88,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.push('/auth/login');
+      router.push("/auth/login");
     }
   }, [authLoading, isAuthenticated, router]);
 
@@ -97,13 +98,17 @@ export default function OrdersPage() {
   const toggleUpload = (id: string) =>
     setUploadOpen((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const handleUploadPayment = async (orderId: string, file: File, orderNumber: string) => {
+  const handleUploadPayment = async (
+    orderId: string,
+    file: File,
+    orderNumber: string,
+  ) => {
     // Validate filename matches order number
-    const fileNameWithoutExt = file.name.replace(/\.[^.]+$/, '');
+    const fileNameWithoutExt = file.name.replace(/\.[^.]+$/, "");
     if (fileNameWithoutExt !== orderNumber) {
       toast(
         `Nama file harus sesuai kode pesanan: ${orderNumber}. Contoh: ${orderNumber}.jpg`,
-        'error',
+        "error",
       );
       return;
     }
@@ -111,20 +116,22 @@ export default function OrdersPage() {
     setUploading((prev) => ({ ...prev, [orderId]: true }));
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
       await api.post(`/orders/${orderId}/payment-proof`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { "Content-Type": "multipart/form-data" },
       });
       toast(
-        '📸 Bukti transfer berhasil diunggah! Admin akan verifikasi segera.',
-        'success',
+        "📸 Bukti transfer berhasil diunggah! Admin akan verifikasi segera.",
+        "success",
       );
       toggleUpload(orderId);
       refetch();
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: string } } };
-      const msg = axiosErr?.response?.data?.error || 'Gagal mengunggah bukti transfer. Coba lagi.';
-      toast(msg, 'error');
+      const msg =
+        axiosErr?.response?.data?.error ||
+        "Gagal mengunggah bukti transfer. Coba lagi.";
+      toast(msg, "error");
     } finally {
       setUploading((prev) => ({ ...prev, [orderId]: false }));
     }
@@ -171,8 +178,8 @@ export default function OrdersPage() {
             className={`flex items-center gap-1.5 py-2.5 px-5 rounded-pill border-[1.5px] text-[0.82rem] font-bold cursor-pointer transition-all shadow-[0_2px_12px_rgba(45,90,0,.06)]
               ${
                 statusFilter === f.value
-                  ? 'bg-g1 text-white border-g1 shadow-[0_4px_18px_rgba(45,90,0,.35)]'
-                  : 'bg-white text-muted border-faint hover:border-g3 hover:text-g1 hover:-translate-y-0.5'
+                  ? "bg-g1 text-white border-g1 shadow-[0_4px_18px_rgba(45,90,0,.35)]"
+                  : "bg-white text-muted border-faint hover:border-g3 hover:text-g1 hover:-translate-y-0.5"
               }`}
           >
             {f.label}
@@ -196,31 +203,31 @@ export default function OrdersPage() {
               </h3>
               <p className="text-[0.85rem] leading-relaxed mb-5">
                 {statusFilter
-                  ? 'Tidak ada pesanan dengan status ini.'
-                  : 'Yuk mulai belanja buah segar!'}
+                  ? "Tidak ada pesanan dengan status ini."
+                  : "Yuk mulai belanja buah segar!"}
               </p>
-              <a
+              <Link
                 href="/products"
                 className="inline-block px-8 py-3 bg-g1 text-white rounded-pill text-[0.92rem] font-extrabold no-underline shadow-[0_4px_16px_rgba(45,90,0,.3)] hover:bg-g2 hover:-translate-y-0.5 transition-all"
               >
                 🍎 Jelajahi Produk
-              </a>
+              </Link>
             </div>
           </div>
         ) : (
           <>
             <div className="mb-4 text-[0.82rem] text-muted font-semibold">
-              Ditemukan{' '}
+              Ditemukan{" "}
               <b className="text-ink">
                 {pagination?.totalItems || orders.length}
-              </b>{' '}
+              </b>{" "}
               pesanan
             </div>
 
             {orders.map((o: Order) => {
               const s = STATUS_MAP[o.status] || STATUS_MAP.PENDING;
               const step = getStepNumber(o.status);
-              const isCancelled = o.status === 'CANCELLED';
+              const isCancelled = o.status === "CANCELLED";
 
               return (
                 <div
@@ -232,7 +239,7 @@ export default function OrdersPage() {
                     <div>
                       <div className="text-[0.85rem] font-extrabold tracking-wide">
                         {o.orderNumber}
-                        {o.buyerType === 'RESELLER' && (
+                        {o.buyerType === "RESELLER" && (
                           <span className="bg-g5 text-g1 text-[0.65rem] py-0.5 px-2 rounded-pill ml-1.5 font-extrabold">
                             RESELLER
                           </span>
@@ -258,24 +265,24 @@ export default function OrdersPage() {
                           className="absolute top-[17px] left-[16px] h-0.5 bg-g4 transition-all duration-700 z-0"
                           style={{
                             width: `${((step - 1) / 4) * 100}%`,
-                            maxWidth: 'calc(100% - 32px)',
+                            maxWidth: "calc(100% - 32px)",
                           }}
                         />
                         {TL_STEPS.map((t, i) => (
                           <div
                             key={i}
                             className={`flex-1 flex flex-col items-center gap-2 relative z-[1]
-                            ${i + 1 < step ? 'text-g1' : i + 1 === step ? 'text-g1' : 'text-muted'}`}
+                            ${i + 1 < step ? "text-g1" : i + 1 === step ? "text-g1" : "text-muted"}`}
                           >
                             <div
                               className={`w-[34px] h-[34px] rounded-full border-2 flex items-center justify-center text-[0.85rem] transition-all
-                              ${i + 1 < step ? 'bg-g4 border-g4' : i + 1 === step ? 'bg-g1 border-g1 shadow-[0_0_0_4px_rgba(69,125,0,.15)]' : 'bg-white border-faint'}`}
+                              ${i + 1 < step ? "bg-g4 border-g4" : i + 1 === step ? "bg-g1 border-g1 shadow-[0_0_0_4px_rgba(69,125,0,.15)]" : "bg-white border-faint"}`}
                             >
-                              {i + 1 < step ? '✓' : t.emoji}
+                              {i + 1 < step ? "✓" : t.emoji}
                             </div>
                             <div
                               className={`text-[0.68rem] font-bold text-center leading-tight hidden sm:block
-                              ${i + 1 <= step ? 'text-g1 font-extrabold' : 'text-muted'}`}
+                              ${i + 1 <= step ? "text-g1 font-extrabold" : "text-muted"}`}
                             >
                               {t.label}
                             </div>
@@ -290,7 +297,7 @@ export default function OrdersPage() {
                     {o.items?.map((it, i) => (
                       <div
                         key={it.id}
-                        className={`flex items-center gap-3 py-3 ${i < (o.items?.length || 0) - 1 ? 'border-b border-faint' : ''}`}
+                        className={`flex items-center gap-3 py-3 ${i < (o.items?.length || 0) - 1 ? "border-b border-faint" : ""}`}
                       >
                         <div className="w-11 h-11 rounded-xl bg-g6 flex items-center justify-center shrink-0 overflow-hidden">
                           {it.product?.imageUrl ? (
@@ -338,7 +345,7 @@ export default function OrdersPage() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      {o.status === 'PENDING' && !o.paymentProofUrl && (
+                      {o.status === "PENDING" && !o.paymentProofUrl && (
                         <button
                           onClick={() => toggleUpload(o.id)}
                           className="py-2 px-4 rounded-pill text-[0.78rem] font-bold cursor-pointer bg-g1 text-white border-none shadow-[0_2px_10px_rgba(45,90,0,.2)] hover:bg-g2 transition-all"
@@ -346,12 +353,12 @@ export default function OrdersPage() {
                           📤 Upload Bukti TF
                         </button>
                       )}
-                      {o.status === 'PENDING' && o.paymentProofUrl && (
+                      {o.status === "PENDING" && o.paymentProofUrl && (
                         <span className="py-2 px-4 rounded-pill text-[0.78rem] font-bold bg-[#fff3e0] text-[#c47d00]">
                           ⏳ Menunggu Verifikasi
                         </span>
                       )}
-                      {o.status === 'DONE' && (
+                      {o.status === "DONE" && (
                         <button
                           onClick={() => router.push(`/orders/${o.id}`)}
                           className="py-2 px-4 rounded-pill text-[0.78rem] font-bold cursor-pointer bg-[#fff8e1] text-[#f59e0b] border-[1.5px] border-[#f59e0b]/30 hover:bg-[#fef3c7] transition-all"
@@ -376,11 +383,12 @@ export default function OrdersPage() {
                       </h4>
                       <div className="bg-[#fff8e1] border border-[#ffe082] rounded-xl px-3 py-2 mb-3">
                         <p className="text-xs font-bold text-[#c47d00]">
-                          ⚠️ Nama file harus: <span className="font-mono">{o.orderNumber}.jpg</span>
+                          ⚠️ Nama file harus:{" "}
+                          <span className="font-mono">{o.orderNumber}.jpg</span>
                         </p>
                       </div>
                       <label
-                        className={`block border-2 border-dashed border-g4 rounded-[14px] p-5 text-center cursor-pointer bg-g6 hover:border-g2 hover:bg-g5 transition-all ${uploading[o.id] ? 'opacity-50 pointer-events-none' : ''}`}
+                        className={`block border-2 border-dashed border-g4 rounded-[14px] p-5 text-center cursor-pointer bg-g6 hover:border-g2 hover:bg-g5 transition-all ${uploading[o.id] ? "opacity-50 pointer-events-none" : ""}`}
                       >
                         <input
                           type="file"
@@ -388,7 +396,8 @@ export default function OrdersPage() {
                           className="hidden"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) handleUploadPayment(o.id, file, o.orderNumber);
+                            if (file)
+                              handleUploadPayment(o.id, file, o.orderNumber);
                           }}
                         />
                         {uploading[o.id] ? (
@@ -438,8 +447,8 @@ export default function OrdersPage() {
                     className={`w-[38px] h-[38px] rounded-full border-[1.5px] flex items-center justify-center text-[0.88rem] font-bold transition-all
                       ${
                         page === p
-                          ? 'bg-g1 text-white border-g1'
-                          : 'border-faint bg-white text-muted hover:border-g3 hover:bg-g6'
+                          ? "bg-g1 text-white border-g1"
+                          : "border-faint bg-white text-muted hover:border-g3 hover:bg-g6"
                       }`}
                   >
                     {p}
@@ -467,7 +476,7 @@ export default function OrdersPage() {
               </p>
               <button
                 onClick={() =>
-                  toast('💬 Menghubungi admin via WhatsApp...', 'info')
+                  toast("💬 Menghubungi admin via WhatsApp...", "info")
                 }
                 className="bg-g4 text-ink border-none py-2.5 px-6 rounded-pill text-[0.85rem] font-extrabold cursor-pointer hover:bg-g5 transition-all"
               >

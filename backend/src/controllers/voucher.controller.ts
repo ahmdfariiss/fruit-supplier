@@ -11,6 +11,7 @@ export const validateVoucher = async (
     const result = await voucherService.validateVoucher(
       req.body.code,
       req.body.orderTotal,
+      req.user?.userId,
     );
     success(res, result);
   } catch (error) {

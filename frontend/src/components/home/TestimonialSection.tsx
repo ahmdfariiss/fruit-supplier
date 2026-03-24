@@ -87,33 +87,71 @@ export default function TestimonialSection() {
         </div>
       </div>
 
-      {/* Testimonials Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        {testimonials.map((t) => (
-          <div
-            key={t.id}
-            className="bg-white rounded-3xl p-6 border border-faint shadow-sm hover:shadow-card hover:-translate-y-1 transition-[transform,box-shadow] duration-300"
-          >
-            <StarRating rating={t.rating} size="sm" />
-            <p className="text-[0.85rem] text-muted leading-relaxed mt-3 mb-4">
-              &ldquo;{t.comment}&rdquo;
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-g5 flex items-center justify-center text-g1 font-bold text-sm">
-                {t.user.name
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .toUpperCase()
-                  .slice(0, 2)}
+      {/* Testimonials Marquee */}
+      <div className="max-w-[100vw] overflow-hidden -mx-[6%] relative">
+        {/* Fade edges */}
+        <div className="absolute inset-y-0 left-0 w-16 md:w-32 bg-gradient-to-r from-g6 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-16 md:w-32 bg-gradient-to-l from-g6 to-transparent z-10 pointer-events-none" />
+
+        <div className="flex flex-col gap-6">
+          {/* Top Row (Right to Left) */}
+          <div className="flex gap-6 w-max animate-ticker hover:[animation-play-state:paused] px-6">
+            {[...testimonials, ...testimonials, ...testimonials, ...testimonials, ...testimonials, ...testimonials].map((t, i) => (
+              <div
+                key={`top-${t.id}-${i}`}
+                className="w-[320px] bg-white rounded-3xl p-6 border border-faint shadow-sm hover:shadow-card transition-[box-shadow] duration-300 flex-shrink-0"
+              >
+                <StarRating rating={t.rating} size="sm" />
+                <p className="text-[0.85rem] text-muted leading-relaxed mt-3 mb-4 line-clamp-3 h-[60px]">
+                  &ldquo;{t.comment}&rdquo;
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-g5 flex items-center justify-center text-g1 font-bold text-sm">
+                    {t.user.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-ink">{t.user.name}</p>
+                    <p className="text-xs text-muted truncate w-[180px]">{t.product.name}</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-bold text-ink">{t.user.name}</p>
-                <p className="text-xs text-muted">{t.product.name}</p>
-              </div>
-            </div>
+            ))}
           </div>
-        ))}
+
+          {/* Bottom Row (Left to Right) */}
+          <div className="flex gap-6 w-max animate-ticker-reverse hover:[animation-play-state:paused] px-6 ml-[-200px]">
+            {[...testimonials].reverse().concat([...testimonials].reverse()).concat([...testimonials].reverse()).concat([...testimonials].reverse()).concat([...testimonials].reverse()).concat([...testimonials].reverse()).map((t, i) => (
+              <div
+                key={`bot-${t.id}-${i}`}
+                className="w-[320px] bg-white rounded-3xl p-6 border border-faint shadow-sm hover:shadow-card transition-[box-shadow] duration-300 flex-shrink-0"
+              >
+                <StarRating rating={t.rating} size="sm" />
+                <p className="text-[0.85rem] text-muted leading-relaxed mt-3 mb-4 line-clamp-3 h-[60px]">
+                  &ldquo;{t.comment}&rdquo;
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-g5 flex items-center justify-center text-g1 font-bold text-sm">
+                    {t.user.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-ink">{t.user.name}</p>
+                    <p className="text-xs text-muted truncate w-[180px]">{t.product.name}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

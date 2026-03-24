@@ -8,26 +8,32 @@ import api from '@/lib/api';
 const BannerSlider = dynamic(() => import('@/components/home/BannerSlider'), {
   ssr: false,
   loading: () => (
-    <div className="rounded-3xl bg-g5 aspect-[21/9] md:aspect-[3/1] animate-pulse" />
+    <div className="rounded-3xl bg-g5 aspect-[16/7] sm:aspect-[5/2] lg:aspect-[3/1] max-h-[420px] animate-pulse" />
   ),
 });
 
-const FeaturedProducts = dynamic(() => import('@/components/home/FeaturedProducts'), {
-  ssr: false,
-  loading: () => (
-    <div className="py-[90px] px-[6%]">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-g5 rounded-[22px] h-[320px] animate-pulse" />
-        ))}
+const FeaturedProducts = dynamic(
+  () => import('@/components/home/FeaturedProducts'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="py-[90px] px-[6%]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-g5 rounded-[22px] h-[320px] animate-pulse"
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  ),
-});
+    ),
+  },
+);
 
 const TestimonialSection = dynamic(
   () => import('@/components/home/TestimonialSection'),
-  { ssr: false }
+  { ssr: false },
 );
 
 export default function HomeContent() {
@@ -55,19 +61,9 @@ export default function HomeContent() {
     <>
       {/* ═══ BANNER STRIP ═══ */}
       {banners && banners.length > 0 && (
-        <section className="py-10 px-[6%]">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-4">
+        <section className="py-6 px-[6%]">
+          <div className="mx-auto w-full max-w-[1180px]">
             <BannerSlider banners={banners} />
-            {banners.length > 1 && (
-              <div className="rounded-[22px] bg-ink border-2 border-dashed border-white/[0.18] flex items-center justify-center h-[150px] text-center cursor-pointer hover:border-g4 hover:shadow-card transition-all overflow-hidden">
-                <div>
-                  <span className="text-2xl block mb-1">📢</span>
-                  <span className="text-white/80 text-[0.78rem] font-bold">
-                    Banner Promo
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
         </section>
       )}

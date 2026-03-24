@@ -123,7 +123,7 @@ export default function AdminLayout({
                         : 'text-white/60 hover:bg-white/8 hover:text-white'
                     }`}
                 >
-                  <Icon className="w-4.5 h-4.5" />
+                  <Icon className="w-5 h-5" />
                   {item.label}
                   {isActive(item) && (
                     <span className="ml-auto w-1.5 h-1.5 rounded-full bg-g4" />

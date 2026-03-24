@@ -3,11 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
+
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
-import { useHydrated } from '@/hooks/useHydrated';
 import {
   CartIcon,
   CloseIcon,
@@ -25,7 +24,6 @@ const navLinks = [
 ];
 
 function NavbarInner() {
-  const hydrated = useHydrated();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
@@ -49,7 +47,6 @@ function NavbarInner() {
 
   // Don't show navbar on admin pages
   if (pathname?.startsWith('/admin')) return null;
-  if (!hydrated) return null;
 
   const itemCount = cartItems();
   const showAuthenticatedActions = !isLoading && isAuthenticated;
@@ -193,21 +190,24 @@ function NavbarInner() {
       </nav>
 
       {/* Mobile Menu */}
-      {mobileOpen && (
-        <div
-          id="mobile-menu"
-          role="navigation"
-          aria-label="Menu navigasi mobile"
-          className="md:hidden mt-3 bg-white/95 backdrop-blur-xl rounded-3xl border border-white/90 shadow-lg p-5"
-        >
-          <ul className="flex flex-col gap-1 list-none mb-4" role="list">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  aria-current={pathname === link.href ? 'page' : undefined}
-                  className={`
+      <div
+        id="mobile-menu"
+        role="navigation"
+        aria-label="Menu navigasi mobile"
+        className={`md:hidden mt-3 bg-white/95 backdrop-blur-xl rounded-3xl border border-white/90 shadow-lg p-5 transition-all duration-300 ${
+          mobileOpen
+            ? 'opacity-100 visible'
+            : 'opacity-0 invisible pointer-events-none'
+        }`}
+      >
+        <ul className="flex flex-col gap-1 list-none mb-4" role="list">
+          {navLinks.map((link) => (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                aria-current={pathname === link.href ? 'page' : undefined}
+                className={`
                     block text-sm font-semibold px-4 py-3 rounded-2xl
                     transition-all no-underline
                     ${
@@ -216,66 +216,61 @@ function NavbarInner() {
                         : 'text-muted hover:bg-g6 hover:text-g1'
                     }
                   `}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {showAuthenticatedActions ? (
-            <div className="flex flex-col gap-2 mt-2 border-t border-faint pt-4">
-              <Link
-                href="/orders"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold text-muted hover:bg-g6 hover:text-g1 no-underline"
               >
-                <PackageIcon className="w-4 h-4" /> Pesanan Saya
+                {link.label}
               </Link>
-              {user?.role === 'ADMIN' && (
-                <Link
-                  href="/admin"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold bg-g6 text-g1 hover:bg-g5 no-underline"
-                >
-                  <SettingsIcon className="w-4 h-4" /> Panel Admin
-                </Link>
-              )}
-              <button
-                onClick={() => {
-                  logout();
-                  setMobileOpen(false);
-                }}
-                className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 no-underline bg-transparent border-none cursor-pointer text-left w-full"
-              >
-                <LogoutIcon className="w-4 h-4" /> Keluar
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
+            </li>
+          ))}
+        </ul>
+        {showAuthenticatedActions ? (
+          <div className="flex flex-col gap-2 mt-2 border-t border-faint pt-4">
+            <Link
+              href="/orders"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold text-muted hover:bg-g6 hover:text-g1 no-underline"
+            >
+              <PackageIcon className="w-4 h-4" /> Pesanan Saya
+            </Link>
+            {user?.role === 'ADMIN' && (
               <Link
-                href="/auth/login"
+                href="/admin"
                 onClick={() => setMobileOpen(false)}
-                className="flex-1 text-center px-4 py-3 rounded-full text-sm font-bold border border-faint text-ink no-underline"
+                className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold bg-g6 text-g1 hover:bg-g5 no-underline"
               >
-                Masuk
+                <SettingsIcon className="w-4 h-4" /> Panel Admin
               </Link>
-              <Link
-                href="/auth/register"
-                onClick={() => setMobileOpen(false)}
-                className="flex-1 text-center px-4 py-3 rounded-full text-sm font-bold bg-g1 text-white no-underline"
-              >
-                Daftar
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+            <button
+              onClick={() => {
+                logout();
+                setMobileOpen(false);
+              }}
+              className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 no-underline bg-transparent border-none cursor-pointer text-left w-full"
+            >
+              <LogoutIcon className="w-4 h-4" /> Keluar
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Link
+              href="/auth/login"
+              onClick={() => setMobileOpen(false)}
+              className="flex-1 text-center px-4 py-3 rounded-full text-sm font-bold border border-faint text-ink no-underline"
+            >
+              Masuk
+            </Link>
+            <Link
+              href="/auth/register"
+              onClick={() => setMobileOpen(false)}
+              className="flex-1 text-center px-4 py-3 rounded-full text-sm font-bold bg-g1 text-white no-underline"
+            >
+              Daftar
+            </Link>
+          </div>
+        )}
+      </div>
     </header>
   );
 }
 
-const Navbar = dynamic(() => Promise.resolve(NavbarInner), {
-  ssr: false,
-});
-
-export default Navbar;
+export default NavbarInner;

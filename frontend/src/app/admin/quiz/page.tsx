@@ -31,7 +31,7 @@ export default function AdminQuizPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<QuizQuestion | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-quiz'],
@@ -94,7 +94,7 @@ export default function AdminQuizPage() {
       await api.delete(`/admin/quiz/${deleteTarget.id}`);
       queryClient.invalidateQueries({ queryKey: ['admin-quiz'] });
     } catch {
-      addToast({ type: 'error', message: 'Gagal menghapus soal' });
+      toast('Gagal menghapus soal', 'error');
     } finally {
       setDeletingId(null);
       setDeleteTarget(null);

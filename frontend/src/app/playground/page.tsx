@@ -9,7 +9,12 @@ import { useToast } from '@/hooks/useToast';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { useRouter } from 'next/navigation';
-import { formatRupiah } from '@/lib/formatters';
+import {
+  formatRupiah,
+  getJakartaCurrentDate,
+  getJakartaCurrentMonth,
+  getJakartaCurrentYear,
+} from '@/lib/formatters';
 import type { Product } from '@/types/product';
 import type { QuizQuestion, QuizResult } from '@/types/quiz';
 
@@ -100,9 +105,12 @@ export default function PlaygroundPage() {
    PANEL 1: KALENDER MUSIM BUAH (API)
    ════════════════════════════════════════════ */
 function CalendarPanel() {
-  const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth());
+  const currentJakartaYear = getJakartaCurrentYear();
+  const currentJakartaMonthIndex = getJakartaCurrentMonth() - 1;
+  const currentJakartaDate = getJakartaCurrentDate();
+
+  const [year, setYear] = useState(currentJakartaYear);
+  const [month, setMonth] = useState(currentJakartaMonthIndex);
   const [filter, setFilter] = useState('all');
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const router = useRouter();
@@ -157,7 +165,8 @@ function CalendarPanel() {
       : [allProducts[parseInt(filter)]].filter(Boolean);
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const isCurrentMonth = now.getFullYear() === year && now.getMonth() === month;
+  const isCurrentMonth =
+    currentJakartaYear === year && currentJakartaMonthIndex === month;
 
   const peakFruits = filteredProducts.filter(
     (p) => getSeasonStatus(p, month) === 'P',
@@ -256,7 +265,7 @@ function CalendarPanel() {
           const day = i + 1;
           const hasPeak = peakFruits.length > 0;
           const hasAvail = availFruits.length > 0 && !hasPeak;
-          const isToday = isCurrentMonth && day === now.getDate();
+          const isToday = isCurrentMonth && day === currentJakartaDate;
           const showFruits = [...peakFruits, ...availFruits];
           const icons = showFruits
             .slice(0, 4)

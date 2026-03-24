@@ -49,6 +49,10 @@ const config: Config = {
           from: { transform: 'translateX(0)' },
           to: { transform: 'translateX(-50%)' },
         },
+        'ticker-reverse': {
+          from: { transform: 'translateX(-50%)' },
+          to: { transform: 'translateX(0)' },
+        },
         fadeInUp: {
           from: { opacity: '0', transform: 'translateY(24px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
@@ -59,7 +63,8 @@ const config: Config = {
         },
       },
       animation: {
-        ticker: 'ticker 22s linear infinite',
+        ticker: 'ticker 90s linear infinite',
+        'ticker-reverse': 'ticker-reverse 90s linear infinite',
         'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
         'fade-in': 'fadeIn 0.3s ease-out forwards',
       },

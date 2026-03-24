@@ -4,11 +4,12 @@ import {
   MapPinIcon,
   PackageIcon,
 } from '@/components/ui/icons';
+import FadeIn from '@/components/ui/FadeIn';
 
 export default function ImpactCounter() {
   const stats = [
     {
-      value: '150+',
+      value: '10+',
       label: 'Petani Mitra',
       icon: <LeafIcon className="w-8 h-8 mx-auto text-white" />,
     },
@@ -30,10 +31,10 @@ export default function ImpactCounter() {
   ];
 
   return (
-    <section className="py-16 px-[6%] bg-g1 cv-auto">
+    <section className="py-16 px-[6%] bg-g1 cv-auto overflow-hidden">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto text-center">
-        {stats.map((s) => (
-          <div key={s.label}>
+        {stats.map((s, i) => (
+          <FadeIn key={s.label} direction="up" delay={i * 0.1}>
             <span className="text-3xl block mb-2">{s.icon}</span>
             <div className="text-[2rem] font-black text-white tracking-tight">
               {s.value}
@@ -41,7 +42,7 @@ export default function ImpactCounter() {
             <div className="text-[0.72rem] font-semibold text-white/90 uppercase tracking-widest">
               {s.label}
             </div>
-          </div>
+          </FadeIn>
         ))}
       </div>
     </section>

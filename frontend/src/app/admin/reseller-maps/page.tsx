@@ -44,7 +44,7 @@ export default function AdminResellerMapsPage() {
     null,
   );
   const [showForm, setShowForm] = useState(false);
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-reseller-maps'],
@@ -98,7 +98,7 @@ export default function AdminResellerMapsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-reseller-maps'] });
       queryClient.invalidateQueries({ queryKey: ['reseller-maps'] });
     } catch {
-      addToast({ type: 'error', message: 'Gagal menghapus lokasi' });
+      toast('Gagal menghapus lokasi', 'error');
     } finally {
       setDeletingId(null);
       setDeleteTarget(null);
@@ -110,10 +110,10 @@ export default function AdminResellerMapsPage() {
 
   // Supplier center (fallback to Semarang)
   const centerLat = parseFloat(
-    process.env.NEXT_PUBLIC_SUPPLIER_LAT || '-6.9667',
+    process.env.NEXT_PUBLIC_SUPPLIER_LAT || '-6.2748',
   );
   const centerLng = parseFloat(
-    process.env.NEXT_PUBLIC_SUPPLIER_LNG || '110.4167',
+    process.env.NEXT_PUBLIC_SUPPLIER_LNG || '106.8672',
   );
 
   return (

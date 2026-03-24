@@ -21,7 +21,7 @@ export default function AdminProductsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-products', search, page],
@@ -60,7 +60,7 @@ export default function AdminProductsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       setDeleteTarget(null);
     } catch {
-      addToast({ type: 'error', message: 'Gagal menghapus produk' });
+      toast('Gagal menghapus produk', 'error');
     } finally {
       setDeletingId(null);
     }

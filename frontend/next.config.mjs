@@ -39,17 +39,29 @@ const nextConfig = {
     ];
   },
   async headers() {
+    const isProd = process.env.NODE_ENV === 'production';
+
     return [
       {
         source: '/:all*(svg|jpg|png|webp|avif|ico|woff2)',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+          {
+            key: 'Cache-Control',
+            value: isProd
+              ? 'public, max-age=31536000, immutable'
+              : 'no-store, max-age=0',
+          },
         ],
       },
       {
         source: '/_next/static/:path*',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+          {
+            key: 'Cache-Control',
+            value: isProd
+              ? 'public, max-age=31536000, immutable'
+              : 'no-store, max-age=0',
+          },
         ],
       },
     ];

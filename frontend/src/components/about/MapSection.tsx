@@ -83,9 +83,9 @@ export default function MapSection({
                 Kantor BuahKita
               </div>
               <div className="text-[0.75rem] text-muted leading-[1.5]">
-                Jl. Pasar Buah No. 12
+                Jl. H. Taiman Ujung No.67, RT.7/RW.4, Kp. Tengah, Kec. Kramat jati, Kota Jakarta Timur.
                 <br />
-                Semarang, Jawa Tengah
+                Jakarta Timur, DKI Jakarta
               </div>
               <div className="inline-flex items-center gap-1 bg-g5 text-g1 text-[0.65rem] font-extrabold px-[9px] py-[3px] rounded-pill mt-1.5 border border-faint">
                 🏪 Kantor Pusat

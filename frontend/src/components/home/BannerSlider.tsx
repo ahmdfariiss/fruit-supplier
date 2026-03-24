@@ -37,7 +37,7 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
   return (
     <div className="relative rounded-3xl overflow-hidden bg-ink">
       {/* Slides */}
-      <div className="relative aspect-[21/9] md:aspect-[3/1]">
+      <div className="relative aspect-[16/7] sm:aspect-[5/2] lg:aspect-[3/1] max-h-[420px]">
         {banners.map((banner, idx) => (
           <div
             key={banner.id}
@@ -62,17 +62,10 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
               alt={banner.title}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, 75vw"
+              sizes="100vw"
               priority={idx === 0}
               loading={idx === 0 ? 'eager' : 'lazy'}
             />
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-ink/60 via-ink/20 to-transparent" />
-            <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10">
-              <p className="text-white font-bold text-lg md:text-2xl max-w-md">
-                {banner.title}
-              </p>
-            </div>
           </div>
         ))}
       </div>

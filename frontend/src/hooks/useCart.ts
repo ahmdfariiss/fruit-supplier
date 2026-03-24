@@ -6,13 +6,14 @@ import { useAuthStore } from '@/store/authStore';
 
 export const useCart = () => {
   const cart = useCartStore();
+  const fetchCart = useCartStore((s) => s.fetchCart);
   const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated) {
-      cart.fetchCart();
+      fetchCart();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchCart]);
 
   return cart;
 };

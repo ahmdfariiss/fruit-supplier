@@ -1,7 +1,5 @@
 import { prisma } from '../config/database';
 import { AppError } from '../middlewares/errorHandler';
-import { nanoid } from 'nanoid';
-import { env } from '../config/env';
 import type { SubmitQuizInput } from '../validators/quiz.validator';
 
 // Public: returns questions WITHOUT correctIndex
@@ -107,35 +105,40 @@ export const submitQuiz = async (userId: string, input: SubmitQuizInput) => {
   let voucherCode: string | null = null;
 
   if (isPerfect) {
-    // Check if user already has a quiz voucher
-    const existingVouchers = await prisma.userVoucher.findMany({
-      where: { userId },
-      include: { voucher: true },
+    const now = new Date();
+
+    const candidateVouchers = await prisma.voucher.findMany({
+      where: {
+        isActive: true,
+        validFrom: { lte: now },
+        OR: [{ validUntil: null }, { validUntil: { gte: now } }],
+        NOT: {
+          code: { startsWith: 'QUIZ-' },
+        },
+        userVouchers: {
+          none: { userId },
+        },
+      },
+      orderBy: [{ createdAt: 'asc' }],
+      select: { id: true, code: true, usedCount: true, usageLimit: true },
+      take: 100,
     });
 
-    const hasQuizVoucher = existingVouchers.length > 0;
+    const availableVoucher = candidateVouchers.find(
+      (voucher) => voucher.usedCount < voucher.usageLimit,
+    );
 
-    if (hasQuizVoucher) {
-      throw new AppError('Kamu sudah mendapat voucher dari quiz ini.', 400);
+    if (!availableVoucher) {
+      throw new AppError(
+        'Belum ada voucher reward quiz yang tersedia. Silakan hubungi admin.',
+        400,
+      );
     }
 
-    // Generate voucher
-    voucherCode = `QUIZ-${nanoid(8).toUpperCase()}`;
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + env.QUIZ_VOUCHER_EXPIRES_DAYS);
-
-    const voucher = await prisma.voucher.create({
-      data: {
-        code: voucherCode,
-        discountType: 'PERCENTAGE',
-        discountValue: env.QUIZ_VOUCHER_DISCOUNT,
-        usageLimit: 1,
-        validUntil: expiresAt,
-      },
-    });
+    voucherCode = availableVoucher.code;
 
     await prisma.userVoucher.create({
-      data: { userId, voucherId: voucher.id },
+      data: { userId, voucherId: availableVoucher.id },
     });
   }
 

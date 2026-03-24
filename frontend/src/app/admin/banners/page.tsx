@@ -28,7 +28,7 @@ export default function AdminBannersPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Banner | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-banners'],
@@ -89,7 +89,7 @@ export default function AdminBannersPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-banners'] });
       queryClient.invalidateQueries({ queryKey: ['banners'] });
     } catch {
-      addToast({ type: 'error', message: 'Gagal menghapus banner' });
+      toast('Gagal menghapus banner', 'error');
     } finally {
       setDeletingId(null);
       setDeleteTarget(null);
