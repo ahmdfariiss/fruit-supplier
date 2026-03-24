@@ -10,9 +10,11 @@ export const getDashboardStats = async () => {
     ordersToday,
     ordersThisMonth,
     totalRevenue,
+    totalUsers,
     newUsersThisMonth,
     totalProducts,
     pendingOrders,
+    recentOrders,
   ] = await Promise.all([
     prisma.order.count(),
     prisma.order.count({ where: { createdAt: { gte: startOfDay } } }),
@@ -21,9 +23,25 @@ export const getDashboardStats = async () => {
       _sum: { total: true },
       where: { status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DONE'] } },
     }),
+    prisma.user.count(),
     prisma.user.count({ where: { createdAt: { gte: startOfMonth } } }),
     prisma.product.count(),
     prisma.order.count({ where: { status: 'PENDING' } }),
+    prisma.order.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        orderNumber: true,
+        total: true,
+        status: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    }),
   ]);
 
   // Top products
@@ -39,9 +57,11 @@ export const getDashboardStats = async () => {
     ordersToday,
     ordersThisMonth,
     totalRevenue: totalRevenue._sum.total || 0,
+    totalUsers,
     newUsersThisMonth,
     totalProducts,
     pendingOrders,
+    recentOrders,
     topProducts: topProducts.map((p: any) => ({
       productId: p.productId,
       productName: p.productName,

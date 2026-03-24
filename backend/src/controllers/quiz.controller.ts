@@ -48,7 +48,11 @@ export const createQuestion = async (
   next: NextFunction,
 ) => {
   try {
-    const question = await quizService.createQuestion(req.body);
+    const payload = {
+      ...req.body,
+      correctIndex: req.body.correctIndex ?? req.body.correctAnswer,
+    };
+    const question = await quizService.createQuestion(payload);
     success(res, question, 'Soal quiz berhasil ditambahkan.', 201);
   } catch (error) {
     next(error);
@@ -61,9 +65,13 @@ export const updateQuestion = async (
   next: NextFunction,
 ) => {
   try {
+    const payload = {
+      ...req.body,
+      correctIndex: req.body.correctIndex ?? req.body.correctAnswer,
+    };
     const question = await quizService.updateQuestion(
       req.params.id as string,
-      req.body,
+      payload,
     );
     success(res, question, 'Soal quiz berhasil diperbarui.');
   } catch (error) {

@@ -12,7 +12,8 @@ interface QuizQuestion {
   id: string;
   question: string;
   options: string[];
-  correctIndex: number;
+  correctIndex?: number;
+  correctAnswer?: number;
   explanation: string | null;
 }
 
@@ -43,11 +44,17 @@ export default function AdminQuizPage() {
 
   const questions = data || [];
 
+  const getCorrectIndex = (q: QuizQuestion) => {
+    if (typeof q.correctIndex === 'number') return q.correctIndex;
+    if (typeof q.correctAnswer === 'number') return q.correctAnswer;
+    return 0;
+  };
+
   const handleEdit = (q: QuizQuestion) => {
     setForm({
       question: q.question,
       options: [...q.options],
-      correctIndex: q.correctIndex,
+      correctIndex: getCorrectIndex(q),
       explanation: q.explanation || '',
     });
     setEditingId(q.id);
@@ -276,14 +283,14 @@ export default function AdminQuizPage() {
                     <div
                       key={i}
                       className={`px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 ${
-                        i === q.correctIndex
+                        i === getCorrectIndex(q)
                           ? 'bg-g5 text-g1 font-bold'
                           : 'bg-g6 text-muted'
                       }`}
                     >
                       <span
                         className={`w-4 h-4 rounded-full flex items-center justify-center text-[0.6rem] font-extrabold flex-shrink-0 ${
-                          i === q.correctIndex
+                          i === getCorrectIndex(q)
                             ? 'bg-g1 text-white'
                             : 'bg-faint text-muted'
                         }`}

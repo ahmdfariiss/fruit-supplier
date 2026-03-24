@@ -123,7 +123,9 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
                 : 'text-muted hover:bg-g6 hover:text-g1'
             }`}
           >
-            <span className="inline-flex items-center gap-1.5"><LeafIcon className="w-4 h-4" /> Semua Buah</span>
+            <span className="inline-flex items-center gap-1.5">
+              <LeafIcon className="w-4 h-4" /> Semua Buah
+            </span>
             <span className="text-[0.7rem] font-extrabold opacity-60 bg-white/20 px-[7px] py-[2px] rounded-pill">
               {categories.length || '—'}
             </span>
@@ -138,14 +140,14 @@ export default function ProductFilter({ categories }: ProductFilterProps) {
                   : 'text-muted hover:bg-g6 hover:text-g1'
               }`}
             >
-                <span className="inline-flex items-center gap-1.5">
-                  {cat.icon ? (
-                    <span>{cat.icon}</span>
-                  ) : (
-                    <FruitIcon className="w-4 h-4" />
-                  )}{' '}
-                  {cat.name}
-                </span>
+              <span className="inline-flex items-center gap-1.5">
+                {cat.icon ? (
+                  <span>{cat.icon}</span>
+                ) : (
+                  <FruitIcon className="w-4 h-4" />
+                )}{' '}
+                {cat.name}
+              </span>
             </button>
           ))}
         </div>

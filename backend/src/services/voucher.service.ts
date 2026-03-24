@@ -128,8 +128,7 @@ export const createVoucher = async (data: {
   }
 
   const resolvedDiscountType = data.discountType || data.type || 'PERCENTAGE';
-  const resolvedDiscountValue =
-    data.discountValue ?? data.value ?? Number.NaN;
+  const resolvedDiscountValue = data.discountValue ?? data.value ?? Number.NaN;
   const resolvedMinPurchase = data.minPurchase ?? data.minOrder ?? 0;
   const resolvedValidUntil = data.validUntil ?? data.expiresAt ?? null;
   const resolvedUsageLimit =
