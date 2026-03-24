@@ -2,6 +2,28 @@ import { prisma } from '../config/database';
 import { AppError } from '../middlewares/errorHandler';
 import type { SubmitQuizInput } from '../validators/quiz.validator';
 
+const normalizeCorrectIndex = (data: {
+  correctAnswer?: number | string;
+  correctIndex?: number | string;
+}) => {
+  const parseIndex = (value: unknown) => {
+    if (typeof value === 'number' && Number.isInteger(value)) return value;
+    if (typeof value === 'string' && value.trim() !== '') {
+      const parsed = Number(value);
+      if (Number.isInteger(parsed)) return parsed;
+    }
+    return undefined;
+  };
+
+  const fromCorrectIndex = parseIndex(data.correctIndex);
+  if (fromCorrectIndex !== undefined) return fromCorrectIndex;
+
+  const fromCorrectAnswer = parseIndex(data.correctAnswer);
+  if (fromCorrectAnswer !== undefined) return fromCorrectAnswer;
+
+  return undefined;
+};
+
 // Public: returns questions WITHOUT correctIndex
 export const getQuestions = async () => {
   return prisma.quizQuestion.findMany({
@@ -24,6 +46,7 @@ export const getQuestionsAdmin = async () => {
     id: q.id,
     question: q.question,
     options: q.options,
+    correctIndex: q.correctIndex,
     correctAnswer: q.correctIndex,
     explanation: q.explanation,
     imageUrl: null,
@@ -34,14 +57,25 @@ export const getQuestionsAdmin = async () => {
 export const createQuestion = async (data: {
   question: string;
   options: string[];
-  correctAnswer: number;
+  correctAnswer?: number | string;
+  correctIndex?: number | string;
   explanation?: string;
 }) => {
+  const correctIndex = normalizeCorrectIndex(data);
+
+  if (typeof correctIndex !== 'number') {
+    throw new AppError('Jawaban benar (correctIndex) wajib diisi.', 400);
+  }
+
+  if (correctIndex < 0 || correctIndex >= data.options.length) {
+    throw new AppError('Index jawaban benar tidak valid.', 400);
+  }
+
   return prisma.quizQuestion.create({
     data: {
       question: data.question,
       options: data.options,
-      correctIndex: data.correctAnswer,
+      correctIndex,
       explanation: data.explanation || null,
     },
   });
@@ -52,7 +86,8 @@ export const updateQuestion = async (
   data: {
     question?: string;
     options?: string[];
-    correctAnswer?: number;
+    correctAnswer?: number | string;
+    correctIndex?: number | string;
     explanation?: string;
   },
 ) => {
@@ -64,8 +99,18 @@ export const updateQuestion = async (
   const updateData: any = {};
   if (data.question !== undefined) updateData.question = data.question;
   if (data.options !== undefined) updateData.options = data.options;
-  if (data.correctAnswer !== undefined)
-    updateData.correctIndex = data.correctAnswer;
+  const normalizedCorrectIndex = normalizeCorrectIndex(data);
+  if (normalizedCorrectIndex !== undefined) {
+    const options = data.options ?? (question.options as string[]);
+    if (
+      normalizedCorrectIndex < 0 ||
+      normalizedCorrectIndex >= options.length
+    ) {
+      throw new AppError('Index jawaban benar tidak valid.', 400);
+    }
+
+    updateData.correctIndex = normalizedCorrectIndex;
+  }
   if (data.explanation !== undefined) updateData.explanation = data.explanation;
 
   return prisma.quizQuestion.update({ where: { id }, data: updateData });

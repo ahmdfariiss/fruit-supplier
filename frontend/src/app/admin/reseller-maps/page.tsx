@@ -110,10 +110,10 @@ export default function AdminResellerMapsPage() {
 
   // Supplier center (fallback to Semarang)
   const centerLat = parseFloat(
-    process.env.NEXT_PUBLIC_SUPPLIER_LAT || '-6.2748',
+    process.env.NEXT_PUBLIC_SUPPLIER_LAT || '-6.9667',
   );
   const centerLng = parseFloat(
-    process.env.NEXT_PUBLIC_SUPPLIER_LNG || '106.8672',
+    process.env.NEXT_PUBLIC_SUPPLIER_LNG || '110.4167',
   );
 
   return (

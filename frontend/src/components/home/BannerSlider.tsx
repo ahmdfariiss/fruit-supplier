@@ -55,7 +55,9 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
                 window.open(banner.linkUrl, '_blank');
               }
             }}
-            aria-label={banner.linkUrl ? `Buka banner: ${banner.title}` : undefined}
+            aria-label={
+              banner.linkUrl ? `Buka banner: ${banner.title}` : undefined
+            }
           >
             <Image
               src={getImageUrl(banner.imageUrl)}
@@ -89,7 +91,11 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
           </button>
 
           {/* Dots */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2" role="tablist" aria-label="Pilih banner">
+          <div
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2"
+            role="tablist"
+            aria-label="Pilih banner"
+          >
             {banners.map((_, idx) => (
               <button
                 key={idx}

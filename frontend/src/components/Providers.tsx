@@ -11,14 +11,37 @@ function AuthInitializer() {
 
   useEffect(() => {
     if (isLoading) {
-      // Defer auth check to avoid blocking initial render
-      const id = requestIdleCallback
-        ? requestIdleCallback(() => fetchUser())
-        : setTimeout(() => fetchUser(), 100);
+      const runFetchUser = () => {
+        void fetchUser();
+      };
+
+      const hasIdleCallback =
+        typeof window !== 'undefined' &&
+        typeof window.requestIdleCallback === 'function';
+
+      let idleId: number | undefined;
+      let timeoutId: number | undefined;
+
+      if (hasIdleCallback) {
+        idleId = window.requestIdleCallback(runFetchUser);
+      } else {
+        timeoutId = window.setTimeout(runFetchUser, 0);
+      }
+
       return () => {
-        if (typeof cancelIdleCallback !== 'undefined')
-          cancelIdleCallback(id as number);
-        else clearTimeout(id as ReturnType<typeof setTimeout>);
+        if (
+          hasIdleCallback &&
+          typeof window !== 'undefined' &&
+          typeof window.cancelIdleCallback === 'function' &&
+          typeof idleId === 'number'
+        ) {
+          window.cancelIdleCallback(idleId);
+          return;
+        }
+
+        if (typeof timeoutId === 'number') {
+          window.clearTimeout(timeoutId);
+        }
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

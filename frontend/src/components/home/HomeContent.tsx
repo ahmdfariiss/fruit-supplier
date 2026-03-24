@@ -37,7 +37,7 @@ const TestimonialSection = dynamic(
 );
 
 export default function HomeContent() {
-  const { data: banners } = useQuery({
+  const { data: banners, isLoading: isBannersLoading } = useQuery({
     queryKey: ['banners'],
     queryFn: async () => {
       const { data } = await api.get('/banners?active=true');
@@ -60,6 +60,12 @@ export default function HomeContent() {
   return (
     <>
       {/* ═══ BANNER STRIP ═══ */}
+      {isBannersLoading && (
+        <section className="py-6 px-[6%]">
+          <div className="mx-auto w-full max-w-[1180px] rounded-3xl bg-g5 aspect-[16/7] sm:aspect-[5/2] lg:aspect-[3/1] max-h-[420px] animate-pulse" />
+        </section>
+      )}
+
       {banners && banners.length > 0 && (
         <section className="py-6 px-[6%]">
           <div className="mx-auto w-full max-w-[1180px]">

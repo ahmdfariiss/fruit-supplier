@@ -28,6 +28,11 @@ export const metadata: Metadata = {
     default: 'BuahKita — Segar dari Kebun',
     template: '%s | BuahKita',
   },
+  icons: {
+    icon: '/images/logo.png',
+    shortcut: '/images/logo.png',
+    apple: '/images/logo.png',
+  },
   description:
     'Platform e-commerce buah segar yang menghubungkan supplier dengan konsumen dan reseller. Buah segar langsung dari kebun dengan harga terbaik.',
   keywords: [
