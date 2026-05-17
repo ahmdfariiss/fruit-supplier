@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ActivityIcon } from 'lucide-react';
 import {
   ArrowLeftIcon,
   BannerIcon,
@@ -16,6 +17,7 @@ import {
 
 const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: DashboardIcon },
+  { href: '/admin/monitoring', label: 'IoT Monitoring', icon: ActivityIcon },
   { href: '/admin/products', label: 'Produk', icon: FruitIcon },
   { href: '/admin/orders', label: 'Pesanan', icon: PackageIcon },
   { href: '/admin/banners', label: 'Banner', icon: BannerIcon },

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
 import Spinner from '@/components/ui/Spinner';
+import { ActivityIcon } from 'lucide-react';
 import {
   ArrowLeftIcon,
   BannerIcon,
@@ -21,6 +22,7 @@ import {
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', iconKey: 'dashboard', exact: true },
+  { href: '/admin/monitoring', label: 'IoT Monitoring', iconKey: 'monitoring' },
   { href: '/admin/orders', label: 'Pesanan', iconKey: 'orders' },
   { href: '/admin/products', label: 'Produk', iconKey: 'products' },
   { href: '/admin/banners', label: 'Banner', iconKey: 'banners' },
@@ -32,6 +34,7 @@ const NAV_ITEMS = [
 
 const navIcons = {
   dashboard: DashboardIcon,
+  monitoring: ActivityIcon,
   orders: PackageIcon,
   products: FruitIcon,
   banners: BannerIcon,
