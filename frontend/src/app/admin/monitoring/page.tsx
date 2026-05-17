@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -51,8 +51,30 @@ const mockData = {
 export default function MonitoringPage() {
   const [data, setData] = useState(mockData);
   const [loading, setLoading] = useState(true);
-  const [historyApel, setHistoryApel] = useState<any[]>(Array.from({length: 10}, (_, i) => ({ time: `-${10-i}s`, suhu: mockData.apel.suhu, hum: mockData.apel.kelembapan, gas: mockData.apel.gas })));
-  const [historyPisang, setHistoryPisang] = useState<any[]>(Array.from({length: 10}, (_, i) => ({ time: `-${10-i}s`, suhu: mockData.pisang.suhu, hum: mockData.pisang.kelembapan, gas: mockData.pisang.gas })));
+
+  interface HistoryData {
+    time: string;
+    suhu: number;
+    hum: number;
+    gas: number;
+  }
+
+  const [historyApel, setHistoryApel] = useState<HistoryData[]>(
+    Array.from({ length: 10 }, (_, i) => ({
+      time: `-${10 - i}s`,
+      suhu: mockData.apel.suhu,
+      hum: mockData.apel.kelembapan,
+      gas: mockData.apel.gas,
+    })),
+  );
+  const [historyPisang, setHistoryPisang] = useState<HistoryData[]>(
+    Array.from({ length: 10 }, (_, i) => ({
+      time: `-${10 - i}s`,
+      suhu: mockData.pisang.suhu,
+      hum: mockData.pisang.kelembapan,
+      gas: mockData.pisang.gas,
+    })),
+  );
 
   // Fetch telemetry secara berkala (Polling)
   useEffect(() => {
@@ -66,14 +88,51 @@ export default function MonitoringPage() {
         if (json.success && json.data) {
           const { apel, pisang } = json.data;
 
-          const now = new Date().toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const now = new Date().toLocaleTimeString('id-ID', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          });
 
           setHistoryApel((prev) => {
-            const h = [...prev, { time: now, suhu: apel?.tempC ?? apel?.temperatureC ?? prev[prev.length - 1].suhu, hum: apel?.humPct ?? apel?.humidityPct ?? prev[prev.length - 1].hum, gas: apel?.gasPpm ?? apel?.gasValue ?? prev[prev.length - 1].gas }];
+            const h = [
+              ...prev,
+              {
+                time: now,
+                suhu:
+                  apel?.tempC ??
+                  apel?.temperatureC ??
+                  prev[prev.length - 1].suhu,
+                hum:
+                  apel?.humPct ??
+                  apel?.humidityPct ??
+                  prev[prev.length - 1].hum,
+                gas:
+                  apel?.gasPpm ?? apel?.gasValue ?? prev[prev.length - 1].gas,
+              },
+            ];
             return h.slice(-10);
           });
           setHistoryPisang((prev) => {
-            const h = [...prev, { time: now, suhu: pisang?.tempC ?? pisang?.temperatureC ?? prev[prev.length - 1].suhu, hum: pisang?.humPct ?? pisang?.humidityPct ?? prev[prev.length - 1].hum, gas: pisang?.gasPpm ?? pisang?.gasValue ?? prev[prev.length - 1].gas }];
+            const h = [
+              ...prev,
+              {
+                time: now,
+                suhu:
+                  pisang?.tempC ??
+                  pisang?.temperatureC ??
+                  prev[prev.length - 1].suhu,
+                hum:
+                  pisang?.humPct ??
+                  pisang?.humidityPct ??
+                  prev[prev.length - 1].hum,
+                gas:
+                  pisang?.gasPpm ??
+                  pisang?.gasValue ??
+                  prev[prev.length - 1].gas,
+              },
+            ];
             return h.slice(-10);
           });
 
@@ -231,7 +290,7 @@ export default function MonitoringPage() {
     title: string;
     fruitType: 'apel' | 'pisang';
     stats: typeof mockData.apel | typeof mockData.pisang;
-    history: any[];
+    history: HistoryData[];
   }) => (
     <div className="flex flex-col gap-6 p-6 rounded-2xl border border-black/5 bg-white shadow-kpi h-full">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -395,31 +454,98 @@ export default function MonitoringPage() {
         <div className="p-4 rounded-xl border border-black/5 bg-white shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-bold text-[0.8rem] tracking-wide uppercase mb-4 text-ink">Suhu & Kelembapan</h3>
+              <h3 className="font-bold text-[0.8rem] tracking-wide uppercase mb-4 text-ink">
+                Suhu & Kelembapan
+              </h3>
               <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={history}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="time" tick={{fontSize: 10}} tickLine={false} axisLine={false} />
-                    <YAxis yAxisId="left" tick={{fontSize: 10}} tickLine={false} axisLine={false} width={30} />
-                    <YAxis yAxisId="right" orientation="right" tick={{fontSize: 10}} tickLine={false} axisLine={false} width={30} />
-                    <Tooltip contentStyle={{fontSize: '12px', borderRadius: '8px'}} />
-                    <Line yAxisId="left" type="monotone" dataKey="suhu" stroke="#E11D48" strokeWidth={2} dot={false} name="Suhu (°C)" />
-                    <Line yAxisId="right" type="monotone" dataKey="hum" stroke="#3B82F6" strokeWidth={2} dot={false} name="Kelembapan (%)" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#E5E7EB"
+                    />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      yAxisId="left"
+                      tick={{ fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={30}
+                    />
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      tick={{ fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={30}
+                    />
+                    <Tooltip
+                      contentStyle={{ fontSize: '12px', borderRadius: '8px' }}
+                    />
+                    <Line
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="suhu"
+                      stroke="#E11D48"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Suhu (°C)"
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="hum"
+                      stroke="#3B82F6"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Kelembapan (%)"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             </div>
             <div>
-              <h3 className="font-bold text-[0.8rem] tracking-wide uppercase mb-4 text-ink">Kadar Gas (MQ135)</h3>
+              <h3 className="font-bold text-[0.8rem] tracking-wide uppercase mb-4 text-ink">
+                Kadar Gas (MQ135)
+              </h3>
               <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={history}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="time" tick={{fontSize: 10}} tickLine={false} axisLine={false} />
-                    <YAxis tick={{fontSize: 10}} tickLine={false} axisLine={false} width={35} />
-                    <Tooltip contentStyle={{fontSize: '12px', borderRadius: '8px'}} />
-                    <Line type="monotone" dataKey="gas" stroke="#F59E0B" strokeWidth={2} dot={false} name="Gas (ppm)" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#E5E7EB"
+                    />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={35}
+                    />
+                    <Tooltip
+                      contentStyle={{ fontSize: '12px', borderRadius: '8px' }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="gas"
+                      stroke="#F59E0B"
+                      strokeWidth={2}
+                      dot={false}
+                      name="Gas (ppm)"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -427,7 +553,9 @@ export default function MonitoringPage() {
           </div>
         </div>
         <div className="p-4 rounded-xl border border-black/5 bg-white shadow-sm overflow-x-auto">
-          <h3 className="font-bold text-[0.8rem] tracking-wide uppercase mb-3 text-ink">Log Pembaruan (10 Terakhir)</h3>
+          <h3 className="font-bold text-[0.8rem] tracking-wide uppercase mb-3 text-ink">
+            Log Pembaruan (10 Terakhir)
+          </h3>
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="text-muted border-b border-black/5">
@@ -439,7 +567,10 @@ export default function MonitoringPage() {
             </thead>
             <tbody>
               {[...history].reverse().map((row, i) => (
-                <tr key={i} className="border-b border-black/5 last:border-0 hover:bg-black/5 transition-colors">
+                <tr
+                  key={i}
+                  className="border-b border-black/5 last:border-0 hover:bg-black/5 transition-colors"
+                >
                   <td className="py-2 text-ink font-medium">{row.time}</td>
                   <td className="py-2 text-red font-medium">{row.suhu}°C</td>
                   <td className="py-2 text-blue font-medium">{row.hum}%</td>
