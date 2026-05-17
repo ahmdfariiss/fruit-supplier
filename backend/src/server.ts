@@ -33,10 +33,13 @@ app.use(cookieParser());
 app.use(
   '/uploads',
   (req, res, next) => {
-    res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
+    res.setHeader(
+      'Cache-Control',
+      'public, max-age=604800, stale-while-revalidate=86400',
+    );
     next();
   },
-  express.static(path.join(__dirname, '..', env.UPLOAD_DIR))
+  express.static(path.join(__dirname, '..', env.UPLOAD_DIR)),
 );
 
 // ══ API Routes ══
@@ -51,8 +54,10 @@ app.get('/health', (_req, res) => {
 app.use(errorHandler);
 
 // ══ Start Server ══
-const server = app.listen(env.PORT, () => {
-  console.log(`🍉 Server running on http://localhost:${env.PORT}`);
+const server = app.listen(Number(env.PORT), '0.0.0.0', () => {
+  console.log(
+    `🍉 Server running on http://0.0.0.0:${env.PORT} (Accessible from local network)`,
+  );
   console.log(`📦 Environment: ${env.NODE_ENV}`);
 });
 

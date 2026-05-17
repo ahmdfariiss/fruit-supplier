@@ -22,12 +22,12 @@ enum BuyerType {
 }
 
 enum OrderStatus {
-  PENDING    // Menunggu pembayaran
-  CONFIRMED  // Admin konfirmasi pembayaran
+  PENDING // Menunggu pembayaran
+  CONFIRMED // Admin konfirmasi pembayaran
   PROCESSING // Sedang diproses/dikemas
-  SHIPPED    // Sedang dikirim
-  DONE       // Selesai diterima
-  CANCELLED  // Dibatalkan
+  SHIPPED // Sedang dikirim
+  DONE // Selesai diterima
+  CANCELLED // Dibatalkan
 }
 
 enum DiscountType {
@@ -238,4 +238,45 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+}
+
+// ══ IoT Monitoring Models ══
+
+model IotDevice {
+  id        String   @id // Contoh: "esp32-01"
+  name      String
+  location  String?
+  fruitType String // "apel" atau "pisang"
+  status    String   @default("online")
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  // Control Targets
+  fanMode      String   @default("auto")
+  coolingFanOn Boolean  @default(false)
+  exhaustFanOn Boolean  @default(false)
+
+  readings SensorReading[]
+}
+
+model SensorReading {
+  id           String @id @default(uuid())
+  deviceId     String
+  fruitType    String
+  temperatureC Float
+  humidityPct  Float
+  gasValue     Float
+  weightGram   Float
+
+  coolingFanOn Boolean @default(false)
+  exhaustFanOn Boolean @default(false)
+  fanMode      String  @default("auto")
+
+  timestamp DateTime @default(now())
+
+  device IotDevice @relation(fields: [deviceId], references: [id])
+
+  @@index([deviceId])
+  @@index([fruitType])
+  @@index([timestamp(sort: Desc)])
 }

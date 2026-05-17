@@ -10,6 +10,7 @@ import voucherRoutes from './voucher.routes';
 import bannerRoutes from './banner.routes';
 import resellerMapRoutes from './resellerMap.routes';
 import adminRoutes from './admin.routes';
+import { iotRouter } from './iot.routes';
 import { generalLimiter } from '../middlewares/rateLimiter';
 
 export const apiRouter = Router();
@@ -26,4 +27,6 @@ apiRouter.use('/quiz', quizRoutes);
 apiRouter.use('/vouchers', voucherRoutes);
 apiRouter.use('/banners', bannerRoutes);
 apiRouter.use('/reseller-maps', resellerMapRoutes);
+apiRouter.use('/admin', adminRoutes);
+apiRouter.use('/iot', iotRouter);
 apiRouter.use('/admin', adminRoutes);
